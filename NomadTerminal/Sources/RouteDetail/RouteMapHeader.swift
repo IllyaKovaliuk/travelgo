@@ -73,28 +73,76 @@ struct RouteMapHeader: View {
 
     private var realMap: some View {
         Map(initialPosition: .region(trackRegion)) {
-            if trackPoints.count > 1 {
+            if !segmentStretches.isEmpty {
+                // One colored stretch per segment, so it's clear at a glance
+                // which transport covers which piece of the route — not
+                // just a single flat line.
+                ForEach(segmentStretches) { stretch in
+                    MapPolyline(coordinates: stretch.coordinates)
+                        .stroke(stretch.tint, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
+                }
+                ForEach(segmentStretches) { stretch in
+                    Annotation("", coordinate: stretch.midpoint) {
+                        SegmentLabelChip(icon: stretch.icon, label: stretch.label, tint: stretch.tint)
+                    }
+                }
+            } else if trackPoints.count > 1 {
                 MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                    .stroke(NTColor.milk(0.9), style: StrokeStyle(lineWidth: 4.5, lineCap: .round, lineJoin: .round))
+                    .stroke(NTColor.pine, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
+            }
+
+            if trackPoints.count > 1 {
                 if let start = trackPoints.first {
-                    Annotation("Start", coordinate: start.coordinate) {
+                    Annotation("", coordinate: start.coordinate) {
                         MapPin(icon: "flag.fill", tint: NTColor.sage)
                     }
                 }
                 if let end = trackPoints.last {
-                    Annotation("Finish", coordinate: end.coordinate) {
-                        MapPin(icon: "flag.checkered", tint: NTColor.milk, iconColor: NTColor.pine)
+                    Annotation("", coordinate: end.coordinate) {
+                        MapPin(icon: "flag.checkered", tint: NTColor.pine, iconColor: NTColor.milk)
                     }
                 }
             } else if let only = trackPoints.first {
-                Annotation("Route", coordinate: only.coordinate) {
-                    MapPin(icon: "flag.fill", tint: NTColor.milk, iconColor: NTColor.pine)
+                Annotation("", coordinate: only.coordinate) {
+                    MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk)
                 }
             }
         }
-        .mapStyle(.standard(elevation: .realistic))
-        .colorScheme(.dark)
+        .mapStyle(.standard)
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
+    }
+
+    /// One colored, labeled stretch of the polyline per segment — the real
+    /// track split proportionally by each segment's logged distance (we
+    /// don't have exact GPS boundaries between segments, only their order
+    /// and length, so this is the honest approximation of "which piece of
+    /// the path used which transport").
+    private var segmentStretches: [MapSegmentStretch] {
+        guard trackPoints.count > 1, !segments.isEmpty else { return [] }
+        let coords = trackPoints.map(\.coordinate)
+        let totalKM = segments.reduce(0) { $0 + $1.distanceKM }
+        guard totalKM > 0 else { return [] }
+
+        let lastIndex = coords.count - 1
+        var stretches: [MapSegmentStretch] = []
+        var startIdx = 0
+        var cumulative: Double = 0
+
+        for (i, seg) in segments.enumerated() {
+            cumulative += seg.distanceKM
+            let isLast = i == segments.count - 1
+            let endIdx = isLast
+                ? lastIndex
+                : max(startIdx + 1, Int((Double(lastIndex) * (cumulative / totalKM)).rounded()))
+            let clampedEnd = min(endIdx, lastIndex)
+            guard clampedEnd > startIdx else { continue }
+            let slice = Array(coords[startIdx...clampedEnd])
+            stretches.append(MapSegmentStretch(
+                coordinates: slice, tint: seg.tint, icon: seg.icon, label: seg.name, midpoint: slice[slice.count / 2]
+            ))
+            startIdx = clampedEnd
+        }
+        return stretches
     }
 
     /// A region that frames the whole recorded track with a little breathing room.
@@ -146,6 +194,15 @@ struct RouteMapHeader: View {
         }
     }
 
+    private struct MapSegmentStretch: Identifiable {
+        let id = UUID()
+        let coordinates: [CLLocationCoordinate2D]
+        let tint: Color
+        let icon: String
+        let label: String
+        let midpoint: CLLocationCoordinate2D
+    }
+
     private var pins: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -167,5 +224,30 @@ struct RouteMapHeader: View {
                     .position(x: w * 0.86, y: 83)
             }
         }
+    }
+}
+
+/// The "what transport, here" label along a segment's stretch of the real
+/// map — icon + a short piece of its name, styled to read clearly against
+/// a light street map (à la Apple/Google Maps' inline route chips).
+private struct SegmentLabelChip: View {
+    let icon: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon).font(.system(size: 10, weight: .bold))
+            Text(label)
+                .font(NTFont.mono(9.5, .semibold))
+                .tracking(0.2)
+                .lineLimit(1)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 9).padding(.vertical, 6)
+        .background(Capsule().fill(tint))
+        .overlay(Capsule().stroke(.white, lineWidth: 1.5))
+        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+        .fixedSize()
     }
 }

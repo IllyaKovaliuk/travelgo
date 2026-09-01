@@ -31,6 +31,21 @@ actor RouteRepository {
         return rows.map { $0.toRoute() }
     }
 
+    /// Every distinct region (`place`) among published public routes, for
+    /// Search's Region picker — real values from the actual data instead of
+    /// a hardcoded list that drifts from what's really out there.
+    func fetchRegions() async throws -> [String] {
+        struct PlaceRow: Decodable { let place: String }
+        let rows: [PlaceRow] = try await supabase
+            .from("routes")
+            .select("place")
+            .eq("status", value: "published")
+            .eq("visibility", value: "public")
+            .execute()
+            .value
+        return Array(Set(rows.map(\.place))).sorted()
+    }
+
     /// A single route's raw DTO (not the mapped `Route`) — used by
     /// `OfflineRouteStore` to cache exactly what the server sent, so
     /// replaying it later through the same `toRoute()` mapper can never
@@ -51,7 +66,7 @@ actor RouteRepository {
     /// `.or(...)` filter once it grows.
     func searchRoutes(
         query: String, transports: [String], difficulties: [String],
-        minKM: Double, maxKM: Double, minAscentM: Double? = nil, maxAscentM: Double? = nil
+        minKM: Double, maxKM: Double, minAscentM: Double? = nil, maxAscentM: Double? = nil, region: String? = nil
     ) async throws -> [Route] {
         var builder = supabase
             .from("routes")
@@ -67,6 +82,7 @@ actor RouteRepository {
         // doesn't silently exclude every route missing that field.
         if let minAscentM { builder = builder.gte("ascent_m", value: minAscentM) }
         if let maxAscentM { builder = builder.lte("ascent_m", value: maxAscentM) }
+        if let region { builder = builder.eq("place", value: region) }
 
         let rows: [RouteDTO] = try await builder
             .order("created_at")

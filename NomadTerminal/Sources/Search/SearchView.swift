@@ -22,6 +22,9 @@ struct SearchView: View {
     @State private var showResults = false
     @State private var searchTask: Task<Void, Never>?
 
+    @State private var availableRegions: [String] = []
+    @State private var selectedRegion: String?
+
     enum Section { case transport, difficulty, distance }
 
     private var transportKeys: [String] {
@@ -56,7 +59,7 @@ struct SearchView: View {
                     disclosureSection(.distance, title: "Distance & elevation", trailing: nil) {
                         rangeRows
                     }
-                    comingSoonRow(title: "Region")
+                    regionRow
                     comingSoonRow(title: "Requirements")
                 }
                 .padding(.horizontal, 20)
@@ -68,7 +71,10 @@ struct SearchView: View {
         }
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
-        .task { runSearch(debounced: false) }
+        .task {
+            runSearch(debounced: false)
+            availableRegions = (try? await RouteRepository.shared.fetchRegions()) ?? []
+        }
         .onChange(of: selectedTransport) { _, _ in runSearch(debounced: false) }
         .onChange(of: difficultyIndex) { _, _ in runSearch(debounced: false) }
         .onChange(of: query) { _, _ in runSearch(debounced: true) }
@@ -76,6 +82,7 @@ struct SearchView: View {
         .onChange(of: maxDistanceKM) { _, _ in runSearch(debounced: true) }
         .onChange(of: minAscentM) { _, _ in runSearch(debounced: true) }
         .onChange(of: maxAscentM) { _, _ in runSearch(debounced: true) }
+        .onChange(of: selectedRegion) { _, _ in runSearch(debounced: false) }
         .fullScreenCover(isPresented: $showResults) {
             SearchResultsView(routes: results) { showResults = false }
         }
@@ -97,7 +104,8 @@ struct SearchView: View {
                     minKM: minDistanceKM,
                     maxKM: maxDistanceKM,
                     minAscentM: minAscentM > Self.ascentBounds.lowerBound ? minAscentM : nil,
-                    maxAscentM: maxAscentM < Self.ascentBounds.upperBound ? maxAscentM : nil
+                    maxAscentM: maxAscentM < Self.ascentBounds.upperBound ? maxAscentM : nil,
+                    region: selectedRegion
                 )
                 if Task.isCancelled { return }
                 withAnimation(.easeOut(duration: 0.2)) {
@@ -300,6 +308,40 @@ struct SearchView: View {
             DualRangeSlider(low: low, high: high, bounds: bounds, tint: tint)
                 .padding(.horizontal, 3)
         }
+    }
+
+    /// Real filter — populated from the actual distinct `place` values
+    /// among published routes, not a hardcoded list.
+    private var regionRow: some View {
+        Menu {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                selectedRegion = nil
+            } label: {
+                if selectedRegion == nil { Label("Any region", systemImage: "checkmark") }
+                else { Text("Any region") }
+            }
+            ForEach(availableRegions, id: \.self) { region in
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    selectedRegion = region
+                } label: {
+                    if selectedRegion == region { Label(region, systemImage: "checkmark") }
+                    else { Text(region) }
+                }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Text("Region").font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk)
+                Text(selectedRegion ?? "ANY").font(NTFont.mono(11, .semibold)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+                Spacer()
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.5))
+            }
+            .padding(20)
+            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        }
+        .disabled(availableRegions.isEmpty)
     }
 
     /// Honest placeholder — no chevron, no fake tap target. Use the search
