@@ -14,6 +14,11 @@ struct RouteFullMapView: View {
     var onClose: () -> Void
 
     @State private var selectedPOI: RouteDetailInfo.POI?
+    @State private var showSatellite = true
+
+    private var mapStyle: MapStyle {
+        showSatellite ? .hybrid(elevation: .realistic) : .standard(elevation: .realistic)
+    }
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }
     private var pois: [RouteDetailInfo.POI] { route.detail.pois }
@@ -25,6 +30,13 @@ struct RouteFullMapView: View {
         ZStack(alignment: .bottom) {
             Map(initialPosition: .region(trackRegion)) {
                 if !segmentStretches.isEmpty {
+                    // White casing first so the colored line reads against any
+                    // terrain color underneath (satellite forest is often green,
+                    // same as the "foot" segment tint, otherwise invisible).
+                    ForEach(segmentStretches) { stretch in
+                        MapPolyline(coordinates: stretch.coordinates)
+                            .stroke(.white, style: StrokeStyle(lineWidth: 8.5, lineCap: .round, lineJoin: .round))
+                    }
                     ForEach(segmentStretches) { stretch in
                         MapPolyline(coordinates: stretch.coordinates)
                             .stroke(stretch.tint, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
@@ -36,7 +48,9 @@ struct RouteFullMapView: View {
                     }
                 } else if trackPoints.count > 1 {
                     MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                        .stroke(NTColor.pine, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
+                        .stroke(.white, style: StrokeStyle(lineWidth: 8.5, lineCap: .round, lineJoin: .round))
+                    MapPolyline(coordinates: trackPoints.map(\.coordinate))
+                        .stroke(NTColor.accent, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
                 }
 
                 if trackPoints.count > 1 {
@@ -62,7 +76,11 @@ struct RouteFullMapView: View {
                     }
                 }
             }
-            .mapStyle(.standard(elevation: .realistic))
+            // Satellite, not vector "standard" — see RouteMapHeader for why:
+            // remote trails mostly aren't in Apple's road/vector data at
+            // all, so standard renders a flat color wash there. Real
+            // imagery shows the actual terrain regardless of map data.
+            .mapStyle(mapStyle)
             .mapControls {
                 MapCompass()
                 MapScaleView()
@@ -95,6 +113,20 @@ struct RouteFullMapView: View {
                     .shadow(color: .black.opacity(0.2), radius: 6, y: 2)
             }
             .buttonStyle(.plain)
+
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showSatellite.toggle()
+            } label: {
+                Image(systemName: showSatellite ? "map.fill" : "globe.americas.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(NTColor.ink)
+                    .frame(width: 42, height: 42)
+                    .background(Circle().fill(.white))
+                    .shadow(color: .black.opacity(0.2), radius: 6, y: 2)
+            }
+            .buttonStyle(.plain)
+            .padding(.leading, 10)
 
             Spacer()
 

@@ -104,6 +104,13 @@ struct RouteMapHeader: View {
     private var realMap: some View {
         Map(initialPosition: .region(trackRegion)) {
             if !segmentStretches.isEmpty {
+                // White casing under every stretch first, so the colored
+                // line reads clearly against any terrain color underneath
+                // (green segment over green forest was invisible without it).
+                ForEach(segmentStretches) { stretch in
+                    MapPolyline(coordinates: stretch.coordinates)
+                        .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+                }
                 // One colored stretch per segment, so it's clear at a glance
                 // which transport covers which piece of the route — not
                 // just a single flat line.
@@ -118,7 +125,9 @@ struct RouteMapHeader: View {
                 }
             } else if trackPoints.count > 1 {
                 MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                    .stroke(NTColor.pine, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
+                    .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+                MapPolyline(coordinates: trackPoints.map(\.coordinate))
+                    .stroke(NTColor.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
             }
 
             if trackPoints.count > 1 {
@@ -144,7 +153,11 @@ struct RouteMapHeader: View {
                 }
             }
         }
-        .mapStyle(.standard)
+        // Satellite (not vector "standard") — remote trails/backcountry
+        // routes mostly have no road data in Apple's vector map, which
+        // rendered as a flat color wash with no visible terrain at all.
+        // Real satellite imagery shows the actual land regardless.
+        .mapStyle(.hybrid(elevation: .realistic))
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
     }
 
