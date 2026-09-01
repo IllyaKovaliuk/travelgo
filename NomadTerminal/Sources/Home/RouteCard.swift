@@ -111,6 +111,8 @@ struct RouteCard: View {
                         Button {
                             tapHaptic()
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { following.toggle() }
+                            let newValue = following
+                            Task { try? await RouteRepository.shared.setFollowing(authorId: route.author.id, following: newValue) }
                         } label: {
                             Text(following ? "Following" : "Follow")
                                 .font(NTFont.body(13, .semibold))
@@ -158,6 +160,13 @@ struct RouteCard: View {
             }
             Button("Cancel", role: .cancel) {}
         }
+        .task {
+            following = await RouteRepository.shared.isFollowing(authorId: route.author.id)
+        }
+    }
+
+    private var shareText: String {
+        "Check out \"\(route.title.replacingOccurrences(of: "\n", with: " "))\" on NomadTerminal — \(String(format: "%.1f", route.distanceKM))km in \(route.place)."
     }
 
     private func report(reason: String) {
@@ -189,7 +198,18 @@ struct RouteCard: View {
                 let newValue = saved
                 Task { try? await RouteRepository.shared.setSaved(routeId: route.id, saved: newValue) }
             }
-            railButton(icon: "square.and.arrow.up", tint: NTColor.milk, caption: "SHR") {}
+            ShareLink(item: shareText) {
+                VStack(spacing: 3) {
+                    Image(systemName: "square.and.arrow.up").font(.system(size: 19)).foregroundStyle(NTColor.milk)
+                    Text("SHR").font(NTFont.mono(8.5, .semibold)).foregroundStyle(NTColor.milk)
+                }
+                .frame(width: 52, height: 52)
+                .background(Circle().fill(.ultraThinMaterial).environment(\.colorScheme, .dark))
+                .background(Circle().fill(NTColor.milk(0.12)))
+                .overlay(Circle().stroke(NTColor.milk(0.26), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .simultaneousGesture(TapGesture().onEnded { tapHaptic() })
             railButton(icon: "bubble.left", tint: NTColor.milk, caption: "28") { showComments = true }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)

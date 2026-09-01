@@ -130,6 +130,41 @@ actor RouteRepository {
         return !(rows?.isEmpty ?? true)
     }
 
+    private struct FollowRow: Codable {
+        let follower_id: String
+        let followee_id: String
+    }
+
+    func setFollowing(authorId: String, following: Bool) async throws {
+        let userId = try await ensureSession()
+        guard authorId != userId.uuidString else { return } // can't follow yourself
+        if following {
+            try await supabase.from("follows")
+                .upsert(FollowRow(follower_id: userId.uuidString, followee_id: authorId))
+                .execute()
+        } else {
+            try await supabase.from("follows")
+                .delete()
+                .eq("follower_id", value: userId.uuidString)
+                .eq("followee_id", value: authorId)
+                .execute()
+        }
+    }
+
+    /// Whether the current session already follows this author — lets a
+    /// freshly rendered card show the right button state.
+    func isFollowing(authorId: String) async -> Bool {
+        guard let userId = try? await ensureSession() else { return false }
+        let rows: [FollowRow]? = try? await supabase
+            .from("follows")
+            .select("follower_id, followee_id")
+            .eq("follower_id", value: userId.uuidString)
+            .eq("followee_id", value: authorId)
+            .execute()
+            .value
+        return !(rows?.isEmpty ?? true)
+    }
+
     struct SavedRoute {
         let route: Route
         let downloadedOffline: Bool

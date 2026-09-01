@@ -11,9 +11,10 @@ struct RouteDetailFlow: View {
         RouteDetailView(route: route, onNavigate: { showCompass = true })
             .fullScreenCover(isPresented: $showCompass) {
                 CompassView(
-                    waypointName: route.detail.segments.last?.name ?? "Next waypoint",
+                    waypointName: route.detail.segments.last?.name ?? "Route end",
                     waypointIndex: min(3, route.detail.segments.count),
                     waypointTotal: max(route.detail.segments.count, 1),
+                    targetCoordinate: route.detail.trackPoints.last?.coordinate,
                     onClose: { showCompass = false }
                 )
             }

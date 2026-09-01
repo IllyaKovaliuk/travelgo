@@ -1,16 +1,35 @@
 import SwiftUI
+import CoreLocation
 
-/// 06 · Compass mode — live bearing/distance to the next waypoint.
+/// 06 · Compass mode — real device heading via CoreLocation. With a
+/// `targetCoordinate` (a route's recorded track end point), also computes
+/// real live bearing/distance/ETA to it; without one, it's an honest plain
+/// compass instead of faking a waypoint that doesn't exist.
 struct CompassView: View {
-    var waypointName: String = "Enguri ford crossing"
-    var waypointIndex: Int = 3
-    var waypointTotal: Int = 4
+    var waypointName: String = "Next waypoint"
+    var waypointIndex: Int = 1
+    var waypointTotal: Int = 1
+    var targetCoordinate: CLLocationCoordinate2D? = nil
     var onClose: () -> Void
 
-    @State private var bearing: Double = 46
-    @State private var distanceKM: Double = 1.42
+    @State private var tracker = CompassTracker()
     @State private var showSOS = false
-    private let timer = Timer.publish(every: 0.9, on: .main, in: .common).autoconnect()
+
+    private var hasTarget: Bool { targetCoordinate != nil && distanceKM != nil }
+    private var distanceKM: Double? { targetCoordinate.flatMap { tracker.distanceKM(to: $0) } }
+    private var bearingToTarget: Double? { targetCoordinate.flatMap { tracker.bearing(to: $0) } }
+    /// Needle rotation relative to the top of the screen: points at the
+    /// target bearing (adjusted for which way the phone itself is facing)
+    /// when there's a target, otherwise just points at true north.
+    private var needleRotation: Double {
+        let target = bearingToTarget ?? 0
+        let r = target - tracker.headingDegrees
+        return r < 0 ? r + 360 : r
+    }
+    private var etaMinutes: Int? {
+        guard let distanceKM, tracker.speedKMH > 0.5 else { return nil }
+        return Int((distanceKM / tracker.speedKMH * 60).rounded())
+    }
 
     var body: some View {
         ZStack {
@@ -28,13 +47,8 @@ struct CompassView: View {
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(onClose: { showSOS = false })
         }
-        .onReceive(timer) { _ in
-            withAnimation(.easeInOut(duration: 0.9)) {
-                bearing = 46 + sin(Date().timeIntervalSinceReferenceDate / 2.6) * 13
-                distanceKM = max(0.08, distanceKM - 0.03)
-                if distanceKM < 0.1 { distanceKM = 1.42 }
-            }
-        }
+        .onAppear { tracker.start() }
+        .onDisappear { tracker.stop() }
     }
 
     private var header: some View {
@@ -50,9 +64,9 @@ struct CompassView: View {
             Spacer()
 
             VStack(spacing: 5) {
-                Text("WAYPOINT \(waypointIndex) OF \(waypointTotal)")
+                Text(targetCoordinate != nil ? "WAYPOINT \(waypointIndex) OF \(waypointTotal)" : "NO ACTIVE ROUTE")
                     .font(NTFont.mono(10, .medium)).tracking(1.4).foregroundStyle(NTColor.milk(0.5))
-                Text(waypointName)
+                Text(targetCoordinate != nil ? waypointName : "Plain compass")
                     .font(NTFont.body(14, .semibold))
             }
 
@@ -82,7 +96,8 @@ struct CompassView: View {
                     .frame(width: 60, height: 60)
                     .offset(y: -142)
             }
-            .rotationEffect(.degrees(bearing))
+            .rotationEffect(.degrees(needleRotation))
+            .animation(.easeInOut(duration: 0.3), value: needleRotation)
 
             readoutCard
         }
@@ -130,17 +145,23 @@ struct CompassView: View {
                 .overlay(Circle().stroke(NTColor.milk(0.12), lineWidth: 1))
 
             VStack(spacing: 12) {
-                Text("TO WAYPOINT")
+                Text(hasTarget ? "TO WAYPOINT" : "HEADING")
                     .font(NTFont.mono(10, .medium)).tracking(1.6).foregroundStyle(NTColor.milk(0.5))
 
-                HStack(alignment: .lastTextBaseline, spacing: 6) {
-                    Text(String(format: "%.2f", distanceKM))
-                        .font(NTFont.mono(58, .semibold))
+                if hasTarget, let distanceKM {
+                    HStack(alignment: .lastTextBaseline, spacing: 6) {
+                        Text(String(format: "%.2f", distanceKM))
+                            .font(NTFont.mono(58, .semibold))
+                            .contentTransition(.numericText())
+                        Text("KM").font(NTFont.mono(16, .medium)).foregroundStyle(NTColor.milk(0.55))
+                    }
+                } else {
+                    Text(String(format: "%03d°", Int(tracker.headingDegrees.rounded())))
+                        .font(NTFont.mono(52, .semibold))
                         .contentTransition(.numericText())
-                    Text("KM").font(NTFont.mono(16, .medium)).foregroundStyle(NTColor.milk(0.55))
                 }
 
-                Text("BEARING \(Int(bearing.rounded()))° NE")
+                Text(hasTarget ? "BEARING \(Int((bearingToTarget ?? 0).rounded()))° \(compassPoint(bearingToTarget ?? 0))" : compassPoint(tracker.headingDegrees) + " · TRUE NORTH")
                     .font(NTFont.mono(11, .semibold)).tracking(0.6)
                     .foregroundStyle(Color(hex: 0xF1A47C))
                     .padding(.horizontal, 12).padding(.vertical, 6)
@@ -148,16 +169,34 @@ struct CompassView: View {
                     .overlay(Capsule().stroke(NTColor.accent.opacity(0.4), lineWidth: 1))
 
                 HStack(spacing: 16) {
-                    readoutStat("1840", "ALT M")
+                    readoutStat(tracker.altitudeM > 0 ? "\(Int(tracker.altitudeM))" : "—", "ALT M")
                     Rectangle().fill(NTColor.milk(0.14)).frame(width: 1, height: 26)
-                    readoutStat("4.2", "KM/H")
+                    readoutStat(String(format: "%.1f", tracker.speedKMH), "KM/H")
                     Rectangle().fill(NTColor.milk(0.14)).frame(width: 1, height: 26)
-                    readoutStat("21m", "ETA")
+                    readoutStat(etaMinutes.map { "\($0)m" } ?? "—", "ETA")
                 }
                 .padding(.top, 4)
             }
         }
         .frame(width: 228, height: 228)
+    }
+
+    private var gpsStatusText: String {
+        if tracker.authorizationDenied { return "LOCATION ACCESS DENIED — ENABLE IN SETTINGS" }
+        if tracker.horizontalAccuracyM < 0 { return "ACQUIRING GPS FIX…" }
+        return "GPS FIX \(Int(tracker.horizontalAccuracyM.rounded())) M"
+    }
+
+    private var gpsStatusColor: Color {
+        if tracker.authorizationDenied { return Color(hex: 0xE58272) }
+        if tracker.horizontalAccuracyM < 0 { return NTColor.gold }
+        return NTColor.sage
+    }
+
+    private func compassPoint(_ degrees: Double) -> String {
+        let points = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        let index = Int((degrees + 22.5).truncatingRemainder(dividingBy: 360) / 45)
+        return points[max(0, min(7, index))]
     }
 
     private func readoutStat(_ value: String, _ label: String) -> some View {
@@ -170,8 +209,8 @@ struct CompassView: View {
     private var footer: some View {
         VStack(spacing: 12) {
             HStack(spacing: 8) {
-                Circle().fill(NTColor.sage).frame(width: 7, height: 7)
-                Text("GPS FIX 4 M · OFFLINE MAP LOADED")
+                Circle().fill(gpsStatusColor).frame(width: 7, height: 7)
+                Text(gpsStatusText)
                     .font(NTFont.mono(11, .medium)).tracking(0.4)
                     .foregroundStyle(NTColor.milk(0.7))
                 Spacer(minLength: 0)
