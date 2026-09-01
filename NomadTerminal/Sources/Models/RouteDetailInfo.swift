@@ -14,6 +14,30 @@ struct RouteDetailInfo {
     let quoteAuthor: String
     let requirements: [Requirement]
     let segments: [Segment]
+    /// The real recorded GPS polyline, if this route was logged with a live
+    /// CoreLocation recording. Empty for the mock routes and for anything
+    /// published before real recording existed — the map header falls back
+    /// to the decorative illustration when this is empty.
+    let trackPoints: [TrackPoint]
+
+    init(
+        coordinates: String, season: String, duration: String, ascentM: Int, highPointM: Int,
+        elevationProfile: [Double], elevationPeakLabel: String, quote: String, quoteAuthor: String,
+        requirements: [Requirement], segments: [Segment], trackPoints: [TrackPoint] = []
+    ) {
+        self.coordinates = coordinates
+        self.season = season
+        self.duration = duration
+        self.ascentM = ascentM
+        self.highPointM = highPointM
+        self.elevationProfile = elevationProfile
+        self.elevationPeakLabel = elevationPeakLabel
+        self.quote = quote
+        self.quoteAuthor = quoteAuthor
+        self.requirements = requirements
+        self.segments = segments
+        self.trackPoints = trackPoints
+    }
 
     struct Requirement: Identifiable {
         let id = UUID()

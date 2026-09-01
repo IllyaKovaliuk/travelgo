@@ -14,7 +14,7 @@ struct RouteDetailView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    RouteMapHeader(segments: detail.segments, onBack: { dismiss() })
+                    RouteMapHeader(segments: detail.segments, trackPoints: detail.trackPoints, onBack: { dismiss() })
 
                     VStack(alignment: .leading, spacing: 0) {
                         Capsule().fill(NTColor.milk(0.25)).frame(width: 44, height: 4)

@@ -1,14 +1,15 @@
 import SwiftUI
 
-/// 14 · Recording — live. Timer and distance genuinely tick (simulated
-/// pace, since we're not reading real GPS yet); stopping hands off to the
-/// details step with the elapsed numbers baked in.
+/// 14 · Recording — live. Real CoreLocation recording via `RouteTracker`:
+/// distance/ascent/the stored polyline all come from actual GPS fixes, not
+/// a simulated pace. Elapsed time is real wall-clock time.
 struct RecordTrackView: View {
-    var onFinish: () -> Void
+    /// distanceKM, ascentM, recorded points.
+    var onFinish: (Double, Double, [TrackPoint]) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var tracker = RouteTracker()
     @State private var elapsed: TimeInterval = 0
-    @State private var distanceKM: Double = 0
     @State private var isPaused = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -19,18 +20,38 @@ struct RecordTrackView: View {
             VStack {
                 header
                 Spacer()
-                statsCard
+                if tracker.authorizationDenied {
+                    locationDeniedCard
+                } else {
+                    statsCard
+                }
                 Spacer().frame(height: 18)
                 controls
             }
         }
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear { tracker.start() }
+        .onDisappear { tracker.stop() }
         .onReceive(timer) { _ in
             guard !isPaused else { return }
             elapsed += 1
-            distanceKM += 0.0024
         }
+    }
+
+    private var locationDeniedCard: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "location.slash.fill").font(.system(size: 26)).foregroundStyle(Color(hex: 0xE58272))
+            Text("Location access needed to record a track").font(NTFont.body(14.5, .semibold))
+            Text("Enable it in Settings to log real distance, ascent and your path.")
+                .font(NTFont.body(12.5, .light))
+                .foregroundStyle(NTColor.milk(0.6))
+                .multilineTextAlignment(.center)
+        }
+        .padding(24)
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .padding(.horizontal, 22)
     }
 
     private var terrain: some View {
@@ -93,9 +114,9 @@ struct RecordTrackView: View {
                 .contentTransition(.numericText())
 
             HStack(spacing: 0) {
-                stat(String(format: "%.2f", distanceKM), "KM", "DISTANCE")
-                stat(String(format: "%.0f", distanceKM * 34), "M", "ASCENT")
-                stat(String(format: "%.1f", distanceKM > 0 ? distanceKM / (elapsed / 3600 + 0.001) : 0), "KM/H", "AVG SPEED")
+                stat(String(format: "%.2f", tracker.distanceKM), "KM", "DISTANCE")
+                stat(String(format: "%.0f", tracker.ascentM), "M", "ASCENT")
+                stat(String(format: "%.1f", tracker.distanceKM > 0 ? tracker.distanceKM / (elapsed / 3600 + 0.001) : 0), "KM/H", "AVG SPEED")
             }
         }
         .padding(24)
@@ -117,6 +138,7 @@ struct RecordTrackView: View {
             Button {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 withAnimation { isPaused.toggle() }
+                if isPaused { tracker.pause() } else { tracker.resume() }
             } label: {
                 Image(systemName: isPaused ? "play.fill" : "pause.fill")
                     .font(.system(size: 20))
@@ -128,7 +150,8 @@ struct RecordTrackView: View {
 
             Button {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                onFinish()
+                tracker.stop()
+                onFinish(tracker.distanceKM, tracker.ascentM, tracker.storedPoints)
             } label: {
                 HStack(spacing: 9) {
                     Image(systemName: "checkmark.circle.fill")

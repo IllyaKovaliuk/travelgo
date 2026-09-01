@@ -68,6 +68,7 @@ struct RouteDTO: Decodable {
     let elevationPeakLabel: String?
     let quote: String?
     let quoteAuthor: String?
+    let trackPoints: [TrackPoint]
     let profiles: ProfileDTO
     let routeSegments: [SegmentDTO]
     let routeRequirements: [RequirementDTO]
@@ -84,6 +85,7 @@ struct RouteDTO: Decodable {
         case elevationProfile = "elevation_profile"
         case elevationPeakLabel = "elevation_peak_label"
         case quoteAuthor = "quote_author"
+        case trackPoints = "track_points"
         case routeSegments = "route_segments"
         case routeRequirements = "route_requirements"
     }
@@ -111,7 +113,8 @@ extension RouteDTO {
             },
             segments: sortedSegments.map {
                 .init(icon: $0.icon, name: $0.name, distanceKM: $0.distanceKm, tint: Color(hex: $0.tint))
-            }
+            },
+            trackPoints: trackPoints
         )
 
         let authorGradientPairs: [Color] = [NTColor.water, NTColor.pineRaised]

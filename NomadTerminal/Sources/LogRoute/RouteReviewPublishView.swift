@@ -155,7 +155,9 @@ struct RouteReviewPublishView: View {
                     difficulty: draft.difficulty.dbKey,
                     transport: draft.transport.dbKey,
                     transportLabel: draft.transport.rawValue,
-                    distanceKM: distance
+                    distanceKM: distance,
+                    ascentM: Int(draft.ascentM.rounded()),
+                    trackPoints: draft.trackPoints
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation { published = route }

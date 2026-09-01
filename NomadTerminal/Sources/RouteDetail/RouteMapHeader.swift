@@ -1,19 +1,26 @@
 import SwiftUI
+import MapKit
+import CoreLocation
 
-/// The "map" at the top of Route Detail — real geodata will render here
-/// eventually (Mapbox/MapLibre, per the design note); this stand-in shows
-/// the same route-line + typed-pin language so the layout is final.
+/// The "map" at the top of Route Detail. Routes with a real recorded
+/// polyline (`trackPoints`, from a live CoreLocation recording) get an
+/// actual MapKit map with the real path; everything else — the three mock
+/// routes, and anything published before real recording existed — falls
+/// back to the original hand-drawn stand-in so the layout never breaks.
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
+    var trackPoints: [TrackPoint] = []
     var onBack: () -> Void
 
     var body: some View {
         ZStack {
-            terrain
-
-            routeLine
-
-            pins
+            if trackPoints.count > 1 {
+                realMap
+            } else {
+                terrain
+                routeLine
+                pins
+            }
 
             LinearGradient(colors: [NTColor.pineDeep.opacity(0.85), .clear], startPoint: .top, endPoint: .bottom)
                 .frame(height: 130)
@@ -35,7 +42,7 @@ struct RouteMapHeader: View {
 
                     Spacer()
 
-                    Text("MAP RENDERED WITH REAL GEODATA")
+                    Text(trackPoints.count > 1 ? "LIVE GPS TRACK" : "MAP RENDERED WITH REAL GEODATA")
                         .font(NTFont.mono(9.5, .medium))
                         .tracking(0.6)
                         .foregroundStyle(NTColor.milk)
@@ -51,6 +58,40 @@ struct RouteMapHeader: View {
         }
         .frame(height: 330)
         .clipped()
+    }
+
+    private var realMap: some View {
+        Map(initialPosition: .region(trackRegion)) {
+            MapPolyline(coordinates: trackPoints.map(\.coordinate))
+                .stroke(NTColor.milk(0.9), style: StrokeStyle(lineWidth: 4.5, lineCap: .round, lineJoin: .round))
+            if let start = trackPoints.first {
+                Annotation("Start", coordinate: start.coordinate) {
+                    MapPin(icon: "flag.fill", tint: NTColor.sage)
+                }
+            }
+            if let end = trackPoints.last {
+                Annotation("Finish", coordinate: end.coordinate) {
+                    MapPin(icon: "flag.checkered", tint: NTColor.milk, iconColor: NTColor.pine)
+                }
+            }
+        }
+        .mapStyle(.standard(elevation: .realistic))
+        .colorScheme(.dark)
+        .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
+    }
+
+    /// A region that frames the whole recorded track with a little breathing room.
+    private var trackRegion: MKCoordinateRegion {
+        let lats = trackPoints.map(\.lat)
+        let lngs = trackPoints.map(\.lng)
+        let minLat = lats.min() ?? 0, maxLat = lats.max() ?? 0
+        let minLng = lngs.min() ?? 0, maxLng = lngs.max() ?? 0
+        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2)
+        let span = MKCoordinateSpan(
+            latitudeDelta: max((maxLat - minLat) * 1.5, 0.01),
+            longitudeDelta: max((maxLng - minLng) * 1.5, 0.01)
+        )
+        return MKCoordinateRegion(center: center, span: span)
     }
 
     private var terrain: some View {

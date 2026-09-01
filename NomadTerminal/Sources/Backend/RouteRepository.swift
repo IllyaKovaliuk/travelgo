@@ -156,6 +156,8 @@ actor RouteRepository {
         var transport: String
         var transportLabel: String
         var distanceKM: Double
+        var ascentM: Int = 0
+        var trackPoints: [TrackPoint] = []
         var visibility: String = "public"
     }
 
@@ -174,6 +176,8 @@ actor RouteRepository {
             let transport: String
             let transport_label: String
             let distance_km: Double
+            let ascent_m: Int
+            let track_points: [TrackPoint]
             let visibility: String
             let status: String
         }
@@ -186,6 +190,8 @@ actor RouteRepository {
             transport: input.transport,
             transport_label: input.transportLabel,
             distance_km: input.distanceKM,
+            ascent_m: input.ascentM,
+            track_points: input.trackPoints,
             visibility: input.visibility,
             status: "published"
         )
