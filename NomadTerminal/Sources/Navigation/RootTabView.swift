@@ -12,6 +12,7 @@ struct RootTabView: View {
             case .home: HomeFeedView()
             case .search: SearchView()
             case .compass: CompassView(onClose: { tab = .home })
+            case .guide: GuideView()
             case .saved: SavedView()
             case .profile: ProfileView()
             }

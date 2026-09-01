@@ -1,13 +1,14 @@
 import SwiftUI
 
 enum RootTab: Int, CaseIterable {
-    case home, search, compass, saved, profile
+    case home, search, compass, guide, saved, profile
 
     var icon: String {
         switch self {
         case .home: return "house.fill"
         case .search: return "magnifyingglass"
         case .compass: return "location.north.line.fill"
+        case .guide: return "book.closed.fill"
         case .saved: return "bookmark.fill"
         case .profile: return ""
         }
