@@ -60,3 +60,19 @@ targets:
           - IBMPlexMono-Medium.ttf
           - IBMPlexMono-SemiBold.ttf
           - Newsreader-LightItalic.ttf
+schemes:
+  NomadTerminal:
+    build:
+      targets:
+        NomadTerminal: all
+    run:
+      config: Debug
+      storeKitConfiguration: Configuration.storekit
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

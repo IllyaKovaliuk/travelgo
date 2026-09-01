@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var showPaywall = false
     @State private var showAuth = false
     @State private var isSigningOut = false
+    @State private var subscription = SubscriptionManager.shared
 
     enum Theme { case pine, milk }
 
@@ -82,12 +83,14 @@ struct SettingsView: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle().fill(NTColor.gold.opacity(0.2))
-                    Image(systemName: "crown.fill").font(.system(size: 15)).foregroundStyle(NTColor.gold)
+                    Image(systemName: subscription.isPro ? "checkmark.seal.fill" : "crown.fill")
+                        .font(.system(size: 15)).foregroundStyle(NTColor.gold)
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Get NomadTerminal Pro").font(NTFont.body(14.5, .semibold))
-                    Text("Offline maps, SOS beacon, weather alerts").font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
+                    Text(subscription.isPro ? "NomadTerminal Pro" : "Get NomadTerminal Pro").font(NTFont.body(14.5, .semibold))
+                    Text(subscription.isPro ? "Active — manage your plan" : "Offline maps, SOS beacon, weather alerts")
+                        .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.4))

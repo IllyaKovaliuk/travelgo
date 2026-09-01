@@ -1,0 +1,119 @@
+{
+  "identifier" : "152AD406-DF50-4540-BEF1-82C10ACFE22D",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "9F3CF0D4-BDE6-4259-AFC7-BA0E40C1ECB8",
+      "localizations" : [],
+      "name" : "NomadTerminal Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "70B0633B-68F2-4A8D-8F79-EB0FB2EA9C48",
+          "introductoryOffer" : {
+            "internalID" : "DFEC34B1-C2EC-41D1-B146-59999E380D7D",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Everything you need where there's no signal at all.",
+              "displayName" : "NomadTerminal Pro — Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "io.nomadterminal.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "9F3CF0D4-BDE6-4259-AFC7-BA0E40C1ECB8",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "59.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "606D37A3-DD5C-40E8-BD5D-243920366C31",
+          "introductoryOffer" : {
+            "internalID" : "49EDF510-3AE8-4AF6-A48A-C99F0610EC78",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Everything you need where there's no signal at all. Best value.",
+              "displayName" : "NomadTerminal Pro — Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "io.nomadterminal.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Annual",
+          "subscriptionGroupID" : "9F3CF0D4-BDE6-4259-AFC7-BA0E40C1ECB8",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

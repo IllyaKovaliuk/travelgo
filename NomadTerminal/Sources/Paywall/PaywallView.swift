@@ -1,13 +1,19 @@
 import SwiftUI
+import StoreKit
 
-/// 20 · NomadTerminal Pro — paywall. Visual only; StoreKit purchase flow
-/// is a separate, dedicated pass once pricing/products are set up in
-/// App Store Connect.
+/// 20 · NomadTerminal Pro — paywall. Real StoreKit 2 purchase flow, backed
+/// by `SubscriptionManager` and the two products in `Configuration.storekit`
+/// (must be mirrored exactly in App Store Connect before shipping).
 struct PaywallView: View {
     var onClose: () -> Void
 
-    @State private var plan: Plan = .annual
-    enum Plan { case monthly, annual }
+    @State private var manager = SubscriptionManager.shared
+    @State private var selectedProductID = SubscriptionManager.annualID
+    @State private var isPurchasing = false
+
+    private var selectedProduct: Product? {
+        manager.products.first { $0.id == selectedProductID }
+    }
 
     var body: some View {
         ZStack {
@@ -36,64 +42,155 @@ struct PaywallView: View {
                     .buttonStyle(.plain)
                 }
 
-                ZStack {
-                    Circle().fill(NTColor.gold.opacity(0.2))
-                    Image(systemName: "crown.fill").font(.system(size: 24)).foregroundStyle(NTColor.gold)
-                }
-                .frame(width: 56, height: 56)
-                .padding(.top, 20)
+                if manager.isPro {
+                    proActiveState
+                } else {
+                    ZStack {
+                        Circle().fill(NTColor.gold.opacity(0.2))
+                        Image(systemName: "crown.fill").font(.system(size: 24)).foregroundStyle(NTColor.gold)
+                    }
+                    .frame(width: 56, height: 56)
+                    .padding(.top, 20)
 
-                Text("Go further\noff grid.")
-                    .font(NTFont.heading(32, .extraBold))
-                    .foregroundStyle(NTColor.milk)
-                    .padding(.top, 18)
+                    Text("Go further\noff grid.")
+                        .font(NTFont.heading(32, .extraBold))
+                        .foregroundStyle(NTColor.milk)
+                        .padding(.top, 18)
 
-                Text("NomadTerminal Pro — everything you need where there's no signal at all.")
-                    .font(NTFont.body(14.5, .light))
-                    .foregroundStyle(NTColor.milk(0.62))
-                    .padding(.top, 8)
+                    Text("NomadTerminal Pro — everything you need where there's no signal at all.")
+                        .font(NTFont.body(14.5, .light))
+                        .foregroundStyle(NTColor.milk(0.62))
+                        .padding(.top, 8)
 
-                VStack(alignment: .leading, spacing: 13) {
-                    feature("Unlimited offline map downloads")
-                    feature("Satellite SOS beacon, no bars needed")
-                    feature("Live ford & weather condition alerts")
-                    feature("Publish unlimited routes")
-                }
-                .padding(.top, 22)
+                    VStack(alignment: .leading, spacing: 13) {
+                        feature("Unlimited offline map downloads")
+                        feature("Satellite SOS beacon, no bars needed")
+                        feature("Live ford & weather condition alerts")
+                        feature("Publish unlimited routes")
+                    }
+                    .padding(.top, 22)
 
-                Spacer(minLength: 20)
+                    Spacer(minLength: 20)
 
-                HStack(spacing: 10) {
-                    planCard(.monthly, title: "Monthly", price: "$7.99")
-                    planCard(.annual, title: "Annual", price: "$59.99", badge: "SAVE 38%")
-                }
+                    if let error = manager.purchaseError {
+                        HStack(spacing: 10) {
+                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color(hex: 0xE58272))
+                            Text(error).font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.milk(0.85))
+                        }
+                        .padding(14)
+                        .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .padding(.bottom, 14)
+                    }
 
-                Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                } label: {
-                    Text("Start 7-day free trial")
-                        .font(NTFont.body(16, .semibold))
-                        .foregroundStyle(NTColor.pine)
+                    if manager.isLoadingProducts {
+                        ProgressView().tint(NTColor.milk).frame(maxWidth: .infinity).padding(.vertical, 20)
+                    } else if manager.products.isEmpty {
+                        Text("Subscription options unavailable right now.")
+                            .font(NTFont.body(13, .medium))
+                            .foregroundStyle(NTColor.milk(0.55))
+                            .padding(.vertical, 20)
+                    } else {
+                        HStack(spacing: 10) {
+                            ForEach(manager.products) { product in
+                                planCard(product)
+                            }
+                        }
+
+                        Button {
+                            purchase()
+                        } label: {
+                            HStack(spacing: 9) {
+                                if isPurchasing {
+                                    ProgressView().tint(NTColor.pine)
+                                } else {
+                                    Text(trialCopy)
+                                        .font(NTFont.body(16, .semibold))
+                                }
+                            }
+                            .foregroundStyle(NTColor.pine)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .background(NTColor.milk, in: Capsule())
+                            .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+                        }
+                        .buttonStyle(.plain)
+                        .ntPressable()
+                        .disabled(isPurchasing || selectedProduct == nil)
+                        .padding(.top, 18)
+
+                        if let selectedProduct {
+                            Text("Cancel anytime. Renews at \(selectedProduct.displayPrice)\(renewalSuffix).")
+                                .font(NTFont.mono(10.5, .medium)).tracking(0.3)
+                                .foregroundStyle(NTColor.milk(0.45))
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 12)
+                        }
+
+                        Button {
+                            Task { await manager.restore() }
+                        } label: {
+                            Text("Restore purchases")
+                                .font(NTFont.mono(10.5, .medium)).tracking(0.3)
+                                .foregroundStyle(NTColor.milk(0.55))
+                                .underline()
+                        }
+                        .buttonStyle(.plain)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .background(NTColor.milk, in: Capsule())
-                        .shadow(color: .black.opacity(0.35), radius: 16, y: 8)
+                        .padding(.top, 8)
+                    }
                 }
-                .buttonStyle(.plain)
-                .ntPressable()
-                .padding(.top, 18)
-
-                Text("Cancel anytime. Renews at \(plan == .annual ? "$59.99/yr" : "$7.99/mo").")
-                    .font(NTFont.mono(10.5, .medium)).tracking(0.3)
-                    .foregroundStyle(NTColor.milk(0.45))
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 12)
             }
             .padding(.horizontal, 28)
             .padding(.top, 16)
             .padding(.bottom, 20)
         }
         .foregroundStyle(NTColor.milk)
+        .task {
+            await manager.loadProducts()
+            if selectedProduct == nil { selectedProductID = manager.products.first?.id ?? SubscriptionManager.annualID }
+        }
+    }
+
+    private var trialCopy: String {
+        selectedProduct?.subscription?.introductoryOffer != nil ? "Start 7-day free trial" : "Subscribe"
+    }
+
+    private var renewalSuffix: String {
+        guard let period = selectedProduct?.subscription?.subscriptionPeriod else { return "" }
+        switch period.unit {
+        case .month: return "/mo"
+        case .year: return "/yr"
+        default: return ""
+        }
+    }
+
+    private var proActiveState: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle().fill(NTColor.sage.opacity(0.2))
+                Image(systemName: "checkmark.seal.fill").font(.system(size: 28)).foregroundStyle(NTColor.sage)
+            }
+            .frame(width: 64, height: 64)
+            .padding(.top, 30)
+
+            Text("You're Pro.").font(NTFont.heading(28, .extraBold))
+            Text("Offline maps, SOS beacon and weather alerts are all unlocked.")
+                .font(NTFont.body(14, .light))
+                .foregroundStyle(NTColor.milk(0.62))
+                .multilineTextAlignment(.center)
+
+            Button(action: onClose) {
+                Text("Done")
+                    .font(NTFont.body(16, .semibold))
+                    .foregroundStyle(NTColor.pine)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 58)
+                    .background(NTColor.milk, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 20)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func feature(_ text: String) -> some View {
@@ -107,24 +204,37 @@ struct PaywallView: View {
         }
     }
 
-    private func planCard(_ p: Plan, title: String, price: String, badge: String? = nil) -> some View {
-        Button { plan = p } label: {
+    private func planCard(_ product: Product) -> some View {
+        let isAnnual = product.id == SubscriptionManager.annualID
+        return Button { selectedProductID = product.id } label: {
             VStack(alignment: .leading, spacing: 8) {
-                if let badge {
-                    Text(badge)
+                if isAnnual {
+                    Text("SAVE 38%")
                         .font(NTFont.mono(9, .semibold)).tracking(0.4)
                         .foregroundStyle(Color(hex: 0x231007))
                         .padding(.horizontal, 9).padding(.vertical, 4)
                         .background(Capsule().fill(NTColor.accent))
                 }
-                Text(title).font(NTFont.body(13, .semibold))
-                Text(price).font(NTFont.mono(20, .semibold))
+                Text(isAnnual ? "Annual" : "Monthly").font(NTFont.body(13, .semibold))
+                Text(product.displayPrice).font(NTFont.mono(20, .semibold))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-            .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(plan == p ? NTColor.accent.opacity(0.14) : NTColor.milk(0.06)))
-            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(plan == p ? NTColor.accent : NTColor.milk(0.16), lineWidth: plan == p ? 1.5 : 1))
+            .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(selectedProductID == product.id ? NTColor.accent.opacity(0.14) : NTColor.milk(0.06)))
+            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(selectedProductID == product.id ? NTColor.accent : NTColor.milk(0.16), lineWidth: selectedProductID == product.id ? 1.5 : 1))
         }
         .buttonStyle(.plain)
+    }
+
+    private func purchase() {
+        guard let product = selectedProduct else { return }
+        isPurchasing = true
+        Task {
+            await manager.purchase(product)
+            isPurchasing = false
+            if manager.isPro {
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
+        }
     }
 }
