@@ -11,11 +11,16 @@ import CoreLocation
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
     var trackPoints: [TrackPoint] = []
+    var pois: [RouteDetailInfo.POI] = []
     /// A pre-rendered snapshot from `OfflineRouteStore` — shown instead of a
     /// live `Map` when present, since a live map still needs network for
     /// tiles even with the real coordinates already on hand.
     var cachedSnapshot: UIImage? = nil
     var onBack: () -> Void
+    /// Tapping the map (anywhere but the back button) opens the real
+    /// full-screen, pannable/zoomable map — this header is a preview, not
+    /// the actual navigable map.
+    var onOpenFullMap: (() -> Void)? = nil
 
     var body: some View {
         ZStack {
@@ -66,9 +71,34 @@ struct RouteMapHeader: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 14)
+            if onOpenFullMap != nil {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            Text("OPEN MAP")
+                        }
+                        .font(NTFont.mono(9.5, .semibold)).tracking(0.5)
+                        .foregroundStyle(NTColor.milk)
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Capsule().fill(.ultraThinMaterial).environment(\.colorScheme, .dark))
+                        .background(Capsule().fill(NTColor.milk(0.1)))
+                        .overlay(Capsule().stroke(NTColor.milk(0.26), lineWidth: 1))
+                    }
+                }
+                .padding(16)
+            }
         }
         .frame(height: 330)
         .clipped()
+        .contentShape(Rectangle())
+        .onTapGesture { onOpenFullMap?() }
+    }
+
+    private var segmentStretches: [MapSegmentStretch] {
+        MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
     }
 
     private var realMap: some View {
@@ -107,42 +137,15 @@ struct RouteMapHeader: View {
                     MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk)
                 }
             }
+
+            ForEach(pois) { poi in
+                Annotation("", coordinate: poi.coordinate) {
+                    POIMapMarker(category: poi.category)
+                }
+            }
         }
         .mapStyle(.standard)
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
-    }
-
-    /// One colored, labeled stretch of the polyline per segment — the real
-    /// track split proportionally by each segment's logged distance (we
-    /// don't have exact GPS boundaries between segments, only their order
-    /// and length, so this is the honest approximation of "which piece of
-    /// the path used which transport").
-    private var segmentStretches: [MapSegmentStretch] {
-        guard trackPoints.count > 1, !segments.isEmpty else { return [] }
-        let coords = trackPoints.map(\.coordinate)
-        let totalKM = segments.reduce(0) { $0 + $1.distanceKM }
-        guard totalKM > 0 else { return [] }
-
-        let lastIndex = coords.count - 1
-        var stretches: [MapSegmentStretch] = []
-        var startIdx = 0
-        var cumulative: Double = 0
-
-        for (i, seg) in segments.enumerated() {
-            cumulative += seg.distanceKM
-            let isLast = i == segments.count - 1
-            let endIdx = isLast
-                ? lastIndex
-                : max(startIdx + 1, Int((Double(lastIndex) * (cumulative / totalKM)).rounded()))
-            let clampedEnd = min(endIdx, lastIndex)
-            guard clampedEnd > startIdx else { continue }
-            let slice = Array(coords[startIdx...clampedEnd])
-            stretches.append(MapSegmentStretch(
-                coordinates: slice, tint: seg.tint, icon: seg.icon, label: seg.name, midpoint: slice[slice.count / 2]
-            ))
-            startIdx = clampedEnd
-        }
-        return stretches
     }
 
     /// A region that frames the whole recorded track with a little breathing room.
@@ -194,15 +197,6 @@ struct RouteMapHeader: View {
         }
     }
 
-    private struct MapSegmentStretch: Identifiable {
-        let id = UUID()
-        let coordinates: [CLLocationCoordinate2D]
-        let tint: Color
-        let icon: String
-        let label: String
-        let midpoint: CLLocationCoordinate2D
-    }
-
     private var pins: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -224,30 +218,5 @@ struct RouteMapHeader: View {
                     .position(x: w * 0.86, y: 83)
             }
         }
-    }
-}
-
-/// The "what transport, here" label along a segment's stretch of the real
-/// map — icon + a short piece of its name, styled to read clearly against
-/// a light street map (à la Apple/Google Maps' inline route chips).
-private struct SegmentLabelChip: View {
-    let icon: String
-    let label: String
-    let tint: Color
-
-    var body: some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 10, weight: .bold))
-            Text(label)
-                .font(NTFont.mono(9.5, .semibold))
-                .tracking(0.2)
-                .lineLimit(1)
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 9).padding(.vertical, 6)
-        .background(Capsule().fill(tint))
-        .overlay(Capsule().stroke(.white, lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
-        .fixedSize()
     }
 }

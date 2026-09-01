@@ -172,6 +172,9 @@ struct RouteReviewPublishView: View {
                     requirements: draft.requirements
                         .filter { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }
                         .map { .init(icon: $0.category.icon, title: $0.title, subtitle: $0.subtitle, tint: $0.category.dbHex) },
+                    pois: draft.pois.map {
+                        .init(lat: $0.lat, lng: $0.lng, category: $0.category.rawValue, title: $0.title, note: $0.note.isEmpty ? nil : $0.note)
+                    },
                     coverImageUrl: draft.coverImageUrl
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)

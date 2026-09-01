@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import CoreLocation
 
 /// Wire-format rows straight off Postgres — decoded, then mapped into the
 /// existing `Route` / `RouteDetailInfo` / `Author` view models so nothing
@@ -48,6 +49,21 @@ struct RequirementDTO: Codable {
     }
 }
 
+struct POIDTO: Codable {
+    let id: UUID
+    let lat: Double
+    let lng: Double
+    let category: String
+    let title: String
+    let note: String?
+    let sortOrder: Int
+
+    enum CodingKeys: String, CodingKey {
+        case id, lat, lng, category, title, note
+        case sortOrder = "sort_order"
+    }
+}
+
 struct RouteDTO: Codable {
     let id: UUID
     let title: String
@@ -72,6 +88,7 @@ struct RouteDTO: Codable {
     let profiles: ProfileDTO
     let routeSegments: [SegmentDTO]
     let routeRequirements: [RequirementDTO]
+    let routePointsOfInterest: [POIDTO]
 
     enum CodingKeys: String, CodingKey {
         case id, title, place, difficulty, transport, coordinates, season, duration, quote, profiles
@@ -88,6 +105,7 @@ struct RouteDTO: Codable {
         case trackPoints = "track_points"
         case routeSegments = "route_segments"
         case routeRequirements = "route_requirements"
+        case routePointsOfInterest = "route_points_of_interest"
     }
 }
 
@@ -114,7 +132,10 @@ extension RouteDTO {
             segments: sortedSegments.map {
                 .init(icon: $0.icon, name: $0.name, distanceKM: $0.distanceKm, tint: Color(hex: $0.tint))
             },
-            trackPoints: trackPoints
+            trackPoints: trackPoints,
+            pois: routePointsOfInterest.sorted { $0.sortOrder < $1.sortOrder }.map {
+                .init(id: $0.id.uuidString, coordinate: CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng), category: POICategory(rawValue: $0.category) ?? .other, title: $0.title, note: $0.note)
+            }
         )
 
         let authorGradientPairs: [Color] = [NTColor.water, NTColor.pineRaised]

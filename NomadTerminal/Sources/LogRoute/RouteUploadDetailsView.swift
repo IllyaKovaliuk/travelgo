@@ -111,6 +111,9 @@ struct RouteUploadDetailsView: View {
 
                     segmentsSection.padding(.top, 22)
                     requirementsSection.padding(.top, 22)
+                    if !draft.pois.isEmpty {
+                        poisSection.padding(.top, 22)
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -296,6 +299,34 @@ struct RouteUploadDetailsView: View {
                         .foregroundStyle(NTColor.milk(0.8))
                 }
                 .padding(14)
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+        }
+    }
+
+    /// Read-only list of the pins dropped mid-recording — position came
+    /// from real GPS at drop time, so there's nothing to edit here besides
+    /// removing one.
+    private var poisSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("PINS DROPPED (\(draft.pois.count))").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+            ForEach(draft.pois) { poi in
+                HStack(spacing: 10) {
+                    ZStack {
+                        Circle().fill(poi.category.tint)
+                        Image(systemName: poi.category.icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    }
+                    .frame(width: 34, height: 34)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(poi.title).font(NTFont.body(13.5, .medium)).foregroundStyle(NTColor.milk)
+                        if !poi.note.isEmpty {
+                            Text(poi.note).font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.5)).lineLimit(1)
+                        }
+                    }
+                    Spacer()
+                    removeButton { draft.pois.removeAll { $0.id == poi.id } }
+                }
+                .padding(12)
                 .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }

@@ -1,5 +1,14 @@
 import SwiftUI
 
+struct DraftPOI: Identifiable {
+    let id = UUID()
+    var lat: Double
+    var lng: Double
+    var category: POICategory
+    var title: String
+    var note: String = ""
+}
+
 struct DraftSegment: Identifiable {
     let id = UUID()
     var transport: Transport = .foot
@@ -68,6 +77,7 @@ struct NewRouteDraft {
     var quote: String = ""
     var segments: [DraftSegment] = []
     var requirements: [DraftRequirement] = []
+    var pois: [DraftPOI] = []
     var coverImageUrl: String? = nil
 }
 
@@ -89,11 +99,12 @@ struct LogRouteFlow: View {
             .navigationDestination(for: Step.self) { step in
                 switch step {
                 case .record:
-                    RecordTrackView(onFinish: { distanceKM, ascentM, highPointM, points in
-                        draft.distanceKM = String(format: "%.2f", distanceKM)
-                        draft.ascentM = ascentM
-                        draft.highPointM = highPointM
-                        draft.trackPoints = points
+                    RecordTrackView(onFinish: { result in
+                        draft.distanceKM = String(format: "%.2f", result.distanceKM)
+                        draft.ascentM = result.ascentM
+                        draft.highPointM = result.highPointM
+                        draft.trackPoints = result.points
+                        draft.pois = result.pois
                         path.append(.details)
                     })
                 case .details:

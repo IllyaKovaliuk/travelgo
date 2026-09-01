@@ -1,16 +1,25 @@
 import SwiftUI
 
+struct RecordResult {
+    let distanceKM: Double
+    let ascentM: Double
+    let highPointM: Double
+    let points: [TrackPoint]
+    let pois: [DraftPOI]
+}
+
 /// 14 · Recording — live. Real CoreLocation recording via `RouteTracker`:
 /// distance/ascent/the stored polyline all come from actual GPS fixes, not
 /// a simulated pace. Elapsed time is real wall-clock time.
 struct RecordTrackView: View {
-    /// distanceKM, ascentM, highPointM, recorded points.
-    var onFinish: (Double, Double, Double, [TrackPoint]) -> Void
+    var onFinish: (RecordResult) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var tracker = RouteTracker()
     @State private var elapsed: TimeInterval = 0
     @State private var isPaused = false
+    @State private var droppedPOIs: [DraftPOI] = []
+    @State private var pendingPin: TrackPoint?
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -24,6 +33,9 @@ struct RecordTrackView: View {
                     locationDeniedCard
                 } else {
                     statsCard
+                    if !droppedPOIs.isEmpty {
+                        droppedPinsRow.padding(.horizontal, 22).padding(.top, 12)
+                    }
                 }
                 Spacer().frame(height: 18)
                 controls
@@ -36,6 +48,24 @@ struct RecordTrackView: View {
         .onReceive(timer) { _ in
             guard !isPaused else { return }
             elapsed += 1
+        }
+        .sheet(isPresented: Binding(get: { pendingPin != nil }, set: { if !$0 { pendingPin = nil } })) {
+            if let pin = pendingPin {
+                DropPinSheet(onSave: { category, title, note in
+                    droppedPOIs.append(DraftPOI(lat: pin.lat, lng: pin.lng, category: category, title: title, note: note))
+                    pendingPin = nil
+                }, onCancel: { pendingPin = nil })
+                .presentationDetents([.medium])
+            }
+        }
+    }
+
+    private var droppedPinsRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "mappin.circle.fill").font(.system(size: 14)).foregroundStyle(NTColor.accent)
+            Text("\(droppedPOIs.count) PIN\(droppedPOIs.count == 1 ? "" : "S") DROPPED")
+                .font(NTFont.mono(10.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
+            Spacer()
         }
     }
 
@@ -151,7 +181,10 @@ struct RecordTrackView: View {
             Button {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                 tracker.stop()
-                onFinish(tracker.distanceKM, tracker.ascentM, tracker.highPointM, tracker.storedPoints)
+                onFinish(RecordResult(
+                    distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
+                    points: tracker.storedPoints, pois: droppedPOIs
+                ))
             } label: {
                 HStack(spacing: 9) {
                     Image(systemName: "checkmark.circle.fill")
@@ -165,7 +198,11 @@ struct RecordTrackView: View {
             .buttonStyle(.plain)
             .ntPressable()
 
-            Button {} label: {
+            Button {
+                guard let here = tracker.points.last else { return }
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                pendingPin = here
+            } label: {
                 Image(systemName: "mappin.and.ellipse")
                     .font(.system(size: 19))
                     .frame(width: 64, height: 64)
@@ -173,6 +210,8 @@ struct RecordTrackView: View {
                     .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1.4))
             }
             .buttonStyle(.plain)
+            .disabled(tracker.points.isEmpty)
+            .opacity(tracker.points.isEmpty ? 0.4 : 1)
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 14)

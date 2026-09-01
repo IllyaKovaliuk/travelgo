@@ -9,6 +9,7 @@ struct RouteDetailView: View {
     @State private var savedOffline = false
     @State private var isDownloading = false
     @State private var cachedSnapshot: UIImage?
+    @State private var showFullMap = false
 
     private var detail: RouteDetailInfo { route.detail }
 
@@ -16,7 +17,11 @@ struct RouteDetailView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    RouteMapHeader(segments: detail.segments, trackPoints: detail.trackPoints, cachedSnapshot: cachedSnapshot, onBack: { dismiss() })
+                    RouteMapHeader(
+                        segments: detail.segments, trackPoints: detail.trackPoints, pois: detail.pois,
+                        cachedSnapshot: cachedSnapshot, onBack: { dismiss() },
+                        onOpenFullMap: { showFullMap = true }
+                    )
 
                     VStack(alignment: .leading, spacing: 0) {
                         Capsule().fill(NTColor.milk(0.25)).frame(width: 44, height: 4)
@@ -76,6 +81,9 @@ struct RouteDetailView: View {
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(isPresented: $showFullMap) {
+            RouteFullMapView(route: route, onClose: { showFullMap = false })
+        }
         .task {
             savedOffline = await RouteRepository.shared.isSaved(routeId: route.id)
             cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)

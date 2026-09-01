@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 /// The richer payload shown on the Route Detail screen — requirements,
 /// elevation profile, segments, author's note. Mirrors "05 · Route detail".
@@ -19,11 +20,15 @@ struct RouteDetailInfo {
     /// published before real recording existed — the map header falls back
     /// to the decorative illustration when this is empty.
     let trackPoints: [TrackPoint]
+    /// Arbitrary user-dropped pins — "water here", "homestay here",
+    /// "waterfall here". Any number, unlike segments (which describe a
+    /// stretch of path, not a point).
+    let pois: [POI]
 
     init(
         coordinates: String, season: String, duration: String, ascentM: Int, highPointM: Int,
         elevationProfile: [Double], elevationPeakLabel: String, quote: String, quoteAuthor: String,
-        requirements: [Requirement], segments: [Segment], trackPoints: [TrackPoint] = []
+        requirements: [Requirement], segments: [Segment], trackPoints: [TrackPoint] = [], pois: [POI] = []
     ) {
         self.coordinates = coordinates
         self.season = season
@@ -37,6 +42,15 @@ struct RouteDetailInfo {
         self.requirements = requirements
         self.segments = segments
         self.trackPoints = trackPoints
+        self.pois = pois
+    }
+
+    struct POI: Identifiable {
+        let id: String
+        let coordinate: CLLocationCoordinate2D
+        let category: POICategory
+        let title: String
+        let note: String?
     }
 
     struct Requirement: Identifiable {

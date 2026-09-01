@@ -22,7 +22,7 @@ actor RouteRepository {
     func fetchRoutes() async throws -> [Route] {
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .order("created_at")
@@ -53,7 +53,7 @@ actor RouteRepository {
     func fetchRouteDTO(id: String) async throws -> RouteDTO {
         try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
             .eq("id", value: id)
             .single()
             .execute()
@@ -70,7 +70,7 @@ actor RouteRepository {
     ) async throws -> [Route] {
         var builder = supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .in("transport", values: transports)
@@ -213,7 +213,7 @@ actor RouteRepository {
 
         let rows: [SaveRow] = try await supabase
             .from("route_saves")
-            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*))")
+            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*))")
             .eq("user_id", value: userId.uuidString)
             .order("created_at")
             .execute()
@@ -252,6 +252,7 @@ actor RouteRepository {
         var trackPoints: [TrackPoint] = []
         var segments: [NewSegment] = []
         var requirements: [NewRequirement] = []
+        var pois: [NewPOI] = []
         var coverImageUrl: String? = nil
         var visibility: String = "public"
     }
@@ -261,6 +262,14 @@ actor RouteRepository {
         var name: String
         var distanceKM: Double
         var tint: String
+    }
+
+    struct NewPOI {
+        var lat: Double
+        var lng: Double
+        var category: String
+        var title: String
+        var note: String?
     }
 
     struct NewRequirement {
@@ -316,7 +325,7 @@ actor RouteRepository {
         let inserted: RouteDTO = try await supabase
             .from("routes")
             .insert(payload)
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
             .single()
             .execute()
             .value
@@ -341,9 +350,19 @@ actor RouteRepository {
             try await supabase.from("route_requirements").insert(rows).execute()
         }
 
-        // Re-fetch so the returned Route carries the segments/requirements
-        // just inserted (the first response predates them).
-        if !input.segments.isEmpty || !input.requirements.isEmpty {
+        if !input.pois.isEmpty {
+            struct POIInsert: Encodable {
+                let route_id: String, lat: Double, lng: Double, category: String, title: String, note: String?, sort_order: Int
+            }
+            let rows = input.pois.enumerated().map {
+                POIInsert(route_id: inserted.id.uuidString, lat: $1.lat, lng: $1.lng, category: $1.category, title: $1.title, note: $1.note, sort_order: $0)
+            }
+            try await supabase.from("route_points_of_interest").insert(rows).execute()
+        }
+
+        // Re-fetch so the returned Route carries the segments/requirements/
+        // POIs just inserted (the first response predates them).
+        if !input.segments.isEmpty || !input.requirements.isEmpty || !input.pois.isEmpty {
             return try await fetchRouteDTO(id: inserted.id.uuidString).toRoute()
         }
         return inserted.toRoute()
