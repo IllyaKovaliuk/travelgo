@@ -24,6 +24,9 @@ final class RouteTracker: NSObject {
     private(set) var points: [TrackPoint] = []
     private(set) var distanceKM: Double = 0
     private(set) var ascentM: Double = 0
+    /// Highest altitude actually observed during the recording (meters
+    /// above sea level) — feeds the route's "high point" stat.
+    private(set) var highPointM: Double = 0
     private(set) var isAuthorized = true
     var authorizationDenied = false
 
@@ -95,6 +98,10 @@ extension RouteTracker: CLLocationManagerDelegate {
         Task { @MainActor in
             for location in locations {
                 guard location.horizontalAccuracy >= 0, location.horizontalAccuracy < 50 else { continue }
+
+                if location.verticalAccuracy >= 0, location.altitude > self.highPointM {
+                    self.highPointM = location.altitude
+                }
 
                 if let last = self.lastLocation {
                     let delta = location.distance(from: last)

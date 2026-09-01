@@ -70,6 +70,17 @@ enum Transport: String {
         }
     }
 
+    /// Matches `color` above — stored alongside a published segment so it
+    /// renders with the same tint on Route Detail.
+    var dbHex: String {
+        switch self {
+        case .overland: return "#E8743B"
+        case .foot: return "#5FA777"
+        case .water: return "#3E92CC"
+        case .climb: return "#7A5FBF"
+        }
+    }
+
     init(fromKey key: String) {
         switch key {
         case "overland": self = .overland

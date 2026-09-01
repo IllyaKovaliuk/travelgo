@@ -171,14 +171,32 @@ actor RouteRepository {
         var transportLabel: String
         var distanceKM: Double
         var ascentM: Int = 0
+        var highPointM: Int = 0
+        var season: String = ""
+        var duration: String = ""
+        var quote: String = ""
         var trackPoints: [TrackPoint] = []
+        var segments: [NewSegment] = []
+        var requirements: [NewRequirement] = []
         var visibility: String = "public"
     }
 
-    /// Inserts a real row in `routes` under the current session as author.
-    /// No segments/requirements yet — the details/gear steps of the log-a-route
-    /// flow are still visual-only, so a published route starts bare and can be
-    /// filled in from Route Detail later once editing ships.
+    struct NewSegment {
+        var icon: String
+        var name: String
+        var distanceKM: Double
+        var tint: String
+    }
+
+    struct NewRequirement {
+        var icon: String
+        var title: String
+        var subtitle: String
+        var tint: String
+    }
+
+    /// Inserts a real row in `routes` under the current session as author,
+    /// plus any segments/requirements the log-a-route flow collected.
     func publishRoute(_ input: NewRoute) async throws -> Route {
         let userId = try await ensureSession()
 
@@ -191,6 +209,10 @@ actor RouteRepository {
             let transport_label: String
             let distance_km: Double
             let ascent_m: Int
+            let high_point_m: Int
+            let season: String?
+            let duration: String?
+            let quote: String?
             let track_points: [TrackPoint]
             let visibility: String
             let status: String
@@ -205,19 +227,49 @@ actor RouteRepository {
             transport_label: input.transportLabel,
             distance_km: input.distanceKM,
             ascent_m: input.ascentM,
+            high_point_m: input.highPointM,
+            season: input.season.isEmpty ? nil : input.season,
+            duration: input.duration.isEmpty ? nil : input.duration,
+            quote: input.quote.isEmpty ? nil : input.quote,
             track_points: input.trackPoints,
             visibility: input.visibility,
             status: "published"
         )
 
-        let row: RouteDTO = try await supabase
+        let inserted: RouteDTO = try await supabase
             .from("routes")
             .insert(payload)
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
             .single()
             .execute()
             .value
-        return row.toRoute()
+
+        if !input.segments.isEmpty {
+            struct SegmentInsert: Encodable {
+                let route_id: String, icon: String, name: String, distance_km: Double, tint: String, sort_order: Int
+            }
+            let rows = input.segments.enumerated().map {
+                SegmentInsert(route_id: inserted.id.uuidString, icon: $1.icon, name: $1.name, distance_km: $1.distanceKM, tint: $1.tint, sort_order: $0)
+            }
+            try await supabase.from("route_segments").insert(rows).execute()
+        }
+
+        if !input.requirements.isEmpty {
+            struct RequirementInsert: Encodable {
+                let route_id: String, icon: String, title: String, subtitle: String, tint: String, sort_order: Int
+            }
+            let rows = input.requirements.enumerated().map {
+                RequirementInsert(route_id: inserted.id.uuidString, icon: $1.icon, title: $1.title, subtitle: $1.subtitle, tint: $1.tint, sort_order: $0)
+            }
+            try await supabase.from("route_requirements").insert(rows).execute()
+        }
+
+        // Re-fetch so the returned Route carries the segments/requirements
+        // just inserted (the first response predates them).
+        if !input.segments.isEmpty || !input.requirements.isEmpty {
+            return try await fetchRouteDTO(id: inserted.id.uuidString).toRoute()
+        }
+        return inserted.toRoute()
     }
 
     // MARK: - Comments

@@ -157,7 +157,21 @@ struct RouteReviewPublishView: View {
                     transportLabel: draft.transport.rawValue,
                     distanceKM: distance,
                     ascentM: Int(draft.ascentM.rounded()),
-                    trackPoints: draft.trackPoints
+                    highPointM: Int(draft.highPointM.rounded()),
+                    season: draft.season,
+                    duration: draft.duration,
+                    quote: draft.quote,
+                    trackPoints: draft.trackPoints,
+                    segments: draft.segments
+                        .filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+                        .map {
+                            .init(icon: $0.transport.icon, name: $0.name,
+                                  distanceKM: Double($0.distanceKM.replacingOccurrences(of: ",", with: ".")) ?? 0,
+                                  tint: $0.transport.dbHex)
+                        },
+                    requirements: draft.requirements
+                        .filter { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }
+                        .map { .init(icon: $0.category.icon, title: $0.title, subtitle: $0.subtitle, tint: $0.category.dbHex) }
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation { published = route }

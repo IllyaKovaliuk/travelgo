@@ -4,8 +4,8 @@ import SwiftUI
 /// distance/ascent/the stored polyline all come from actual GPS fixes, not
 /// a simulated pace. Elapsed time is real wall-clock time.
 struct RecordTrackView: View {
-    /// distanceKM, ascentM, recorded points.
-    var onFinish: (Double, Double, [TrackPoint]) -> Void
+    /// distanceKM, ascentM, highPointM, recorded points.
+    var onFinish: (Double, Double, Double, [TrackPoint]) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var tracker = RouteTracker()
@@ -151,7 +151,7 @@ struct RecordTrackView: View {
             Button {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                 tracker.stop()
-                onFinish(tracker.distanceKM, tracker.ascentM, tracker.storedPoints)
+                onFinish(tracker.distanceKM, tracker.ascentM, tracker.highPointM, tracker.storedPoints)
             } label: {
                 HStack(spacing: 9) {
                     Image(systemName: "checkmark.circle.fill")

@@ -77,6 +77,33 @@ struct RouteUploadDetailsView: View {
                             .font(NTFont.mono(14, .semibold))
                     }
                     .padding(.top, 14)
+
+                    HStack(spacing: 12) {
+                        field(label: "SEASON") {
+                            TextField("", text: $draft.season, prompt: Text("JUN – OCT").foregroundStyle(NTColor.milk(0.3)))
+                                .font(NTFont.body(13.5, .medium))
+                        }
+                        field(label: "DURATION") {
+                            TextField("", text: $draft.duration, prompt: Text("2 DAYS").foregroundStyle(NTColor.milk(0.3)))
+                                .font(NTFont.body(13.5, .medium))
+                        }
+                    }
+                    .padding(.top, 14)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("A NOTE FOR OTHERS (OPTIONAL)").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+                        TextField("", text: $draft.quote, prompt: Text("Leave before four — the pass holds cloud until sunrise.").foregroundStyle(NTColor.milk(0.3)), axis: .vertical)
+                            .font(NTFont.body(13.5, .regular))
+                            .foregroundStyle(NTColor.milk)
+                            .lineLimit(2...4)
+                            .padding(14)
+                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                    }
+                    .padding(.top, 14)
+
+                    segmentsSection.padding(.top, 22)
+                    requirementsSection.padding(.top, 22)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -128,6 +155,101 @@ struct RouteUploadDetailsView: View {
                 }
             }
         }
+    }
+
+    private var segmentsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("SEGMENTS (OPTIONAL)").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+                Spacer()
+                addButton { draft.segments.append(DraftSegment()) }
+            }
+            ForEach($draft.segments) { $segment in
+                HStack(spacing: 10) {
+                    Menu {
+                        ForEach([Transport.overland, .foot, .water, .climb], id: \.self) { t in
+                            Button { segment.transport = t } label: { Label(t.rawValue, systemImage: t.icon) }
+                        }
+                    } label: {
+                        Image(systemName: segment.transport.icon)
+                            .font(.system(size: 15))
+                            .foregroundStyle(NTColor.milk)
+                            .frame(width: 40, height: 40)
+                            .background(Circle().fill(segment.transport.color.opacity(0.35)))
+                    }
+                    TextField("", text: $segment.name, prompt: Text("Segment name").foregroundStyle(NTColor.milk(0.3)))
+                        .font(NTFont.body(13.5, .medium))
+                        .foregroundStyle(NTColor.milk)
+                    TextField("", text: $segment.distanceKM, prompt: Text("KM").foregroundStyle(NTColor.milk(0.3)))
+                        .keyboardType(.decimalPad)
+                        .font(NTFont.mono(12.5, .semibold))
+                        .foregroundStyle(NTColor.milk)
+                        .frame(width: 50)
+                    removeButton { draft.segments.removeAll { $0.id == segment.id } }
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 54)
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+        }
+    }
+
+    private var requirementsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("REQUIREMENTS & GEAR (OPTIONAL)").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+                Spacer()
+                addButton { draft.requirements.append(DraftRequirement()) }
+            }
+            ForEach($draft.requirements) { $req in
+                VStack(spacing: 10) {
+                    HStack(spacing: 10) {
+                        Menu {
+                            ForEach(RequirementCategory.allCases, id: \.self) { c in
+                                Button { req.category = c } label: { Label(c.rawValue, systemImage: c.icon) }
+                            }
+                        } label: {
+                            Image(systemName: req.category.icon)
+                                .font(.system(size: 15))
+                                .foregroundStyle(NTColor.milk)
+                                .frame(width: 40, height: 40)
+                                .background(Circle().fill(req.category.tint.opacity(0.35)))
+                        }
+                        TextField("", text: $req.title, prompt: Text("Requirement").foregroundStyle(NTColor.milk(0.3)))
+                            .font(NTFont.body(13.5, .medium))
+                            .foregroundStyle(NTColor.milk)
+                        removeButton { draft.requirements.removeAll { $0.id == req.id } }
+                    }
+                    TextField("", text: $req.subtitle, prompt: Text("Detail (optional)").foregroundStyle(NTColor.milk(0.3)))
+                        .font(NTFont.mono(11, .medium))
+                        .foregroundStyle(NTColor.milk(0.8))
+                }
+                .padding(14)
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+        }
+    }
+
+    private func addButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "plus")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(NTColor.pine)
+                .frame(width: 26, height: 26)
+                .background(Circle().fill(NTColor.milk))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func removeButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(NTColor.milk(0.6))
+                .frame(width: 26, height: 26)
+                .background(Circle().fill(NTColor.milk(0.1)))
+        }
+        .buttonStyle(.plain)
     }
 
     private func field<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
