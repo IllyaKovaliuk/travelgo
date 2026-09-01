@@ -274,6 +274,26 @@ actor RouteRepository {
             .execute()
     }
 
+    // MARK: - Moderation
+
+    enum ReportTarget: String { case route, comment }
+
+    /// Files a report — the DB auto-hides content once it collects reports
+    /// from 3 distinct people (see the `content_reports` trigger). Silently
+    /// no-ops on a duplicate report from the same person (unique constraint).
+    func report(_ target: ReportTarget, id: String, reason: String) async throws {
+        let userId = try await ensureSession()
+        struct Insert: Encodable {
+            let target_type: String
+            let target_id: String
+            let reporter_id: String
+            let reason: String
+        }
+        try await supabase.from("content_reports")
+            .insert(Insert(target_type: target.rawValue, target_id: id, reporter_id: userId.uuidString, reason: reason))
+            .execute()
+    }
+
     private func initials(from name: String) -> String {
         name.split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
     }

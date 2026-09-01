@@ -9,6 +9,8 @@ struct CommentsView: View {
     @State private var draft = ""
     @State private var isLoading = true
     @State private var isSending = false
+    @State private var reportingCommentID: String?
+    @State private var reportedIDs: Set<String> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,6 +47,23 @@ struct CommentsView: View {
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
         .task { await load() }
+        .confirmationDialog("Why are you reporting this comment?", isPresented: Binding(
+            get: { reportingCommentID != nil },
+            set: { if !$0 { reportingCommentID = nil } }
+        ), titleVisibility: .visible) {
+            ForEach(["Spam", "Harassment", "Inappropriate content", "Other"], id: \.self) { reason in
+                Button(reason) { report(reason: reason) }
+            }
+            Button("Cancel", role: .cancel) { reportingCommentID = nil }
+        }
+    }
+
+    private func report(reason: String) {
+        guard let id = reportingCommentID else { return }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        reportedIDs.insert(id)
+        reportingCommentID = nil
+        Task { try? await RouteRepository.shared.report(.comment, id: id, reason: reason) }
     }
 
     private var header: some View {
@@ -95,6 +114,16 @@ struct CommentsView: View {
         }
         .padding(.vertical, 14)
         .overlay(Rectangle().fill(NTColor.milk(0.1)).frame(height: 1), alignment: .bottom)
+        .contentShape(Rectangle())
+        .contextMenu {
+            if reportedIDs.contains(comment.id) {
+                Label("Reported", systemImage: "checkmark").disabled(true)
+            } else {
+                Button(role: .destructive) { reportingCommentID = comment.id } label: {
+                    Label("Report comment", systemImage: "flag")
+                }
+            }
+        }
     }
 
     private var composer: some View {

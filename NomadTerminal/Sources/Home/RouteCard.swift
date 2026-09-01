@@ -12,6 +12,8 @@ struct RouteCard: View {
     @State private var following = false
     @State private var likeCount = 2400
     @State private var showComments = false
+    @State private var showReportDialog = false
+    @State private var reported = false
 
     var body: some View {
         GeometryReader { geo in
@@ -19,6 +21,15 @@ struct RouteCard: View {
                 ImagePlaceholder(caption: route.coverPlaceholder)
                     .contentShape(Rectangle())
                     .onTapGesture(perform: onOpen)
+                    .contextMenu {
+                        if reported {
+                            Label("Reported", systemImage: "checkmark").disabled(true)
+                        } else {
+                            Button(role: .destructive) { showReportDialog = true } label: {
+                                Label("Report route", systemImage: "flag")
+                            }
+                        }
+                    }
 
                 LinearGradient(
                     stops: [
@@ -141,6 +152,18 @@ struct RouteCard: View {
         .fullScreenCover(isPresented: $showComments) {
             CommentsView(route: route)
         }
+        .confirmationDialog("Why are you reporting this route?", isPresented: $showReportDialog, titleVisibility: .visible) {
+            ForEach(["Spam", "Inappropriate content", "Misleading or unsafe info", "Other"], id: \.self) { reason in
+                Button(reason) { report(reason: reason) }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private func report(reason: String) {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        withAnimation { reported = true }
+        Task { try? await RouteRepository.shared.report(.route, id: route.id, reason: reason) }
     }
 
     private var actionRail: some View {
