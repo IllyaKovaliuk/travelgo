@@ -10,11 +10,21 @@ import CoreLocation
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
     var trackPoints: [TrackPoint] = []
+    /// A pre-rendered snapshot from `OfflineRouteStore` — shown instead of a
+    /// live `Map` when present, since a live map still needs network for
+    /// tiles even with the real coordinates already on hand.
+    var cachedSnapshot: UIImage? = nil
     var onBack: () -> Void
 
     var body: some View {
         ZStack {
-            if trackPoints.count > 1 {
+            if let cachedSnapshot {
+                Image(uiImage: cachedSnapshot)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+            } else if trackPoints.count > 1 {
                 realMap
             } else {
                 terrain
@@ -42,7 +52,7 @@ struct RouteMapHeader: View {
 
                     Spacer()
 
-                    Text(trackPoints.count > 1 ? "LIVE GPS TRACK" : "MAP RENDERED WITH REAL GEODATA")
+                    Text(cachedSnapshot != nil ? "SAVED OFFLINE" : (trackPoints.count > 1 ? "LIVE GPS TRACK" : "MAP RENDERED WITH REAL GEODATA"))
                         .font(NTFont.mono(9.5, .medium))
                         .tracking(0.6)
                         .foregroundStyle(NTColor.milk)

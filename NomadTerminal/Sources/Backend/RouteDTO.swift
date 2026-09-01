@@ -4,7 +4,7 @@ import SwiftUI
 /// Wire-format rows straight off Postgres — decoded, then mapped into the
 /// existing `Route` / `RouteDetailInfo` / `Author` view models so nothing
 /// downstream (SwiftUI views) needs to change.
-struct ProfileDTO: Decodable {
+struct ProfileDTO: Codable {
     let id: UUID
     let username: String
     let displayName: String
@@ -21,7 +21,7 @@ struct ProfileDTO: Decodable {
     }
 }
 
-struct SegmentDTO: Decodable {
+struct SegmentDTO: Codable {
     let icon: String
     let name: String
     let distanceKm: Double
@@ -35,7 +35,7 @@ struct SegmentDTO: Decodable {
     }
 }
 
-struct RequirementDTO: Decodable {
+struct RequirementDTO: Codable {
     let icon: String
     let title: String
     let subtitle: String?
@@ -48,7 +48,7 @@ struct RequirementDTO: Decodable {
     }
 }
 
-struct RouteDTO: Decodable {
+struct RouteDTO: Codable {
     let id: UUID
     let title: String
     let place: String

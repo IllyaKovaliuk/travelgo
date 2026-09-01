@@ -81,7 +81,11 @@ struct SavedView: View {
         do {
             saves = try await RouteRepository.shared.fetchSavedRoutes()
         } catch {
-            print("Saved fetch failed: \(error)")
+            // No connectivity (or the request otherwise failed) — fall back
+            // to whatever's actually on disk so "Downloaded" still works
+            // with zero signal, which is the entire point of the feature.
+            let offline = await OfflineRouteStore.shared.allDownloadedRoutes()
+            saves = offline.map { .init(route: $0, downloadedOffline: true) }
         }
         withAnimation { isLoading = false }
     }

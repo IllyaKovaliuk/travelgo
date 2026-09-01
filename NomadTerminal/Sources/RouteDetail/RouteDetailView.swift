@@ -7,6 +7,8 @@ struct RouteDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var savedOffline = false
+    @State private var isDownloading = false
+    @State private var cachedSnapshot: UIImage?
 
     private var detail: RouteDetailInfo { route.detail }
 
@@ -14,7 +16,7 @@ struct RouteDetailView: View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    RouteMapHeader(segments: detail.segments, trackPoints: detail.trackPoints, onBack: { dismiss() })
+                    RouteMapHeader(segments: detail.segments, trackPoints: detail.trackPoints, cachedSnapshot: cachedSnapshot, onBack: { dismiss() })
 
                     VStack(alignment: .leading, spacing: 0) {
                         Capsule().fill(NTColor.milk(0.25)).frame(width: 44, height: 4)
@@ -76,6 +78,7 @@ struct RouteDetailView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task {
             savedOffline = await RouteRepository.shared.isSaved(routeId: route.id)
+            cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
         }
     }
 
@@ -212,18 +215,44 @@ struct RouteDetailView: View {
         }
     }
 
+    private func toggleOffline() {
+        if savedOffline {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline = false }
+            Task {
+                await OfflineRouteStore.shared.remove(routeId: route.id)
+                try? await RouteRepository.shared.setSaved(routeId: route.id, saved: false, downloadedOffline: false)
+            }
+            return
+        }
+        isDownloading = true
+        Task {
+            do {
+                _ = try await OfflineRouteStore.shared.download(routeId: route.id)
+                cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
+                try await RouteRepository.shared.setSaved(routeId: route.id, saved: true, downloadedOffline: true)
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline = true }
+            } catch {
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+            }
+            isDownloading = false
+        }
+    }
+
     private var bottomBar: some View {
         HStack(spacing: 10) {
             Button {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline.toggle() }
-                let newValue = savedOffline
-                Task { try? await RouteRepository.shared.setSaved(routeId: route.id, saved: newValue, downloadedOffline: newValue) }
+                toggleOffline()
             } label: {
                 HStack(spacing: 9) {
-                    Image(systemName: savedOffline ? "checkmark.circle.fill" : "arrow.down.circle")
-                        .font(.system(size: 17))
-                    Text(savedOffline ? "Saved offline" : "Save offline")
+                    if isDownloading {
+                        ProgressView().tint(Color(hex: 0x231007))
+                    } else {
+                        Image(systemName: savedOffline ? "checkmark.circle.fill" : "arrow.down.circle")
+                            .font(.system(size: 17))
+                    }
+                    Text(isDownloading ? "Downloading…" : (savedOffline ? "Saved offline" : "Save offline"))
                         .font(NTFont.body(15, .semibold))
                 }
                 .foregroundStyle(Color(hex: 0x231007))
@@ -234,6 +263,7 @@ struct RouteDetailView: View {
             }
             .buttonStyle(.plain)
             .ntPressable()
+            .disabled(isDownloading)
 
             Button(action: onNavigate) {
                 HStack(spacing: 9) {

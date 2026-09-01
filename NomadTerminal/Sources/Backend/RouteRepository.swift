@@ -31,6 +31,20 @@ actor RouteRepository {
         return rows.map { $0.toRoute() }
     }
 
+    /// A single route's raw DTO (not the mapped `Route`) — used by
+    /// `OfflineRouteStore` to cache exactly what the server sent, so
+    /// replaying it later through the same `toRoute()` mapper can never
+    /// drift from the live shape.
+    func fetchRouteDTO(id: String) async throws -> RouteDTO {
+        try await supabase
+            .from("routes")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
+            .eq("id", value: id)
+            .single()
+            .execute()
+            .value
+    }
+
     /// Real filtered search — backs the Search screen's "Show results".
     /// Text matching (title/place) happens client-side after the filtered
     /// fetch since the dataset is still small; move to a server-side
