@@ -49,8 +49,11 @@ actor RouteRepository {
     /// Text matching (title/place) happens client-side after the filtered
     /// fetch since the dataset is still small; move to a server-side
     /// `.or(...)` filter once it grows.
-    func searchRoutes(query: String, transports: [String], difficulties: [String], minKM: Double, maxKM: Double) async throws -> [Route] {
-        let rows: [RouteDTO] = try await supabase
+    func searchRoutes(
+        query: String, transports: [String], difficulties: [String],
+        minKM: Double, maxKM: Double, minAscentM: Double? = nil, maxAscentM: Double? = nil
+    ) async throws -> [Route] {
+        var builder = supabase
             .from("routes")
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*)")
             .eq("status", value: "published")
@@ -59,6 +62,13 @@ actor RouteRepository {
             .in("difficulty", values: difficulties)
             .gte("distance_km", value: minKM)
             .lte("distance_km", value: maxKM)
+        // Ascent is nullable (older/manual routes) — only filter on it when
+        // the caller narrowed the range, so a default full-range slider
+        // doesn't silently exclude every route missing that field.
+        if let minAscentM { builder = builder.gte("ascent_m", value: minAscentM) }
+        if let maxAscentM { builder = builder.lte("ascent_m", value: maxAscentM) }
+
+        let rows: [RouteDTO] = try await builder
             .order("created_at")
             .execute()
             .value
@@ -196,6 +206,19 @@ actor RouteRepository {
         return rows.map { SavedRoute(route: $0.routes.toRoute(), downloadedOffline: $0.downloadedOffline) }
     }
 
+    // MARK: - Cover photos
+
+    /// Uploads a picked photo to the `route-covers` bucket and returns its
+    /// public URL. Called from the log-a-route flow before publish.
+    func uploadCoverImage(_ data: Data) async throws -> String {
+        let userId = try await ensureSession()
+        let path = "\(userId.uuidString)/\(UUID().uuidString).jpg"
+        try await supabase.storage.from("route-covers").upload(
+            path, data: data, options: FileOptions(contentType: "image/jpeg")
+        )
+        return try supabase.storage.from("route-covers").getPublicURL(path: path).absoluteString
+    }
+
     // MARK: - Publishing
 
     struct NewRoute {
@@ -213,6 +236,7 @@ actor RouteRepository {
         var trackPoints: [TrackPoint] = []
         var segments: [NewSegment] = []
         var requirements: [NewRequirement] = []
+        var coverImageUrl: String? = nil
         var visibility: String = "public"
     }
 
@@ -249,6 +273,7 @@ actor RouteRepository {
             let duration: String?
             let quote: String?
             let track_points: [TrackPoint]
+            let cover_image_url: String?
             let visibility: String
             let status: String
         }
@@ -267,6 +292,7 @@ actor RouteRepository {
             duration: input.duration.isEmpty ? nil : input.duration,
             quote: input.quote.isEmpty ? nil : input.quote,
             track_points: input.trackPoints,
+            cover_image_url: input.coverImageUrl,
             visibility: input.visibility,
             status: "published"
         )

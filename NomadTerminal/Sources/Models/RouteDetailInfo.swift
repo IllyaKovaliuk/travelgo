@@ -78,6 +78,11 @@ extension RouteDetailInfo {
             .init(icon: Transport.overland.icon, name: "Ushguli track, 4×4 only", distanceKM: 31.6, tint: NTColor.accent),
             .init(icon: Transport.water.icon, name: "Enguri ford crossing", distanceKM: 0.4, tint: NTColor.water),
             .init(icon: Transport.climb.icon, name: "Zagar scramble to col", distanceKM: 16.2, tint: NTColor.extreme)
+        ],
+        trackPoints: [
+            .init(lat: 42.640, lng: 42.980), .init(lat: 42.652, lng: 42.994), .init(lat: 42.661, lng: 43.006),
+            .init(lat: 42.670, lng: 43.018), .init(lat: 42.680, lng: 43.022), .init(lat: 42.689, lng: 43.032),
+            .init(lat: 42.696, lng: 43.041)
         ]
     )
 
@@ -98,6 +103,10 @@ extension RouteDetailInfo {
         segments: [
             .init(icon: Transport.water.icon, name: "Put-in to gorge narrows", distanceKM: 8.4, tint: NTColor.water),
             .init(icon: Transport.water.icon, name: "Gorge run to take-out", distanceKM: 10.5, tint: NTColor.water)
+        ],
+        trackPoints: [
+            .init(lat: 46.218, lng: 13.598), .init(lat: 46.228, lng: 13.609), .init(lat: 46.240, lng: 13.620),
+            .init(lat: 46.251, lng: 13.631), .init(lat: 46.262, lng: 13.641)
         ]
     )
 
@@ -118,6 +127,7 @@ extension RouteDetailInfo {
         segments: [
             .init(icon: Transport.foot.icon, name: "Approach to base of wall", distanceKM: 3.1, tint: NTColor.sage),
             .init(icon: Transport.climb.icon, name: "North face, 12 pitches", distanceKM: 0.54, tint: NTColor.extreme)
-        ]
+        ],
+        trackPoints: [.init(lat: 43.188, lng: -4.852), .init(lat: 43.191, lng: -4.848)]
     )
 }

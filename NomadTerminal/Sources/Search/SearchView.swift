@@ -9,6 +9,13 @@ struct SearchView: View {
     @State private var difficultyIndex = 2
     @State private var openSection: Section? = .transport
 
+    private static let distanceBounds: ClosedRange<Double> = 0...200
+    private static let ascentBounds: ClosedRange<Double> = 0...3000
+    @State private var minDistanceKM: Double = distanceBounds.lowerBound
+    @State private var maxDistanceKM: Double = distanceBounds.upperBound
+    @State private var minAscentM: Double = ascentBounds.lowerBound
+    @State private var maxAscentM: Double = ascentBounds.upperBound
+
     @State private var results: [Route] = []
     @State private var isSearching = false
     @State private var hasSearched = false
@@ -49,8 +56,8 @@ struct SearchView: View {
                     disclosureSection(.distance, title: "Distance & elevation", trailing: nil) {
                         rangeRows
                     }
-                    staticRow(title: "Region", value: "CAUCASUS")
-                    staticRow(title: "Requirements", value: "NO PERMIT")
+                    comingSoonRow(title: "Region")
+                    comingSoonRow(title: "Requirements")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -65,6 +72,10 @@ struct SearchView: View {
         .onChange(of: selectedTransport) { _, _ in runSearch(debounced: false) }
         .onChange(of: difficultyIndex) { _, _ in runSearch(debounced: false) }
         .onChange(of: query) { _, _ in runSearch(debounced: true) }
+        .onChange(of: minDistanceKM) { _, _ in runSearch(debounced: true) }
+        .onChange(of: maxDistanceKM) { _, _ in runSearch(debounced: true) }
+        .onChange(of: minAscentM) { _, _ in runSearch(debounced: true) }
+        .onChange(of: maxAscentM) { _, _ in runSearch(debounced: true) }
         .fullScreenCover(isPresented: $showResults) {
             SearchResultsView(routes: results) { showResults = false }
         }
@@ -83,8 +94,10 @@ struct SearchView: View {
                     query: query,
                     transports: transportKeys,
                     difficulties: difficultyKeys,
-                    minKM: 0,
-                    maxKM: 100_000
+                    minKM: minDistanceKM,
+                    maxKM: maxDistanceKM,
+                    minAscentM: minAscentM > Self.ascentBounds.lowerBound ? minAscentM : nil,
+                    maxAscentM: maxAscentM < Self.ascentBounds.upperBound ? maxAscentM : nil
                 )
                 if Task.isCancelled { return }
                 withAnimation(.easeOut(duration: 0.2)) {
@@ -263,39 +276,45 @@ struct SearchView: View {
     }
 
     private var rangeRows: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            rangeRow(label: "DISTANCE", value: "18 – 80 KM", fraction: 0.55, tint: NTColor.sage)
-            rangeRow(label: "ASCENT", value: "0 – 2400 M", fraction: 0.32, tint: NTColor.water)
+        VStack(alignment: .leading, spacing: 22) {
+            rangeRow(
+                label: "DISTANCE",
+                value: "\(Int(minDistanceKM)) – \(Int(maxDistanceKM)) KM",
+                low: $minDistanceKM, high: $maxDistanceKM, bounds: Self.distanceBounds, tint: NTColor.sage
+            )
+            rangeRow(
+                label: "ASCENT",
+                value: "\(Int(minAscentM)) – \(Int(maxAscentM)) M",
+                low: $minAscentM, high: $maxAscentM, bounds: Self.ascentBounds, tint: NTColor.water
+            )
         }
     }
 
-    private func rangeRow(label: String, value: String, fraction: CGFloat, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private func rangeRow(label: String, value: String, low: Binding<Double>, high: Binding<Double>, bounds: ClosedRange<Double>, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text(label).font(NTFont.mono(11, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
                 Spacer()
                 Text(value).font(NTFont.mono(11, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
             }
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(NTColor.milk(0.15)).frame(height: 6)
-                    Capsule().fill(tint).frame(width: geo.size.width * fraction, height: 6)
-                }
-            }
-            .frame(height: 6)
+            DualRangeSlider(low: low, high: high, bounds: bounds, tint: tint)
+                .padding(.horizontal, 3)
         }
     }
 
-    private func staticRow(title: String, value: String) -> some View {
+    /// Honest placeholder — no chevron, no fake tap target. Use the search
+    /// bar's free-text match against title/place for region filtering in
+    /// the meantime; a real requirements-based filter needs a join query
+    /// this screen doesn't build yet.
+    private func comingSoonRow(title: String) -> some View {
         HStack(spacing: 12) {
-            Text(title).font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk)
-            Text(value).font(NTFont.mono(11, .semibold)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+            Text(title).font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk(0.5))
             Spacer()
-            Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(NTColor.milk(0.5))
+            Text("COMING SOON").font(NTFont.mono(10, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.4))
         }
         .padding(20)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
     }
 
     private var resultsBar: some View {

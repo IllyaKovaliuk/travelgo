@@ -171,7 +171,8 @@ struct RouteReviewPublishView: View {
                         },
                     requirements: draft.requirements
                         .filter { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }
-                        .map { .init(icon: $0.category.icon, title: $0.title, subtitle: $0.subtitle, tint: $0.category.dbHex) }
+                        .map { .init(icon: $0.category.icon, title: $0.title, subtitle: $0.subtitle, tint: $0.category.dbHex) },
+                    coverImageUrl: draft.coverImageUrl
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation { published = route }

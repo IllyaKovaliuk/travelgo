@@ -51,7 +51,7 @@ struct SearchResultsView: View {
 
     private func tile(_ route: Route) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            ImagePlaceholder(tint: NTColor.pineRaised)
+            RouteCoverImage(url: route.coverImageUrl, tint: NTColor.pineRaised)
                 .frame(height: 120)
             VStack(alignment: .leading, spacing: 8) {
                 Text(route.title.replacingOccurrences(of: "\n", with: " "))

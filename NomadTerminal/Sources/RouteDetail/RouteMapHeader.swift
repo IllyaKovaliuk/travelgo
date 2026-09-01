@@ -2,11 +2,12 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-/// The "map" at the top of Route Detail. Routes with a real recorded
-/// polyline (`trackPoints`, from a live CoreLocation recording) get an
-/// actual MapKit map with the real path; everything else — the three mock
-/// routes, and anything published before real recording existed — falls
-/// back to the original hand-drawn stand-in so the layout never breaks.
+/// The "map" at the top of Route Detail. Any route with at least one real
+/// coordinate (`trackPoints`) gets an actual MapKit map — a full polyline
+/// for a real recording, or just a centered pin for routes that only have
+/// a single reference point. Only routes with zero coordinates at all
+/// (shouldn't normally happen once publish always records a track, but
+/// guards against edge cases) fall back to the hand-drawn stand-in.
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
     var trackPoints: [TrackPoint] = []
@@ -24,7 +25,7 @@ struct RouteMapHeader: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(maxWidth: .infinity)
                     .clipped()
-            } else if trackPoints.count > 1 {
+            } else if !trackPoints.isEmpty {
                 realMap
             } else {
                 terrain
@@ -52,7 +53,7 @@ struct RouteMapHeader: View {
 
                     Spacer()
 
-                    Text(cachedSnapshot != nil ? "SAVED OFFLINE" : (trackPoints.count > 1 ? "LIVE GPS TRACK" : "MAP RENDERED WITH REAL GEODATA"))
+                    Text(cachedSnapshot != nil ? "SAVED OFFLINE" : (trackPoints.count > 1 ? "LIVE GPS TRACK" : (trackPoints.isEmpty ? "MAP RENDERED WITH REAL GEODATA" : "APPROXIMATE LOCATION")))
                         .font(NTFont.mono(9.5, .medium))
                         .tracking(0.6)
                         .foregroundStyle(NTColor.milk)
@@ -72,16 +73,22 @@ struct RouteMapHeader: View {
 
     private var realMap: some View {
         Map(initialPosition: .region(trackRegion)) {
-            MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                .stroke(NTColor.milk(0.9), style: StrokeStyle(lineWidth: 4.5, lineCap: .round, lineJoin: .round))
-            if let start = trackPoints.first {
-                Annotation("Start", coordinate: start.coordinate) {
-                    MapPin(icon: "flag.fill", tint: NTColor.sage)
+            if trackPoints.count > 1 {
+                MapPolyline(coordinates: trackPoints.map(\.coordinate))
+                    .stroke(NTColor.milk(0.9), style: StrokeStyle(lineWidth: 4.5, lineCap: .round, lineJoin: .round))
+                if let start = trackPoints.first {
+                    Annotation("Start", coordinate: start.coordinate) {
+                        MapPin(icon: "flag.fill", tint: NTColor.sage)
+                    }
                 }
-            }
-            if let end = trackPoints.last {
-                Annotation("Finish", coordinate: end.coordinate) {
-                    MapPin(icon: "flag.checkered", tint: NTColor.milk, iconColor: NTColor.pine)
+                if let end = trackPoints.last {
+                    Annotation("Finish", coordinate: end.coordinate) {
+                        MapPin(icon: "flag.checkered", tint: NTColor.milk, iconColor: NTColor.pine)
+                    }
+                }
+            } else if let only = trackPoints.first {
+                Annotation("Route", coordinate: only.coordinate) {
+                    MapPin(icon: "flag.fill", tint: NTColor.milk, iconColor: NTColor.pine)
                 }
             }
         }

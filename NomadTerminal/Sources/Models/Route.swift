@@ -8,6 +8,9 @@ struct Route: Identifiable {
     let title: String
     let place: String
     let coverPlaceholder: String
+    /// A real uploaded photo, if the author added one — Supabase Storage
+    /// public URL. `nil` falls back to the decorative placeholder.
+    var coverImageUrl: String? = nil
     let difficulty: Difficulty
     let transport: Transport
     let transportLabel: String

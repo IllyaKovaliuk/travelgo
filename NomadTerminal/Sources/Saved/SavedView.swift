@@ -107,9 +107,9 @@ struct SavedView: View {
     private func savedTile(item: RouteRepository.SavedRoute) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topTrailing) {
-                RoundedRectangle(cornerRadius: 0)
-                    .fill(LinearGradient(colors: [NTColor.pineRaised, NTColor.pineShadow], startPoint: .topLeading, endPoint: .bottomTrailing))
+                RouteCoverImage(url: item.route.coverImageUrl, tint: NTColor.pineRaised)
                     .frame(height: 132)
+                    .clipped()
                 Image(systemName: item.downloadedOffline ? "checkmark" : "arrow.down")
                     .font(.system(size: 12, weight: .semibold))
                     .frame(width: 28, height: 28)

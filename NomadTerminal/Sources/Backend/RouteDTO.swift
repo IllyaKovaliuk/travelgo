@@ -124,6 +124,7 @@ extension RouteDTO {
             title: title,
             place: place,
             coverPlaceholder: title,
+            coverImageUrl: coverImageUrl,
             difficulty: Route.Difficulty(rawValue: difficulty.uppercased()) ?? .moderate,
             transport: Transport(fromKey: transport),
             transportLabel: transportLabel,

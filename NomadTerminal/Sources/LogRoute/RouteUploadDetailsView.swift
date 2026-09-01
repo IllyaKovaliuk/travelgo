@@ -1,10 +1,17 @@
 import SwiftUI
+import PhotosUI
+import UIKit
 
 /// 15 · Log a route — details. Real text fields feeding a draft that gets
 /// published for real on the last step.
 struct RouteUploadDetailsView: View {
     @Binding var draft: NewRouteDraft
     var onContinue: () -> Void
+
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var previewImage: UIImage?
+    @State private var isUploadingCover = false
+    @State private var coverUploadError: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -124,22 +131,86 @@ struct RouteUploadDetailsView: View {
     }
 
     private var coverSlot: some View {
-        RoundedRectangle(cornerRadius: 26, style: .continuous)
-            .fill(NTColor.milk(0.05))
-            .frame(height: 150)
-            .overlay(
+        PhotosPicker(selection: $pickerItem, matching: .images) {
+            ZStack {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
-                    .foregroundStyle(NTColor.milk(0.28))
-            )
-            .overlay(
-                VStack(spacing: 8) {
-                    Image(systemName: "photo.badge.plus").font(.system(size: 24, weight: .light))
-                    Text("Add cover photo").font(NTFont.body(12.5, .semibold))
+                    .fill(NTColor.milk(0.05))
+                    .frame(height: 150)
+
+                if let previewImage {
+                    Image(uiImage: previewImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(height: 150)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                } else {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+                        .foregroundStyle(NTColor.milk(0.28))
+                        .frame(height: 150)
                 }
-                .foregroundStyle(NTColor.milk(0.6))
-            )
-            .padding(.top, 20)
+
+                if isUploadingCover {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 26, style: .continuous).fill(.black.opacity(0.4))
+                        ProgressView().tint(NTColor.milk)
+                    }
+                    .frame(height: 150)
+                } else if previewImage == nil {
+                    VStack(spacing: 8) {
+                        Image(systemName: "photo.badge.plus").font(.system(size: 24, weight: .light))
+                        Text("Add cover photo").font(NTFont.body(12.5, .semibold))
+                    }
+                    .foregroundStyle(NTColor.milk(0.6))
+                } else if draft.coverImageUrl != nil {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(NTColor.sage)
+                                .padding(10)
+                        }
+                        Spacer()
+                    }
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.top, 20)
+        .onChange(of: pickerItem) { _, newItem in
+            guard let newItem else { return }
+            Task { await uploadCover(newItem) }
+        }
+        .overlay(alignment: .bottom) {
+            if let coverUploadError {
+                Text(coverUploadError)
+                    .font(NTFont.body(11, .medium))
+                    .foregroundStyle(Color(hex: 0xE58272))
+                    .padding(.bottom, -18)
+            }
+        }
+    }
+
+    private func uploadCover(_ item: PhotosPickerItem) async {
+        coverUploadError = nil
+        guard let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) else {
+            coverUploadError = "Couldn't load that photo — try another."
+            return
+        }
+        withAnimation { previewImage = image }
+        // Downscale before upload — a full-res phone photo is overkill for
+        // a card thumbnail and needlessly slow to upload over cellular.
+        let resized = image.resized(maxDimension: 1600)
+        guard let jpeg = resized.jpegData(compressionQuality: 0.82) else { return }
+
+        isUploadingCover = true
+        do {
+            draft.coverImageUrl = try await RouteRepository.shared.uploadCoverImage(jpeg)
+        } catch {
+            coverUploadError = "Upload failed — check your connection and try again."
+        }
+        isUploadingCover = false
     }
 
     private func stepHeader(title: String, step: Int) -> some View {
@@ -262,5 +333,18 @@ struct RouteUploadDetailsView: View {
                 .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
         }
+    }
+}
+
+private extension UIImage {
+    /// Scales down to fit within `maxDimension` on the long edge, preserving
+    /// aspect ratio. A no-op if the image is already smaller.
+    func resized(maxDimension: CGFloat) -> UIImage {
+        let longEdge = max(size.width, size.height)
+        guard longEdge > maxDimension else { return self }
+        let scale = maxDimension / longEdge
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in draw(in: CGRect(origin: .zero, size: newSize)) }
     }
 }

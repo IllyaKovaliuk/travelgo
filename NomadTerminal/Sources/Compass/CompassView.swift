@@ -14,6 +14,12 @@ struct CompassView: View {
 
     @State private var tracker = CompassTracker()
     @State private var showSOS = false
+    /// The needle's actual on-screen rotation — unwrapped (not clamped to
+    /// 0..<360) so it always animates the short way around. Animating the
+    /// raw 0..<360 `needleRotation` directly makes the needle spin almost
+    /// all the way around every time it crosses the 0°/360° seam, which on
+    /// a real device (where heading updates constantly) looked jerky.
+    @State private var displayRotation: Double = 0
 
     private var hasTarget: Bool { targetCoordinate != nil && distanceKM != nil }
     private var distanceKM: Double? { targetCoordinate.flatMap { tracker.distanceKM(to: $0) } }
@@ -47,8 +53,19 @@ struct CompassView: View {
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(onClose: { showSOS = false })
         }
-        .onAppear { tracker.start() }
+        .onAppear {
+            tracker.start()
+            displayRotation = needleRotation
+        }
         .onDisappear { tracker.stop() }
+        .onChange(of: needleRotation) { _, newValue in
+            var delta = (newValue - displayRotation.truncatingRemainder(dividingBy: 360)).truncatingRemainder(dividingBy: 360)
+            if delta > 180 { delta -= 360 }
+            if delta < -180 { delta += 360 }
+            withAnimation(.easeInOut(duration: 0.25)) {
+                displayRotation += delta
+            }
+        }
     }
 
     private var header: some View {
@@ -96,8 +113,7 @@ struct CompassView: View {
                     .frame(width: 60, height: 60)
                     .offset(y: -142)
             }
-            .rotationEffect(.degrees(needleRotation))
-            .animation(.easeInOut(duration: 0.3), value: needleRotation)
+            .rotationEffect(.degrees(displayRotation))
 
             readoutCard
         }

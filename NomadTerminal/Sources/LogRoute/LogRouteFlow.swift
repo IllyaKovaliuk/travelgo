@@ -68,6 +68,7 @@ struct NewRouteDraft {
     var quote: String = ""
     var segments: [DraftSegment] = []
     var requirements: [DraftRequirement] = []
+    var coverImageUrl: String? = nil
 }
 
 /// Coordinates the whole "log a route" flow — start → record → details →
