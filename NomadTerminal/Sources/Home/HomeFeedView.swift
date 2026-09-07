@@ -7,7 +7,7 @@ struct HomeFeedView: View {
     @State private var feedTab: FeedTab = .following
     @State private var scrollPosition: String?
     @State private var openRoute: Route?
-    @State private var routes: [Route] = Route.mock
+    @State private var routes: [Route] = []
     @State private var isLoading = true
     @State private var isOffline = false
     @State private var showLogRoute = false
@@ -56,19 +56,25 @@ struct HomeFeedView: View {
     }
 
     private func loadRoutes() async {
+        // Used to start `routes` pre-filled with the mock feed, then swap
+        // it for live data once the fetch resolved — which meant every
+        // launch briefly showed the mock "Zagar Pass" card and then visibly
+        // replaced it with the real first route a moment later (the "one
+        // route pops up and immediately gets covered by another" bug).
+        // Starting empty and only setting `routes` once, after we actually
+        // know which data we're showing, makes that swap impossible.
         do {
             try await RouteRepository.shared.ensureSession()
             let live = try await RouteRepository.shared.fetchRoutes()
-            if !live.isEmpty {
-                withAnimation(.easeInOut(duration: 0.3)) { routes = live }
-                isOffline = false
-            }
+            routes = live.isEmpty ? Route.mock : live
+            isOffline = false
         } catch {
-            // Offline or backend hiccup — the mock feed already on screen
-            // keeps the app usable, matching the "cache tiles… survives
-            // four days without a bar of service" promise from onboarding.
-            print("Route fetch failed, staying on mock feed: \(error)")
-            withAnimation { isOffline = true }
+            // Offline or backend hiccup — fall back to the mock feed so the
+            // app stays usable, matching the "cache tiles… survives four
+            // days without a bar of service" promise from onboarding.
+            print("Route fetch failed, falling back to mock feed: \(error)")
+            routes = Route.mock
+            isOffline = true
         }
         withAnimation { isLoading = false }
     }

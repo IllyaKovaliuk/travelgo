@@ -18,7 +18,7 @@ update public.profiles set username = 'ainara.r', display_name = 'Ainara Ruiz', 
 update public.profiles set username = 'sanadrives', display_name = 'Sana Kadyrova', home_location = 'Almaty, KZ', km_logged = 4218, routes_completed = 38 where id = '44444444-4444-4444-4444-444444444444';
 
 -- ── Routes ──────────────────────────────────────────────────────────────
-insert into public.routes (id, author_id, title, place, difficulty, transport, transport_label, secondary_badge_icon, secondary_badge_label, distance_km, coordinates, season, duration, ascent_m, high_point_m, elevation_profile, elevation_peak_label, quote, quote_author, track_points)
+insert into public.routes (id, author_id, title, place, difficulty, transport, transport_label, secondary_badge_icon, secondary_badge_label, distance_km, coordinates, season, duration, ascent_m, high_point_m, elevation_profile, elevation_peak_label, quote, quote_author, track_points, cover_image_url)
 values (
   'aaaaaaaa-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111',
   'Zagar Pass' || chr(10) || 'at first light', 'SVANETI, GEORGIA', 'hard', 'overland', '4×4',
@@ -26,7 +26,8 @@ values (
   array[0.42,0.38,0.55,0.5,0.7,0.66,0.82,0.78,0.95,0.9,1.0,0.86,0.72,0.6], '2410 M',
   'Leave Mestia before four. The pass holds cloud until the sun clears the Ushba ridge, and once it does you get about forty minutes of the light everyone comes here for.',
   '— TAMAR MELADZE, LOGGED SEP 2025',
-  '[{"lat":42.640,"lng":42.980},{"lat":42.652,"lng":42.994},{"lat":42.661,"lng":43.006},{"lat":42.670,"lng":43.018},{"lat":42.680,"lng":43.022},{"lat":42.689,"lng":43.032},{"lat":42.696,"lng":43.041}]'::jsonb
+  '[{"lat":42.640,"lng":42.980},{"lat":42.652,"lng":42.994},{"lat":42.661,"lng":43.006},{"lat":42.670,"lng":43.018},{"lat":42.680,"lng":43.022},{"lat":42.689,"lng":43.032},{"lat":42.696,"lng":43.041}]'::jsonb,
+  'https://smdnbjvelqsgjoubognc.supabase.co/storage/v1/object/public/route-covers/seed/zagar-pass.jpg'
 ), (
   'aaaaaaaa-0000-0000-0000-000000000002', '22222222-2222-2222-2222-222222222222',
   'The Emerald' || chr(10) || 'Corridor', 'SOČA VALLEY, SLOVENIA', 'moderate', 'water', 'KAYAK',
@@ -34,7 +35,8 @@ values (
   array[0.5,0.48,0.6,0.55,0.5,0.62,0.58,0.44,0.4,0.5,0.46,0.38], '480 M',
   'Put in above the gorge at first light — the glacial melt keeps flow predictable until early afternoon.',
   '— LUKA KRANJC, LOGGED JUL 2025',
-  '[{"lat":46.218,"lng":13.598},{"lat":46.228,"lng":13.609},{"lat":46.240,"lng":13.620},{"lat":46.251,"lng":13.631},{"lat":46.262,"lng":13.641}]'::jsonb
+  '[{"lat":46.218,"lng":13.598},{"lat":46.228,"lng":13.609},{"lat":46.240,"lng":13.620},{"lat":46.251,"lng":13.631},{"lat":46.262,"lng":13.641}]'::jsonb,
+  'https://smdnbjvelqsgjoubognc.supabase.co/storage/v1/object/public/route-covers/seed/emerald-corridor.jpg'
 ), (
   'aaaaaaaa-0000-0000-0000-000000000003', '33333333-3333-3333-3333-333333333333',
   'Naranjo' || chr(10) || 'north face', 'PICOS DE EUROPA, SPAIN', 'hard', 'climb', 'CLIMB · 6b',
@@ -42,7 +44,8 @@ values (
   array[0.2,0.3,0.35,0.5,0.48,0.62,0.7,0.66,0.82,0.9,0.95,1.0], '2519 M',
   'The crux pitch faces north and stays wet after rain for two full days — check the topo forum before you commit.',
   '— AINARA RUIZ, LOGGED AUG 2025',
-  '[{"lat":43.188,"lng":-4.852},{"lat":43.191,"lng":-4.848}]'::jsonb
+  '[{"lat":43.188,"lng":-4.852},{"lat":43.191,"lng":-4.848}]'::jsonb,
+  'https://smdnbjvelqsgjoubognc.supabase.co/storage/v1/object/public/route-covers/seed/naranjo-north-face.jpg'
 );
 
 -- ── Segments ────────────────────────────────────────────────────────────
