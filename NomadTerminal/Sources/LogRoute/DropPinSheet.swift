@@ -16,32 +16,8 @@ struct DropPinSheet: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("WHAT'S HERE").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
-                            ForEach(POICategory.allCases, id: \.self) { c in
-                                Button {
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                    category = c
-                                } label: {
-                                    VStack(spacing: 6) {
-                                        Image(systemName: c.icon).font(.system(size: 18))
-                                        Text(c.label)
-                                            .font(NTFont.mono(8.5, .semibold))
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(2)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                    .foregroundStyle(category == c ? Color(hex: 0x231007) : NTColor.milk(0.8))
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 74)
-                                    .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(category == c ? c.tint : NTColor.milk(0.07)))
-                                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: category == c ? 0 : 1))
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
+                    categoryGrid(title: "OUTDOOR", cases: POICategory.outdoorCases)
+                    categoryGrid(title: "IN TOWN", cases: POICategory.urbanCases + [.other])
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("NAME").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
@@ -94,5 +70,34 @@ struct DropPinSheet: View {
         }
         .preferredColorScheme(.dark)
         .onAppear { titleFocused = true }
+    }
+
+    private func categoryGrid(title: String, cases: [POICategory]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                ForEach(cases, id: \.self) { c in
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        category = c
+                    } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: c.icon).font(.system(size: 18))
+                            Text(c.label)
+                                .font(NTFont.mono(8.5, .semibold))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .foregroundStyle(category == c ? Color(hex: 0x231007) : NTColor.milk(0.8))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 74)
+                        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(category == c ? c.tint : NTColor.milk(0.07)))
+                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: category == c ? 0 : 1))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 }

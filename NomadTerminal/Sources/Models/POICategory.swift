@@ -5,7 +5,12 @@ import SwiftUI
 /// (dropping pins while recording) and Route Detail (showing them on the
 /// real map) so both sides agree on the same icon/color per category.
 enum POICategory: String, CaseIterable, Codable {
-    case foot, vehicle, water, viewpoint, settlement, wildlife, camp, danger, other
+    // Outdoor / overland
+    case foot, vehicle, water, viewpoint, settlement, wildlife, camp, danger
+    // Urban / any city, anywhere — logging a route isn't outdoor-only, so
+    // pins shouldn't be either.
+    case restaurant, cafe, hotel, landmark, shopping
+    case other
 
     var icon: String {
         switch self {
@@ -17,6 +22,11 @@ enum POICategory: String, CaseIterable, Codable {
         case .wildlife: return "pawprint.fill"
         case .camp: return "tent.fill"
         case .danger: return "exclamationmark.triangle.fill"
+        case .restaurant: return "fork.knife"
+        case .cafe: return "cup.and.saucer.fill"
+        case .hotel: return "bed.double.fill"
+        case .landmark: return "building.columns.fill"
+        case .shopping: return "bag.fill"
         case .other: return "mappin"
         }
     }
@@ -31,6 +41,11 @@ enum POICategory: String, CaseIterable, Codable {
         case .wildlife: return "Wildlife"
         case .camp: return "Campsite"
         case .danger: return "Hazard"
+        case .restaurant: return "Restaurant"
+        case .cafe: return "Café"
+        case .hotel: return "Hotel / lodging"
+        case .landmark: return "Landmark"
+        case .shopping: return "Shopping"
         case .other: return "Point of interest"
         }
     }
@@ -45,6 +60,11 @@ enum POICategory: String, CaseIterable, Codable {
         case .wildlife: return NTColor.extreme
         case .camp: return NTColor.sage
         case .danger: return NTColor.hard
+        case .restaurant: return NTColor.accent
+        case .cafe: return NTColor.gold
+        case .hotel: return NTColor.accentDeep
+        case .landmark: return NTColor.extreme
+        case .shopping: return NTColor.water
         case .other: return NTColor.milk(0.7)
         }
     }
@@ -61,7 +81,17 @@ enum POICategory: String, CaseIterable, Codable {
         case .wildlife: return "#7A5FBF"
         case .camp: return "#5FA777"
         case .danger: return "#B33A2B"
+        case .restaurant: return "#E8743B"
+        case .cafe: return "#E0A458"
+        case .hotel: return "#C2551F"
+        case .landmark: return "#7A5FBF"
+        case .shopping: return "#3E92CC"
         case .other: return "#FAF6EC"
         }
     }
+
+    /// A convenient split for pickers that want to group outdoor vs. urban
+    /// options instead of one flat list of 14.
+    static var outdoorCases: [POICategory] { [.foot, .vehicle, .water, .viewpoint, .settlement, .wildlife, .camp, .danger] }
+    static var urbanCases: [POICategory] { [.restaurant, .cafe, .hotel, .landmark, .shopping] }
 }

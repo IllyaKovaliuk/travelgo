@@ -4,6 +4,9 @@ import SwiftUI
 /// `RouteRepository.searchRoutes` and "Show results" presents whatever
 /// that last query returned.
 struct SearchView: View {
+    enum Mode { case routes, places }
+    @State private var mode: Mode = .routes
+
     @State private var query = ""
     @State private var selectedTransport: Set<Transport> = []
     @State private var difficultyIndex = 2
@@ -43,31 +46,37 @@ struct SearchView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 18) {
-                    searchBar
-                    if !query.isEmpty {
-                        suggestionsCard
-                    }
-                    presetsRow
-                    disclosureSection(.transport, title: "Transport", trailing: "\(selectedTransport.count)") {
-                        transportGrid
-                    }
-                    disclosureSection(.difficulty, title: "Difficulty", trailing: ["UP TO EASY", "UP TO MODERATE", "ANYTHING"][difficultyIndex]) {
-                        difficultySlider
-                    }
-                    disclosureSection(.distance, title: "Distance & elevation", trailing: nil) {
-                        rangeRows
-                    }
-                    regionRow
-                    comingSoonRow(title: "Requirements")
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 16)
-            }
+            modeToggle
 
-            resultsBar
+            if mode == .routes {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        searchBar
+                        if !query.isEmpty {
+                            suggestionsCard
+                        }
+                        presetsRow
+                        disclosureSection(.transport, title: "Transport", trailing: "\(selectedTransport.count)") {
+                            transportGrid
+                        }
+                        disclosureSection(.difficulty, title: "Difficulty", trailing: ["UP TO EASY", "UP TO MODERATE", "ANYTHING"][difficultyIndex]) {
+                            difficultySlider
+                        }
+                        disclosureSection(.distance, title: "Distance & elevation", trailing: nil) {
+                            rangeRows
+                        }
+                        regionRow
+                        comingSoonRow(title: "Requirements")
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
+                }
+
+                resultsBar
+            } else {
+                PlaceExploreView()
+            }
         }
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
@@ -118,6 +127,35 @@ struct SearchView: View {
             }
             isSearching = false
         }
+    }
+
+    /// Routes (our own logged content) vs. Places (Apple's global places
+    /// database, works in any city with zero content of our own) — one
+    /// search surface, two very different data sources behind it.
+    private var modeToggle: some View {
+        HStack(spacing: 4) {
+            modeButton("Routes", .routes)
+            modeButton("Places", .places)
+        }
+        .padding(4)
+        .background(Capsule().fill(NTColor.milk(0.08)))
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+    }
+
+    private func modeButton(_ title: String, _ m: Mode) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { mode = m }
+        } label: {
+            Text(title)
+                .font(NTFont.body(13.5, .semibold))
+                .foregroundStyle(mode == m ? NTColor.pine : NTColor.milk(0.65))
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .background(Capsule().fill(mode == m ? NTColor.milk : .clear))
+        }
+        .buttonStyle(.plain)
     }
 
     private var searchBar: some View {
