@@ -442,6 +442,121 @@ actor RouteRepository {
             .execute()
     }
 
+    // MARK: - NomadPoints (loyalty ledger — see backend/supabase/migrations/20260908000001_points.sql)
+
+    struct PointsSummary {
+        let balance: Int
+        let bonusProUntil: Date?
+    }
+
+    struct PointsLedgerEntry: Identifiable, Decodable {
+        let id: UUID
+        let delta: Int
+        let reason: String
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, delta, reason
+            case createdAt = "created_at"
+        }
+    }
+
+    struct PointReward: Identifiable, Decodable {
+        let key: String
+        let title: String
+        let description: String
+        let cost: Int
+        let kind: String
+        let sortOrder: Int
+        var id: String { key }
+
+        enum CodingKeys: String, CodingKey {
+            case key, title, description, cost, kind
+            case sortOrder = "sort_order"
+        }
+    }
+
+    private struct ProfilePointsRow: Decodable {
+        let points_balance: Int
+        let bonus_pro_until: String?
+    }
+
+    /// Current balance + any bonus-Pro grant from redeeming points — both are
+    /// server-computed only (see `award_points`/`redeem_reward`), never
+    /// client-writable, so this always reflects the real, audited total.
+    func fetchPointsSummary() async throws -> PointsSummary {
+        let userId = try await ensureSession()
+        let row: ProfilePointsRow = try await supabase
+            .from("profiles")
+            .select("points_balance, bonus_pro_until")
+            .eq("id", value: userId.uuidString)
+            .single()
+            .execute()
+            .value
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let until = row.bonus_pro_until.flatMap { formatter.date(from: $0) ?? ISO8601DateFormatter().date(from: $0) }
+        return PointsSummary(balance: row.points_balance, bonusProUntil: until)
+    }
+
+    /// Recent ledger history — every earn/redeem/reversal, newest first, for
+    /// the Rewards screen's activity list.
+    func fetchPointsLedger(limit: Int = 50) async throws -> [PointsLedgerEntry] {
+        let userId = try await ensureSession()
+        return try await supabase
+            .from("points_ledger")
+            .select("id, delta, reason, created_at")
+            .eq("user_id", value: userId.uuidString)
+            .order("created_at", ascending: false)
+            .limit(limit)
+            .execute()
+            .value
+    }
+
+    /// The redeemable catalog — real data (`point_rewards`), not hardcoded,
+    /// so adding/pricing new rewards is a DB change, not an app update.
+    func fetchRewardCatalog() async throws -> [PointReward] {
+        try await supabase
+            .from("point_rewards")
+            .select("key, title, description, cost, kind, sort_order")
+            .order("sort_order")
+            .execute()
+            .value
+    }
+
+    enum RedeemError: LocalizedError {
+        case insufficientPoints
+        case alreadyOwned
+        case other(String)
+        var errorDescription: String? {
+            switch self {
+            case .insufficientPoints: return "Not enough points yet — keep logging routes."
+            case .alreadyOwned: return "You already have this one."
+            case .other(let message): return message
+            }
+        }
+    }
+
+    /// Spends points via the server-side `redeem_reward` function — the only
+    /// place a redemption can happen, so a client can never grant itself
+    /// points or Pro time directly.
+    func redeemReward(key: String) async throws {
+        _ = try await ensureSession()
+        struct Params: Encodable { let p_reward_key: String }
+        do {
+            try await supabase.rpc("redeem_reward", params: Params(p_reward_key: key)).execute()
+        } catch {
+            let message = error.localizedDescription
+            if message.contains("insufficient points") {
+                throw RedeemError.insufficientPoints
+            }
+            if message.contains("already owned") {
+                throw RedeemError.alreadyOwned
+            }
+            throw RedeemError.other(message)
+        }
+    }
+
     private func initials(from name: String) -> String {
         name.split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
     }

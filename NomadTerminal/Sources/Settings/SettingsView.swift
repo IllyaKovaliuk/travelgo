@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var weatherAlerts = false
     @State private var showPaywall = false
     @State private var showAuth = false
+    @State private var showRewards = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
 
@@ -21,6 +22,7 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 14) {
                     proRow
+                    pointsRow
 
                     appearanceCard
 
@@ -69,6 +71,7 @@ struct SettingsView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .fullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
             .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
+            .sheet(isPresented: $showRewards) { RewardsView() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
@@ -101,6 +104,29 @@ struct SettingsView: View {
         .padding(18)
         .background(NTColor.gold.opacity(0.1), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.gold.opacity(0.3), lineWidth: 1))
+    }
+
+    private var pointsRow: some View {
+        Button { showRewards = true } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(NTColor.sage.opacity(0.2))
+                    Image(systemName: "sparkles").font(.system(size: 15)).foregroundStyle(NTColor.sage)
+                }
+                .frame(width: 38, height: 38)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("NomadPoints").font(NTFont.body(14.5, .semibold))
+                    Text("Earn from real activity, redeem for Pro & badges").font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.4))
+            }
+            .foregroundStyle(NTColor.milk)
+        }
+        .buttonStyle(.plain)
+        .padding(18)
+        .background(NTColor.sage.opacity(0.1), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.sage.opacity(0.3), lineWidth: 1))
     }
 
     private func signOut() {

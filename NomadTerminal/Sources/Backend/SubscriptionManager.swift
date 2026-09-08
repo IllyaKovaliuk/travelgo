@@ -17,7 +17,13 @@ final class SubscriptionManager {
     private(set) var products: [Product] = []
     private(set) var isPro = false
     private(set) var isLoadingProducts = false
+    /// Set when points were redeemed for temporary Pro (see NomadPoints'
+    /// `redeem_reward` → `profiles.bonus_pro_until`). `isPro` is true while
+    /// this is in the future, independent of any real StoreKit purchase.
+    private(set) var bonusProUntil: Date?
     var purchaseError: String?
+
+    private var hasRealSubscription = false
 
     private init() {
         // Fire-and-forget: `shared` is a singleton that lives for the app's
@@ -26,7 +32,22 @@ final class SubscriptionManager {
         Task { [weak self] in
             await self?.loadProducts()
             await self?.refreshEntitlements()
+            await self?.refreshBonusPro()
         }
+    }
+
+    /// Re-reads `profiles.bonus_pro_until` — call after redeeming a points
+    /// reward so Pro unlocks immediately without waiting for next launch.
+    func refreshBonusPro() async {
+        if let summary = try? await RouteRepository.shared.fetchPointsSummary() {
+            bonusProUntil = summary.bonusProUntil
+        }
+        recomputeIsPro()
+    }
+
+    private func recomputeIsPro() {
+        let bonusActive = (bonusProUntil ?? .distantPast) > .now
+        isPro = hasRealSubscription || bonusActive
     }
 
     /// Fetches the two subscription `Product`s from StoreKit, sorted cheapest first.
@@ -86,7 +107,8 @@ final class SubscriptionManager {
                 active = true
             }
         }
-        isPro = active
+        hasRealSubscription = active
+        recomputeIsPro()
     }
 
     private func observeTransactionUpdates() async {
