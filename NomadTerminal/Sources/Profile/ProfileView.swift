@@ -8,6 +8,7 @@ struct ProfileView: View {
     @State private var tab: Tab = .badges
     @State private var showSettings = false
     @State private var showAuth = false
+    @State private var showEditProfile = false
 
     @State private var profile: RouteRepository.MyProfile?
     @State private var badges: [RouteRepository.MyBadge] = []
@@ -76,8 +77,13 @@ struct ProfileView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showSettings, onDismiss: { Task { await load() } }) { SettingsView() }
         .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; Task { await load() } }) }
+        .sheet(isPresented: $showEditProfile) {
+            if let profile {
+                EditProfileView(current: profile, onSaved: { Task { await load() } })
+            }
+        }
         .task { await load() }
     }
 
@@ -121,6 +127,16 @@ struct ProfileView: View {
                     Text("@\(profile?.username ?? "") · \((profile?.homeLocation ?? "NO HOME SET").uppercased())")
                         .font(NTFont.mono(11.5, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
                 }
+            }
+            if profile?.isAnonymous == false {
+                Button { showEditProfile = true } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(NTColor.milk(0.7))
+                        .frame(width: 32, height: 32)
+                        .background(Circle().fill(NTColor.milk(0.1)))
+                }
+                .buttonStyle(.plain)
             }
             Spacer()
             Button { showSettings = true } label: {
@@ -283,6 +299,7 @@ struct ProfileView: View {
         case "new_follower": return ("person.badge.plus", NTColor.sage)
         case "route_liked": return ("heart.fill", Color(hex: 0xE58272))
         case "route_saved": return ("bookmark.fill", NTColor.sage)
+        case "route_commented": return ("bubble.left.fill", NTColor.water)
         default:
             if reason.hasPrefix("redeemed_") { return ("star.fill", NTColor.gold) }
             return ("location.circle", NTColor.sage)
@@ -300,6 +317,7 @@ struct ProfileView: View {
         case "route_unliked": return "A like was removed"
         case "route_saved": return "Someone saved your route"
         case "route_unsaved": return "A save was removed"
+        case "route_commented": return "Someone commented on your route"
         case "new_follower": return "Gained a follower"
         case "unfollowed": return "Lost a follower"
         default:

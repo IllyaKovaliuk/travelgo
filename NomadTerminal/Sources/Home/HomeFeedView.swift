@@ -12,22 +12,28 @@ struct HomeFeedView: View {
     @State private var isOffline = false
     @State private var showLogRoute = false
     @State private var showNotifications = false
+    @State private var locationSearcher = PlaceSearcher()
+    @State private var loadToken = 0
 
     var body: some View {
         ZStack(alignment: .top) {
-            ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    ForEach(routes) { route in
-                        RouteCard(route: route, onOpen: { openRoute = route })
-                            .containerRelativeFrame(.vertical)
-                            .id(route.id)
+            if routes.isEmpty && !isLoading {
+                emptyTabState
+            } else {
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(routes) { route in
+                            RouteCard(route: route, onOpen: { openRoute = route })
+                                .containerRelativeFrame(.vertical)
+                                .id(route.id)
+                        }
                     }
+                    .scrollTargetLayout()
                 }
-                .scrollTargetLayout()
+                .scrollPosition(id: $scrollPosition)
+                .scrollTargetBehavior(.paging)
+                .ignoresSafeArea()
             }
-            .scrollPosition(id: $scrollPosition)
-            .scrollTargetBehavior(.paging)
-            .ignoresSafeArea()
 
             topBar
 
@@ -53,6 +59,26 @@ struct HomeFeedView: View {
             NotificationsView(onClose: { showNotifications = false })
         }
         .task { await loadRoutes() }
+        .onChange(of: feedTab) { _, _ in Task { await loadRoutes() } }
+    }
+
+    private var emptyTabState: some View {
+        VStack(spacing: 10) {
+            Image(systemName: feedTab == .following ? "person.2" : "location.slash")
+                .font(.system(size: 30, weight: .light))
+                .foregroundStyle(NTColor.milk(0.4))
+            Text(feedTab == .following ? "Not following anyone yet" : "No nearby routes yet")
+                .font(NTFont.body(15, .semibold))
+                .foregroundStyle(NTColor.milk(0.8))
+            Text(feedTab == .following
+                 ? "Follow someone from a route you like and their routes show up here."
+                 : "Nearby needs your location and routes with a real recorded track — check Wild for everything published so far.")
+                .font(NTFont.body(12.5, .light))
+                .foregroundStyle(NTColor.milk(0.5))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func loadRoutes() async {
@@ -63,20 +89,51 @@ struct HomeFeedView: View {
         // route pops up and immediately gets covered by another" bug).
         // Starting empty and only setting `routes` once, after we actually
         // know which data we're showing, makes that swap impossible.
+        loadToken += 1
+        let myToken = loadToken
+        withAnimation { isLoading = true }
         do {
             try await RouteRepository.shared.ensureSession()
-            let live = try await RouteRepository.shared.fetchRoutes()
-            routes = live.isEmpty ? Route.mock : live
+            let live: [Route]
+            switch feedTab {
+            case .following:
+                // Real subset — routes authored by people this session
+                // actually follows. Used to just silently show the same
+                // content as every other tab regardless of selection.
+                live = try await RouteRepository.shared.fetchFollowingRoutes()
+            case .nearby:
+                live = try await fetchNearby()
+            case .wild:
+                live = try await RouteRepository.shared.fetchRoutes()
+            }
+            if myToken != loadToken { return } // a newer tab switch already superseded this fetch
+            routes = feedTab == .wild && live.isEmpty ? Route.mock : live
             isOffline = false
         } catch {
             // Offline or backend hiccup — fall back to the mock feed so the
             // app stays usable, matching the "cache tiles… survives four
             // days without a bar of service" promise from onboarding.
             print("Route fetch failed, falling back to mock feed: \(error)")
-            routes = Route.mock
-            isOffline = true
+            if myToken != loadToken { return }
+            routes = feedTab == .wild ? Route.mock : []
+            isOffline = feedTab == .wild
         }
-        withAnimation { isLoading = false }
+        if myToken == loadToken { withAnimation { isLoading = false } }
+    }
+
+    /// Waits briefly for a real GPS fix before falling back to "no location
+    /// yet" — `CLLocationManager.requestLocation()` is async/delegate-based,
+    /// so the first call after granting permission can't be read synchronously.
+    private func fetchNearby() async throws -> [Route] {
+        if locationSearcher.currentLocation == nil {
+            locationSearcher.requestLocation()
+            for _ in 0..<20 {
+                if locationSearcher.currentLocation != nil || locationSearcher.authorizationDenied { break }
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+        }
+        guard let here = locationSearcher.currentLocation else { return [] }
+        return try await RouteRepository.shared.fetchNearbyRoutes(from: here.coordinate)
     }
 
     private var offlineBanner: some View {

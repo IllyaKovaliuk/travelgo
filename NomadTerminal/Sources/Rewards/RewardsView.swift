@@ -218,6 +218,7 @@ struct RewardsView: View {
         case "route_unliked": return "Like removed"
         case "route_saved": return "Someone saved your route"
         case "route_unsaved": return "Save removed"
+        case "route_commented": return "Someone commented on your route"
         case "new_follower": return "New follower"
         case "unfollowed": return "Lost a follower"
         default:

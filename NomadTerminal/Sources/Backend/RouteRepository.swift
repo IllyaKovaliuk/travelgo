@@ -1,5 +1,6 @@
 import Foundation
 import Supabase
+import CoreLocation
 
 /// Talks to Postgres/Auth on behalf of the app. Auth starts anonymous —
 /// every device gets a real, persisted user row the moment it needs one
@@ -29,6 +30,47 @@ actor RouteRepository {
             .execute()
             .value
         return rows.map { $0.toRoute() }
+    }
+
+    /// "Following" feed tab — routes from authors the current session
+    /// actually follows. Was previously just relabeled `fetchRoutes()` —
+    /// same content under all 3 tabs regardless of which was selected.
+    func fetchFollowingRoutes() async throws -> [Route] {
+        let userId = try await ensureSession()
+        struct FollowRow: Decodable { let followee_id: UUID }
+        let follows: [FollowRow] = try await supabase
+            .from("follows")
+            .select("followee_id")
+            .eq("follower_id", value: userId.uuidString)
+            .execute()
+            .value
+        guard !follows.isEmpty else { return [] }
+        let ids = follows.map { $0.followee_id.uuidString }
+        let rows: [RouteDTO] = try await supabase
+            .from("routes")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .eq("status", value: "published")
+            .eq("visibility", value: "public")
+            .in("author_id", values: ids)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return rows.map { $0.toRoute() }
+    }
+
+    /// "Nearby" feed tab — published routes sorted by real distance from
+    /// `here`, using each route's first recorded GPS point. Routes with no
+    /// real track (older/manual entries) have no real distance to sort by,
+    /// so they're left out rather than faked into a random position.
+    func fetchNearbyRoutes(from here: CLLocationCoordinate2D) async throws -> [Route] {
+        let all = try await fetchRoutes()
+        let origin = CLLocation(latitude: here.latitude, longitude: here.longitude)
+        let withDistance: [(route: Route, distance: CLLocationDistance)] = all.compactMap { route in
+            guard let first = route.detail.trackPoints.first else { return nil }
+            let point = CLLocation(latitude: first.lat, longitude: first.lng)
+            return (route, origin.distance(from: point))
+        }
+        return withDistance.sorted { $0.distance < $1.distance }.map(\.route)
     }
 
     /// Every distinct region (`place`) among published public routes, for
@@ -488,6 +530,42 @@ actor RouteRepository {
             kmLogged: row.km_logged, routesCompleted: row.routes_completed, badgeCount: badgeRows.count,
             isAnonymous: isAnon
         )
+    }
+
+    enum ProfileUpdateError: LocalizedError {
+        case usernameTaken
+        case other(String)
+        var errorDescription: String? {
+            switch self {
+            case .usernameTaken: return "That username's taken — try another."
+            case .other(let message): return message
+            }
+        }
+    }
+
+    /// Lets someone fix their own name/username/home after the fact — the
+    /// signup form only asks for a display name once, and an account
+    /// created before that field existed (or signed in with a generic
+    /// auto-assigned name) had no way to correct it.
+    func updateMyProfile(displayName: String, username: String, homeLocation: String) async throws {
+        let userId = try await ensureSession()
+        struct Update: Encodable {
+            let display_name: String
+            let username: String
+            let home_location: String?
+        }
+        do {
+            try await supabase.from("profiles")
+                .update(Update(display_name: displayName, username: username, home_location: homeLocation.isEmpty ? nil : homeLocation))
+                .eq("id", value: userId.uuidString)
+                .execute()
+        } catch {
+            let message = error.localizedDescription
+            if message.contains("duplicate key") || message.contains("profiles_username_key") {
+                throw ProfileUpdateError.usernameTaken
+            }
+            throw ProfileUpdateError.other(message)
+        }
     }
 
     struct MyBadge: Identifiable {

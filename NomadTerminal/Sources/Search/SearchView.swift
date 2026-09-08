@@ -24,9 +24,11 @@ struct SearchView: View {
     @State private var hasSearched = false
     @State private var showResults = false
     @State private var searchTask: Task<Void, Never>?
+    @State private var openRoute: Route?
 
     @State private var availableRegions: [String] = []
     @State private var selectedRegion: String?
+    @State private var showRegionMap = false
 
     enum Section { case transport, difficulty, distance }
 
@@ -94,6 +96,14 @@ struct SearchView: View {
         .onChange(of: selectedRegion) { _, _ in runSearch(debounced: false) }
         .fullScreenCover(isPresented: $showResults) {
             SearchResultsView(routes: results) { showResults = false }
+        }
+        .sheet(isPresented: $showRegionMap) {
+            RegionMapPickerView(availableRegions: availableRegions) { picked in
+                selectedRegion = picked
+            }
+        }
+        .fullScreenCover(item: $openRoute) { route in
+            RouteDetailFlow(route: route)
         }
     }
 
@@ -178,37 +188,63 @@ struct SearchView: View {
         .background(NTColor.milk, in: Capsule())
     }
 
+    /// Real live matches while typing — was hardcoded "Svaneti…" rows that
+    /// looked tappable but did nothing at all when tapped, the exact kind
+    /// of thing that makes search feel broken even when the query behind
+    /// it works. Taps straight into the matching route now.
     private var suggestionsCard: some View {
-        VStack(spacing: 0) {
-            suggestionRow(icon: "location.fill", tint: NTColor.accentDeep, bold: "Svan", rest: "eti high route", trailing: "42 ROUTES")
-            Divider().overlay(NTColor.ink.opacity(0.08))
-            suggestionRow(icon: "clock", tint: NTColor.ink.opacity(0.5), bold: "Svan", rest: " towers loop", trailing: "RECENT")
-            Divider().overlay(NTColor.ink.opacity(0.08))
-            suggestionRow(icon: "house.fill", tint: NTColor.ink.opacity(0.5), bold: "Svan", rest: "eti guesthouse chain", trailing: nil)
+        Group {
+            if isSearching && !hasSearched {
+                HStack(spacing: 10) {
+                    ProgressView().tint(NTColor.ink)
+                    Text("Searching…").font(NTFont.body(13.5, .medium)).foregroundStyle(NTColor.ink.opacity(0.6))
+                }
+                .padding(.vertical, 14).padding(.horizontal, 16)
+                .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            } else if results.isEmpty {
+                Text("No routes match \"\(query)\" yet.")
+                    .font(NTFont.body(13.5, .medium))
+                    .foregroundStyle(NTColor.ink.opacity(0.6))
+                    .padding(.vertical, 14).padding(.horizontal, 16)
+                    .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(results.prefix(4).enumerated()), id: \.element.id) { index, route in
+                        if index > 0 { Divider().overlay(NTColor.ink.opacity(0.08)) }
+                        Button { openRoute = route } label: {
+                            suggestionRow(route)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.vertical, 6)
+                .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .shadow(color: .black.opacity(0.3), radius: 24, y: 16)
+            }
         }
-        .padding(.vertical, 6)
-        .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .shadow(color: .black.opacity(0.3), radius: 24, y: 16)
     }
 
-    private func suggestionRow(icon: String, tint: Color, bold: String, rest: String, trailing: String?) -> some View {
+    private func suggestionRow(_ route: Route) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: icon).font(.system(size: 15)).foregroundStyle(tint).frame(width: 18)
-            (Text(bold).fontWeight(.bold) + Text(rest))
+            Image(systemName: "location.fill").font(.system(size: 15)).foregroundStyle(NTColor.accentDeep).frame(width: 18)
+            Text(route.title.replacingOccurrences(of: "\n", with: " "))
                 .font(NTFont.body(14.5, .medium))
                 .foregroundStyle(NTColor.ink)
+                .lineLimit(1)
             Spacer()
-            if let trailing {
-                Text(trailing).font(NTFont.mono(10, .semibold)).foregroundStyle(NTColor.ink.opacity(0.45))
-            }
+            Text(route.place).font(NTFont.mono(10, .semibold)).foregroundStyle(NTColor.ink.opacity(0.45)).lineLimit(1)
         }
         .padding(.horizontal, 14).padding(.vertical, 11)
     }
 
+    private enum Preset { case weekend4x4, hutToHut }
+
+    /// Real filter shortcuts now — used to be plain `Text`, not even
+    /// wrapped in a `Button`, so tapping did nothing at all.
     private var presetsRow: some View {
         HStack(spacing: 8) {
-            presetChip("★ WEEKEND 4×4", filled: true)
-            presetChip("★ HUT-TO-HUT", filled: false)
+            presetChip("★ WEEKEND 4×4", filled: activePreset == .weekend4x4) { applyPreset(.weekend4x4) }
+            presetChip("★ HUT-TO-HUT", filled: activePreset == .hutToHut) { applyPreset(.hutToHut) }
             Text("+ SAVE PRESET")
                 .font(NTFont.mono(11, .semibold)).tracking(0.6)
                 .foregroundStyle(NTColor.milk(0.5))
@@ -217,13 +253,37 @@ struct SearchView: View {
         }
     }
 
-    private func presetChip(_ text: String, filled: Bool) -> some View {
-        Text(text)
-            .font(NTFont.mono(11, .semibold)).tracking(0.6)
-            .foregroundStyle(filled ? Color(hex: 0xF1A47C) : NTColor.milk(0.7))
-            .padding(.horizontal, 14).padding(.vertical, 8)
-            .background(Capsule().fill(filled ? NTColor.accent.opacity(0.18) : .clear))
-            .overlay(Capsule().stroke(filled ? NTColor.accent.opacity(0.5) : NTColor.milk(0.22), lineWidth: 1))
+    private var activePreset: Preset? {
+        if selectedTransport == [.overland] && maxDistanceKM <= 100 { return .weekend4x4 }
+        if selectedTransport == [.foot] && difficultyIndex <= 1 { return .hutToHut }
+        return nil
+    }
+
+    private func applyPreset(_ preset: Preset) {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            switch preset {
+            case .weekend4x4:
+                selectedTransport = [.overland]
+                maxDistanceKM = min(maxDistanceKM, 100)
+                minDistanceKM = Self.distanceBounds.lowerBound
+            case .hutToHut:
+                selectedTransport = [.foot]
+                difficultyIndex = 1
+            }
+        }
+    }
+
+    private func presetChip(_ text: String, filled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(text)
+                .font(NTFont.mono(11, .semibold)).tracking(0.6)
+                .foregroundStyle(filled ? Color(hex: 0xF1A47C) : NTColor.milk(0.7))
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(Capsule().fill(filled ? NTColor.accent.opacity(0.18) : .clear))
+                .overlay(Capsule().stroke(filled ? NTColor.accent.opacity(0.5) : NTColor.milk(0.22), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -298,11 +358,26 @@ struct SearchView: View {
                     Circle().fill(NTColor.milk).frame(width: 22, height: 22)
                         .overlay(Circle().stroke(NTColor.gold, lineWidth: 3))
                         .shadow(radius: 3)
-                        .offset(x: x - 11)
+                        // A tap target bigger than the visible thumb, and a
+                        // drag gesture on the whole track (not just the tiny
+                        // thumb) — snaps to whichever third of the track the
+                        // finger is over. The visible thumb used to have no
+                        // gesture attached at all, so dragging it did nothing.
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .offset(x: x - 22)
                 }
-                .frame(height: 22)
+                .frame(height: 44)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            let fraction = max(0, min(1, value.location.x / w))
+                            setDiff(fraction < 0.33 ? 0 : fraction < 0.67 ? 1 : 2)
+                        }
+                )
             }
-            .frame(height: 22)
+            .frame(height: 44)
 
             HStack {
                 Button("EASY") { setDiff(0) }
@@ -351,35 +426,52 @@ struct SearchView: View {
     /// Real filter — populated from the actual distinct `place` values
     /// among published routes, not a hardcoded list.
     private var regionRow: some View {
-        Menu {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                selectedRegion = nil
-            } label: {
-                if selectedRegion == nil { Label("Any region", systemImage: "checkmark") }
-                else { Text("Any region") }
-            }
-            ForEach(availableRegions, id: \.self) { region in
+        HStack(spacing: 10) {
+            Menu {
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    selectedRegion = region
+                    selectedRegion = nil
                 } label: {
-                    if selectedRegion == region { Label(region, systemImage: "checkmark") }
-                    else { Text(region) }
+                    if selectedRegion == nil { Label("Any region", systemImage: "checkmark") }
+                    else { Text("Any region") }
                 }
+                ForEach(availableRegions, id: \.self) { region in
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        selectedRegion = region
+                    } label: {
+                        if selectedRegion == region { Label(region, systemImage: "checkmark") }
+                        else { Text(region) }
+                    }
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    Text("Region").font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk)
+                    Text(selectedRegion ?? "ANY").font(NTFont.mono(11, .semibold)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.5))
+                }
+                .padding(20)
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
             }
-        } label: {
-            HStack(spacing: 12) {
-                Text("Region").font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk)
-                Text(selectedRegion ?? "ANY").font(NTFont.mono(11, .semibold)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
-                Spacer()
-                Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.5))
+            .disabled(availableRegions.isEmpty)
+
+            // Real ask: pick a region by tapping anywhere on an actual
+            // world map, not just a text list.
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showRegionMap = true
+            } label: {
+                Image(systemName: "globe.americas.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(NTColor.milk)
+                    .frame(width: 60, height: 60)
+                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
             }
-            .padding(20)
-            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+            .buttonStyle(.plain)
         }
-        .disabled(availableRegions.isEmpty)
     }
 
     /// Honest placeholder — no chevron, no fake tap target. Use the search
