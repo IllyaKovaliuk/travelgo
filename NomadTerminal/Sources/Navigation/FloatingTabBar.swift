@@ -1,13 +1,16 @@
 import SwiftUI
 
 enum RootTab: Int, CaseIterable {
-    case home, search, compass, guide, saved, profile
+    // Compass used to be its own tab; it's reached from a route's
+    // "Navigate" button now (with a plain-compass toggle right there,
+    // next to SOS) since a standalone tab for it didn't earn its keep
+    // visually against 5 other primary destinations.
+    case home, search, guide, saved, profile
 
     var icon: String {
         switch self {
         case .home: return "house.fill"
         case .search: return "magnifyingglass"
-        case .compass: return "location.north.line.fill"
         case .guide: return "book.closed.fill"
         case .saved: return "bookmark.fill"
         case .profile: return ""

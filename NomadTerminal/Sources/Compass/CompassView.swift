@@ -14,6 +14,11 @@ struct CompassView: View {
 
     @State private var tracker = CompassTracker()
     @State private var showSOS = false
+    /// Compass used to have its own bottom-tab entry for a "no route"
+    /// plain compass; that tab is gone now, so this lets the same screen
+    /// (opened from a route's Navigate button) drop its waypoint target
+    /// and act as a plain compass without leaving the screen.
+    @State private var showingPlain = false
     /// The needle's actual on-screen rotation — unwrapped (not clamped to
     /// 0..<360) so it always animates the short way around. Animating the
     /// raw 0..<360 `needleRotation` directly makes the needle spin almost
@@ -21,9 +26,11 @@ struct CompassView: View {
     /// a real device (where heading updates constantly) looked jerky.
     @State private var displayRotation: Double = 0
 
-    private var hasTarget: Bool { targetCoordinate != nil && distanceKM != nil }
-    private var distanceKM: Double? { targetCoordinate.flatMap { tracker.distanceKM(to: $0) } }
-    private var bearingToTarget: Double? { targetCoordinate.flatMap { tracker.bearing(to: $0) } }
+    /// nil while showing the plain compass, even if a real target exists.
+    private var activeTarget: CLLocationCoordinate2D? { showingPlain ? nil : targetCoordinate }
+    private var hasTarget: Bool { activeTarget != nil && distanceKM != nil }
+    private var distanceKM: Double? { activeTarget.flatMap { tracker.distanceKM(to: $0) } }
+    private var bearingToTarget: Double? { activeTarget.flatMap { tracker.bearing(to: $0) } }
     /// Needle rotation relative to the top of the screen: points at the
     /// target bearing (adjusted for which way the phone itself is facing)
     /// when there's a target, otherwise just points at true north.
@@ -81,13 +88,28 @@ struct CompassView: View {
             Spacer()
 
             VStack(spacing: 5) {
-                Text(targetCoordinate != nil ? "WAYPOINT \(waypointIndex) OF \(waypointTotal)" : "NO ACTIVE ROUTE")
+                Text(activeTarget != nil ? "WAYPOINT \(waypointIndex) OF \(waypointTotal)" : "NO ACTIVE ROUTE")
                     .font(NTFont.mono(10, .medium)).tracking(1.4).foregroundStyle(NTColor.milk(0.5))
-                Text(targetCoordinate != nil ? waypointName : "Plain compass")
+                Text(activeTarget != nil ? waypointName : "Plain compass")
                     .font(NTFont.body(14, .semibold))
             }
 
             Spacer()
+
+            if targetCoordinate != nil {
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    withAnimation { showingPlain.toggle() }
+                } label: {
+                    Image(systemName: showingPlain ? "location.north.line.fill" : "location.slash")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(showingPlain ? NTColor.accent : NTColor.milk(0.8))
+                        .frame(width: 40, height: 40)
+                        .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
+            }
 
             Button { showSOS = true } label: {
                 Image(systemName: "sos")
