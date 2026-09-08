@@ -157,7 +157,12 @@ struct RouteMapHeader: View {
         // routes mostly have no road data in Apple's vector map, which
         // rendered as a flat color wash with no visible terrain at all.
         // Real satellite imagery shows the actual land regardless.
-        .mapStyle(.hybrid(elevation: .realistic))
+        // `.flat`, not `.realistic`: 3D terrain elevation silently hides
+        // every annotation (pins, segment chips) drawn on the map — real,
+        // confirmed MapKit behavior, not a guess. See RouteFullMapView's
+        // mapStyle comment for how this was isolated. `.flat` keeps the
+        // same real satellite imagery without hiding anything on top of it.
+        .mapStyle(.hybrid(elevation: .flat))
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
     }
 

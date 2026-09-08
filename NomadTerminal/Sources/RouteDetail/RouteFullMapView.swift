@@ -16,8 +16,17 @@ struct RouteFullMapView: View {
     @State private var selectedPOI: RouteDetailInfo.POI?
     @State private var showSatellite = true
 
+    // `elevation: .realistic` (3D terrain) turned out to silently hide
+    // *every* annotation on this map — custom pins, segment label chips,
+    // even Apple's own built-in `Marker` — confirmed by testing a bare
+    // native Marker against a known coordinate and watching it vanish
+    // only when realistic elevation was on. The 3D terrain mesh
+    // apparently renders in front of ground-anchored annotations. `.flat`
+    // keeps the exact same real satellite imagery (hybrid always includes
+    // it, elevation only affects the 3D terrain mesh) without hiding
+    // anything drawn on top of it.
     private var mapStyle: MapStyle {
-        showSatellite ? .hybrid(elevation: .realistic) : .standard(elevation: .realistic)
+        showSatellite ? .hybrid(elevation: .flat) : .standard(elevation: .flat)
     }
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }
