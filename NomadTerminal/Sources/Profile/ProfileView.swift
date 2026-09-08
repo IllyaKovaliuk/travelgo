@@ -1,28 +1,19 @@
 import SwiftUI
 
-private struct Badge: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let sub: String
-    let colors: [Color]
-    let locked: Bool
-}
-
-private let badges: [Badge] = [
-    .init(icon: "car.side", title: "Diff Locker", sub: "10 TRACKS", colors: [Color(hex: 0xF19A6B), NTColor.accentDeep], locked: false),
-    .init(icon: "water.waves", title: "Cold Water", sub: "GRADE III", colors: [Color(hex: 0x6FB4DD), Color(hex: 0x2A6E9B)], locked: false),
-    .init(icon: "mountain.2.fill", title: "Vertical Mile", sub: "1609 M", colors: [Color(hex: 0x9C86D8), Color(hex: 0x5B41A0)], locked: false),
-    .init(icon: "figure.hiking", title: "Hundred Club", sub: "100 KM FOOT", colors: [Color(hex: 0x8FCBA3), Color(hex: 0x3D7A54)], locked: false),
-    .init(icon: "location.north.circle.fill", title: "True North", sub: "50 H OFFLINE", colors: [Color(hex: 0xF0C98A), Color(hex: 0xA8721F)], locked: false),
-    .init(icon: "lock.fill", title: "Night Ford", sub: "LOCKED", colors: [NTColor.milk(0.14), NTColor.milk(0.14)], locked: true)
-]
-
-/// 08 · Profile & badges
+/// 08 · Profile & badges — real data throughout (was entirely hardcoded
+/// "Sana Kadyrova" mock content before). Anonymous sessions (never signed
+/// up with a real email) see a sign-in prompt instead of a fake identity.
 struct ProfileView: View {
     enum Tab: String, CaseIterable { case routes = "My routes", activity = "Activity", badges = "Badges" }
     @State private var tab: Tab = .badges
     @State private var showSettings = false
+    @State private var showAuth = false
+
+    @State private var profile: RouteRepository.MyProfile?
+    @State private var badges: [RouteRepository.MyBadge] = []
+    @State private var myRoutes: [RouteRepository.MyRoute] = []
+    @State private var activity: [RouteRepository.PointsLedgerEntry] = []
+    @State private var isLoading = true
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -35,71 +26,49 @@ struct ProfileView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    HStack(spacing: 16) {
-                        ZStack(alignment: .bottomTrailing) {
-                            Circle()
-                                .fill(LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing))
-                                .frame(width: 84, height: 84)
-                                .overlay(Text("SK").font(NTFont.heading(28, .semibold)).foregroundStyle(NTColor.milk))
-                            Text("12")
-                                .font(NTFont.mono(10, .semibold))
-                                .foregroundStyle(Color(hex: 0x2B1B05))
-                                .frame(width: 28, height: 28)
-                                .background(Circle().fill(NTColor.gold))
-                                .overlay(Circle().stroke(NTColor.pine, lineWidth: 3))
-                        }
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Sana Kadyrova").font(NTFont.heading(26, .extraBold)).foregroundStyle(NTColor.milk)
-                            Text("@sanadrives · ALMATY, KZ").font(NTFont.mono(11.5, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
-                        }
-                        Spacer()
-                        Button { showSettings = true } label: {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 16))
-                                .foregroundStyle(NTColor.milk(0.75))
-                                .frame(width: 38, height: 38)
-                                .background(Circle().fill(NTColor.milk(0.1)))
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    header
 
-                    HStack(spacing: 0) {
-                        statBlock("4218", "KM LOGGED")
-                        statBlock("38", "COMPLETED")
-                        statBlock("9", "BADGES")
-                    }
-                    .padding(.vertical, 18)
-                    .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .top)
-                    .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .bottom)
-                    .padding(.top, 24)
+                    if profile?.isAnonymous == true {
+                        anonymousPrompt
+                    } else {
+                        HStack(spacing: 0) {
+                            statBlock(formatKM(profile?.kmLogged ?? 0), "KM LOGGED")
+                            statBlock("\(profile?.routesCompleted ?? 0)", "COMPLETED")
+                            statBlock("\(badges.filter(\.earned).count)", "BADGES")
+                        }
+                        .padding(.vertical, 18)
+                        .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .top)
+                        .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .bottom)
+                        .padding(.top, 24)
 
-                    HStack(spacing: 4) {
-                        ForEach(Tab.allCases, id: \.self) { t in
-                            Button {
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { tab = t }
-                            } label: {
-                                Text(t.rawValue)
-                                    .font(NTFont.body(13, .semibold))
-                                    .foregroundStyle(tab == t ? NTColor.pine : NTColor.milk(0.7))
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 42)
-                                    .background(Capsule().fill(tab == t ? NTColor.milk : .clear))
+                        HStack(spacing: 4) {
+                            ForEach(Tab.allCases, id: \.self) { t in
+                                Button {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { tab = t }
+                                } label: {
+                                    Text(t.rawValue)
+                                        .font(NTFont.body(13, .semibold))
+                                        .foregroundStyle(tab == t ? NTColor.pine : NTColor.milk(0.7))
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 42)
+                                        .background(Capsule().fill(tab == t ? NTColor.milk : .clear))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
-                    }
-                    .padding(5)
-                    .background(Capsule().fill(NTColor.milk(0.08)))
-                    .padding(.top, 22)
+                        .padding(5)
+                        .background(Capsule().fill(NTColor.milk(0.08)))
+                        .padding(.top, 22)
 
-                    Group {
-                        switch tab {
-                        case .badges: badgeGrid
-                        case .routes: routesList
-                        case .activity: activityList
+                        Group {
+                            switch tab {
+                            case .badges: badgeGrid
+                            case .routes: routesList
+                            case .activity: activityList
+                            }
                         }
+                        .padding(.top, 26)
                     }
-                    .padding(.top, 26)
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 70)
@@ -108,6 +77,86 @@ struct ProfileView: View {
         }
         .foregroundStyle(NTColor.milk)
         .sheet(isPresented: $showSettings) { SettingsView() }
+        .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; Task { await load() } }) }
+        .task { await load() }
+    }
+
+    private func load() async {
+        async let profileResult = try? RouteRepository.shared.fetchMyProfile()
+        async let badgesResult = (try? RouteRepository.shared.fetchMyBadges()) ?? []
+        async let routesResult = (try? RouteRepository.shared.fetchMyRoutes()) ?? []
+        async let activityResult = (try? RouteRepository.shared.fetchPointsLedger(limit: 20)) ?? []
+        profile = await profileResult
+        badges = await badgesResult
+        myRoutes = await routesResult
+        activity = await activityResult
+        isLoading = false
+    }
+
+    private var initials: String {
+        guard let name = profile?.displayName, !name.isEmpty else { return "?" }
+        return name.split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
+    }
+
+    private var header: some View {
+        HStack(spacing: 16) {
+            ZStack(alignment: .bottomTrailing) {
+                Circle()
+                    .fill(LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 84, height: 84)
+                    .overlay(Text(initials).font(NTFont.heading(28, .semibold)).foregroundStyle(NTColor.milk))
+                if profile?.routesCompleted ?? 0 > 0 {
+                    Text("\(profile?.routesCompleted ?? 0)")
+                        .font(NTFont.mono(10, .semibold))
+                        .foregroundStyle(Color(hex: 0x2B1B05))
+                        .frame(width: 28, height: 28)
+                        .background(Circle().fill(NTColor.gold))
+                        .overlay(Circle().stroke(NTColor.pine, lineWidth: 3))
+                }
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Text(profile?.isAnonymous == true ? "Anonymous nomad" : (profile?.displayName ?? "—"))
+                    .font(NTFont.heading(26, .extraBold)).foregroundStyle(NTColor.milk)
+                if profile?.isAnonymous != true {
+                    Text("@\(profile?.username ?? "") · \((profile?.homeLocation ?? "NO HOME SET").uppercased())")
+                        .font(NTFont.mono(11.5, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+                }
+            }
+            Spacer()
+            Button { showSettings = true } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(NTColor.milk(0.75))
+                    .frame(width: 38, height: 38)
+                    .background(Circle().fill(NTColor.milk(0.1)))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var anonymousPrompt: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("You're browsing without an account — routes you like or save stick around, but nothing syncs to another device and there's no name to show here yet.")
+                .font(NTFont.body(13.5, .light))
+                .foregroundStyle(NTColor.milk(0.65))
+            Button { showAuth = true } label: {
+                Text("Sign in or create an account")
+                    .font(NTFont.body(14, .semibold))
+                    .foregroundStyle(Color(hex: 0x231007))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(NTColor.accent, in: Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(18)
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .padding(.top, 22)
+    }
+
+    private func formatKM(_ km: Double) -> String {
+        km >= 1000 ? String(format: "%.0f", km) : String(format: "%.1f", km)
     }
 
     private func statBlock(_ value: String, _ label: String) -> some View {
@@ -119,36 +168,54 @@ struct ProfileView: View {
     }
 
     private var badgeGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 18) {
-            ForEach(badges) { b in
-                VStack(spacing: 9) {
-                    ZStack {
-                        if b.locked {
-                            Circle().fill(NTColor.milk(0.12)).overlay(Circle().stroke(NTColor.milk(0.16), lineWidth: 1))
-                        } else {
-                            Circle().fill(RadialGradient(colors: b.colors, center: UnitPoint(x: 0.4, y: 0.32), startRadius: 0, endRadius: 50))
-                                .overlay(Circle().stroke(NTColor.milk(0.3), lineWidth: 1.5))
-                                .shadow(color: b.colors.last!.opacity(0.6), radius: 10, y: 6)
-                        }
-                        Image(systemName: b.icon)
-                            .font(.system(size: 26))
-                            .foregroundStyle(b.locked ? NTColor.milk(0.5) : NTColor.milk)
-                    }
-                    .frame(width: 84, height: 84)
+        Group {
+            if badges.isEmpty && !isLoading {
+                emptyState("No badges yet", "Publish routes and log distance to start earning them.")
+            } else {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 18) {
+                    ForEach(badges) { b in
+                        VStack(spacing: 9) {
+                            ZStack {
+                                if !b.earned {
+                                    Circle().fill(NTColor.milk(0.12)).overlay(Circle().stroke(NTColor.milk(0.16), lineWidth: 1))
+                                } else {
+                                    let colors = [Color(hexString: b.colorStart), Color(hexString: b.colorEnd)]
+                                    Circle().fill(RadialGradient(colors: colors, center: UnitPoint(x: 0.4, y: 0.32), startRadius: 0, endRadius: 50))
+                                        .overlay(Circle().stroke(NTColor.milk(0.3), lineWidth: 1.5))
+                                        .shadow(color: colors.last!.opacity(0.6), radius: 10, y: 6)
+                                }
+                                Image(systemName: b.earned ? b.icon : "lock.fill")
+                                    .font(.system(size: 26))
+                                    .foregroundStyle(b.earned ? NTColor.milk : NTColor.milk(0.5))
+                            }
+                            .frame(width: 84, height: 84)
 
-                    Text(b.title).font(NTFont.body(11, .semibold)).multilineTextAlignment(.center)
-                        .foregroundStyle(b.locked ? NTColor.milk(0.5) : NTColor.milk)
-                    Text(b.sub).font(NTFont.mono(8.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
+                            Text(b.title).font(NTFont.body(11, .semibold)).multilineTextAlignment(.center)
+                                .foregroundStyle(b.earned ? NTColor.milk : NTColor.milk(0.5))
+                            Text(b.subtitle).font(NTFont.mono(8.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
+                        }
+                    }
                 }
             }
         }
     }
 
     private var routesList: some View {
-        VStack(spacing: 12) {
-            routeRow(title: "Charyn Canyon rim", meta: "84.1 KM · 4×4 · PUBLISHED", likes: "1.2K", downloads: "318")
-            routeRow(title: "Kolsai lakes traverse", meta: "31.6 KM · FOOT · DRAFT", likes: "0", downloads: "0")
+        Group {
+            if myRoutes.isEmpty && !isLoading {
+                emptyState("No routes published", "Log a route to see it here.")
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(myRoutes) { r in
+                        routeRow(title: r.title, meta: r.meta, likes: formatCount(r.likes), downloads: formatCount(r.saves))
+                    }
+                }
+            }
         }
+    }
+
+    private func formatCount(_ n: Int) -> String {
+        n >= 1000 ? String(format: "%.1fK", Double(n) / 1000) : "\(n)"
     }
 
     private func routeRow(title: String, meta: String, likes: String, downloads: String) -> some View {
@@ -172,29 +239,104 @@ struct ProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
+    /// Repurposes the NomadPoints ledger (real earn/spend events, already
+    /// timestamped and audited — see RewardsView) as the Activity feed,
+    /// instead of a separate invented activity log.
     private var activityList: some View {
-        VStack(spacing: 0) {
-            activityRow(icon: "checkmark", tint: NTColor.accent, text: "Completed **Zagar Pass** in 6 h 42 m", time: "3 DAYS AGO · 62.4 KM")
-            activityRow(icon: "star.fill", tint: NTColor.gold, text: "Earned **True North**", time: "1 WEEK AGO")
-            activityRow(icon: "location.circle", tint: NTColor.sage, text: "Logged a ford condition at **WP3**", time: "2 WEEKS AGO")
+        Group {
+            if activity.isEmpty && !isLoading {
+                emptyState("No activity yet", "Publish a route or get a follower and it'll show up here.")
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(activity) { entry in
+                        activityRow(entry)
+                    }
+                }
+            }
         }
     }
 
-    private func activityRow(icon: String, tint: Color, text: LocalizedStringKey, time: String) -> some View {
-        HStack(alignment: .top, spacing: 14) {
+    private func activityRow(_ entry: RouteRepository.PointsLedgerEntry) -> some View {
+        let (icon, tint) = iconAndTint(for: entry.reason)
+        return HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(tint)
                 .frame(width: 34, height: 34)
                 .background(Circle().fill(tint.opacity(0.2)))
             VStack(alignment: .leading, spacing: 7) {
-                Text(text).font(NTFont.body(14.5, .medium)).foregroundStyle(NTColor.milk)
-                Text(time).font(NTFont.mono(10, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.5))
+                Text(activityLabel(entry.reason)).font(NTFont.body(14.5, .medium)).foregroundStyle(NTColor.milk)
+                Text(relativeTime(entry.createdAt)).font(NTFont.mono(10, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.5))
             }
             Spacer()
+            Text(entry.delta >= 0 ? "+\(entry.delta)" : "\(entry.delta)")
+                .font(NTFont.mono(11, .semibold))
+                .foregroundStyle(entry.delta >= 0 ? NTColor.sage : Color(hex: 0xE58272))
         }
         .padding(.vertical, 15)
         .overlay(Rectangle().fill(NTColor.milk(0.1)).frame(height: 1), alignment: .bottom)
+    }
+
+    private func iconAndTint(for reason: String) -> (String, Color) {
+        switch reason {
+        case "route_published": return ("checkmark", NTColor.accent)
+        case "new_follower": return ("person.badge.plus", NTColor.sage)
+        case "route_liked": return ("heart.fill", Color(hex: 0xE58272))
+        case "route_saved": return ("bookmark.fill", NTColor.sage)
+        default:
+            if reason.hasPrefix("redeemed_") { return ("star.fill", NTColor.gold) }
+            return ("location.circle", NTColor.sage)
+        }
+    }
+
+    private func activityLabel(_ reason: String) -> String {
+        switch reason {
+        case "route_published": return "Published a route"
+        case "segment_added": return "Added a segment"
+        case "requirement_added": return "Added gear/requirement"
+        case "poi_added": return "Dropped a pin"
+        case "cover_photo_added": return "Added a cover photo"
+        case "route_liked": return "Someone liked your route"
+        case "route_unliked": return "A like was removed"
+        case "route_saved": return "Someone saved your route"
+        case "route_unsaved": return "A save was removed"
+        case "new_follower": return "Gained a follower"
+        case "unfollowed": return "Lost a follower"
+        default:
+            if reason.hasPrefix("redeemed_") { return "Redeemed a reward" }
+            return reason
+        }
+    }
+
+    private func relativeTime(_ iso: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard let date = formatter.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) else { return "" }
+        let seconds = -date.timeIntervalSinceNow
+        if seconds < 60 { return "JUST NOW" }
+        if seconds < 3600 { return "\(Int(seconds / 60))M AGO" }
+        if seconds < 86400 { return "\(Int(seconds / 3600))H AGO" }
+        return "\(Int(seconds / 86400))D AGO"
+    }
+
+    private func emptyState(_ title: String, _ subtitle: String) -> some View {
+        VStack(spacing: 6) {
+            Text(title).font(NTFont.body(14.5, .semibold)).foregroundStyle(NTColor.milk(0.7))
+            Text(subtitle).font(NTFont.body(12.5, .light)).foregroundStyle(NTColor.milk(0.45))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+    }
+}
+
+private extension Color {
+    /// Local helper — badge colors come from the DB as "#RRGGBB" strings.
+    init(hexString: String) {
+        var s = hexString
+        if s.hasPrefix("#") { s.removeFirst() }
+        let value = UInt32(s, radix: 16) ?? 0x5FA777
+        self = Color(hex: value)
     }
 }
 

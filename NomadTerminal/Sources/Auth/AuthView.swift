@@ -9,10 +9,12 @@ struct AuthView: View {
 
     enum Mode { case signIn, signUp }
     @State private var mode: Mode = .signIn
+    @State private var name = ""
     @State private var email = ""
     @State private var password = ""
     @State private var isBusy = false
     @State private var errorMessage: String?
+    @State private var confirmEmailSent = false
 
     var body: some View {
         ZStack {
@@ -23,6 +25,56 @@ struct AuthView: View {
                 .position(x: 80, y: -110)
                 .ignoresSafeArea()
 
+            if confirmEmailSent {
+                confirmEmailView
+            } else {
+                formView
+            }
+        }
+        .foregroundStyle(NTColor.milk)
+    }
+
+    private var confirmEmailView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            CompassMark(size: 52)
+
+            Text("Check your\ninbox.")
+                .font(NTFont.heading(34, .extraBold))
+                .foregroundStyle(NTColor.milk)
+                .padding(.top, 22)
+
+            Text("We sent a confirmation link to \(email). Tap it, then come back and sign in.")
+                .font(NTFont.body(15, .light))
+                .foregroundStyle(NTColor.milk(0.62))
+                .padding(.top, 10)
+
+            Spacer()
+
+            Button {
+                withAnimation { confirmEmailSent = false; mode = .signIn; password = "" }
+            } label: {
+                Text("Back to sign in")
+                    .font(NTFont.body(16, .semibold))
+                    .foregroundStyle(Color(hex: 0x231007))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .background(NTColor.accent, in: Capsule())
+                    .shadow(color: NTColor.accent.opacity(0.5), radius: 14, y: 8)
+            }
+            .buttonStyle(.plain)
+
+            Button("Skip for now", action: onDone)
+                .font(NTFont.body(13, .medium))
+                .foregroundStyle(NTColor.milk(0.4))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 16)
+        }
+        .padding(.horizontal, 30)
+        .padding(.top, 24)
+        .padding(.bottom, 20)
+    }
+
+    private var formView: some View {
             VStack(alignment: .leading, spacing: 0) {
                 CompassMark(size: 52)
 
@@ -50,6 +102,9 @@ struct AuthView: View {
                 .padding(.vertical, 22)
 
                 VStack(spacing: 10) {
+                    if mode == .signUp {
+                        textField(icon: "person", placeholder: "Your name", text: $name, isSecure: false)
+                    }
                     textField(icon: "envelope", placeholder: "you@nomadterminal.io", text: $email, isSecure: false)
                     textField(icon: "lock", placeholder: "Password", text: $password, isSecure: true)
                 }
@@ -75,8 +130,8 @@ struct AuthView: View {
                     .shadow(color: NTColor.accent.opacity(0.5), radius: 14, y: 8)
                 }
                 .buttonStyle(.plain)
-                .disabled(isBusy || email.isEmpty || password.count < 6)
-                .opacity((email.isEmpty || password.count < 6) ? 0.6 : 1)
+                .disabled(isBusy || !canSubmit)
+                .opacity(canSubmit ? 1 : 0.6)
 
                 Button {
                     withAnimation { mode = mode == .signIn ? .signUp : .signIn }
@@ -103,8 +158,6 @@ struct AuthView: View {
             .padding(.horizontal, 30)
             .padding(.top, 24)
             .padding(.bottom, 20)
-        }
-        .foregroundStyle(NTColor.milk)
     }
 
     private func socialButton(icon: String, title: String, filled: Bool) -> some View {
@@ -145,6 +198,12 @@ struct AuthView: View {
         .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
     }
 
+    private var canSubmit: Bool {
+        guard !email.isEmpty, password.count >= 6 else { return false }
+        if mode == .signUp, name.trimmingCharacters(in: .whitespaces).isEmpty { return false }
+        return true
+    }
+
     private func submit() {
         isBusy = true
         errorMessage = nil
@@ -152,11 +211,29 @@ struct AuthView: View {
             do {
                 if mode == .signIn {
                     try await supabase.auth.signIn(email: email, password: password)
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    onDone()
                 } else {
-                    try await supabase.auth.signUp(email: email, password: password)
+                    let trimmedName = name.trimmingCharacters(in: .whitespaces)
+                    let response = try await supabase.auth.signUp(
+                        email: email, password: password,
+                        data: ["display_name": .string(trimmedName)]
+                    )
+                    if response.session != nil {
+                        // Autoconfirm is on for this project — signing up
+                        // really did log them in immediately.
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        onDone()
+                    } else {
+                        // No session back means Supabase is holding this
+                        // account pending email confirmation. Silently
+                        // calling onDone() here (the old behavior) closed
+                        // the screen while the person was still logged out
+                        // — indistinguishable from "nothing happened."
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        withAnimation { confirmEmailSent = true }
+                    }
                 }
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-                onDone()
             } catch {
                 errorMessage = friendlyMessage(error)
             }
@@ -166,6 +243,9 @@ struct AuthView: View {
 
     private func friendlyMessage(_ error: Error) -> String {
         let text = "\(error)"
+        if text.contains("email_not_confirmed") || text.contains("Email not confirmed") {
+            return "Confirm your email first — check the link we sent you, then sign in."
+        }
         if text.contains("Invalid login") { return "Wrong email or password." }
         if text.contains("already registered") || text.contains("already exists") { return "That email already has an account — try signing in." }
         if text.contains("rate_limit") { return "Too many attempts — wait a minute and try again." }

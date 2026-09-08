@@ -442,6 +442,124 @@ actor RouteRepository {
             .execute()
     }
 
+    // MARK: - My profile (real data for the Profile tab — replaces the old hardcoded "Sana Kadyrova")
+
+    struct MyProfile {
+        let username: String
+        let displayName: String
+        let homeLocation: String?
+        let kmLogged: Double
+        let routesCompleted: Int
+        let badgeCount: Int
+        /// True for a device that's only ever been anonymously
+        /// auto-signed-in (liked/saved something pre-signup) — Profile
+        /// shows a "sign in" prompt instead of pretending this is a real
+        /// account with a name.
+        let isAnonymous: Bool
+    }
+
+    private struct MyProfileRow: Decodable {
+        let username: String
+        let display_name: String
+        let home_location: String?
+        let km_logged: Double
+        let routes_completed: Int
+    }
+
+    func fetchMyProfile() async throws -> MyProfile {
+        let userId = try await ensureSession()
+        let isAnon = (try? await supabase.auth.session)?.user.isAnonymous ?? true
+        let row: MyProfileRow = try await supabase
+            .from("profiles")
+            .select("username, display_name, home_location, km_logged, routes_completed")
+            .eq("id", value: userId.uuidString)
+            .single()
+            .execute()
+            .value
+        struct BadgeRow: Decodable { let badge_id: UUID }
+        let badgeRows: [BadgeRow] = (try? await supabase
+            .from("user_badges")
+            .select("badge_id")
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+            .value) ?? []
+        return MyProfile(
+            username: row.username, displayName: row.display_name, homeLocation: row.home_location,
+            kmLogged: row.km_logged, routesCompleted: row.routes_completed, badgeCount: badgeRows.count,
+            isAnonymous: isAnon
+        )
+    }
+
+    struct MyBadge: Identifiable {
+        let key: String
+        let title: String
+        let subtitle: String
+        let icon: String
+        let colorStart: String
+        let colorEnd: String
+        let earned: Bool
+        var id: String { key }
+    }
+
+    /// The full badge catalog with each one flagged for whether *this*
+    /// user actually earned it — so the grid shows real locked/unlocked
+    /// state instead of every badge just looking earned.
+    func fetchMyBadges() async throws -> [MyBadge] {
+        let userId = try await ensureSession()
+        struct BadgeRow: Decodable {
+            let key: String, title: String, subtitle: String, icon: String
+            let color_start: String, color_end: String
+        }
+        let all: [BadgeRow] = try await supabase.from("badges").select("*").execute().value
+        struct EarnedRow: Decodable { let badge_id: UUID }
+        let earnedIds: Set<UUID> = Set(((try? await supabase
+            .from("user_badges")
+            .select("badge_id")
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+            .value) as [EarnedRow]?)?.map(\.badge_id) ?? [])
+        struct BadgeIdRow: Decodable { let key: String, id: UUID }
+        let idsByKey: [String: UUID] = Dictionary(uniqueKeysWithValues: (try? await supabase
+            .from("badges").select("key, id").execute().value as [BadgeIdRow]?)?.map { ($0.key, $0.id) } ?? [])
+        return all.map { row in
+            let earned = idsByKey[row.key].map { earnedIds.contains($0) } ?? false
+            return MyBadge(key: row.key, title: row.title, subtitle: row.subtitle, icon: row.icon,
+                            colorStart: row.color_start, colorEnd: row.color_end, earned: earned)
+        }
+    }
+
+    struct MyRoute: Identifiable {
+        let id: String
+        let title: String
+        let meta: String
+        let likes: Int
+        let saves: Int
+    }
+
+    /// The current user's own published routes, for Profile's "My routes"
+    /// tab — was 2 hardcoded rows before.
+    func fetchMyRoutes() async throws -> [MyRoute] {
+        let userId = try await ensureSession()
+        struct CountWrap: Decodable { let count: Int }
+        struct Row: Decodable {
+            let id: UUID, title: String, place: String, distance_km: Double
+            let transport_label: String, status: String
+            let likes: [CountWrap], saves: [CountWrap]
+        }
+        let rows: [Row] = try await supabase
+            .from("routes")
+            .select("id, title, place, distance_km, transport_label, status, likes:route_likes(count), saves:route_saves(count)")
+            .eq("author_id", value: userId.uuidString)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return rows.map {
+            let meta = "\(String(format: "%.1f", $0.distance_km)) KM · \($0.transport_label) · \($0.status.uppercased())"
+            return MyRoute(id: $0.id.uuidString, title: $0.title.replacingOccurrences(of: "\n", with: " "),
+                            meta: meta, likes: $0.likes.first?.count ?? 0, saves: $0.saves.first?.count ?? 0)
+        }
+    }
+
     // MARK: - NomadPoints (loyalty ledger — see backend/supabase/migrations/20260908000001_points.sql)
 
     struct PointsSummary {
