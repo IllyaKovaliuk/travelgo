@@ -87,15 +87,34 @@ struct ProfileView: View {
         .task { await load() }
     }
 
+    /// Bumped on every `load()` call so a slow, now-stale fetch can't
+    /// clobber a newer one. Real bug this fixes: ProfileView's initial
+    /// `.task` kicks off a load while still anonymous; signing up while
+    /// that's in flight starts a second load with the real account. Both
+    /// are independent `Task`s with no ordering guarantee — if the first
+    /// (anonymous) one happened to resolve *after* the second (real
+    /// account) one, its stale "New Nomad" result silently overwrote the
+    /// correct name. Confirmed via the DB: the real name was always
+    /// stored correctly — this was purely a client-side race, not a
+    /// signup/backend bug.
+    @State private var profileLoadToken = 0
+
     private func load() async {
+        profileLoadToken += 1
+        let myToken = profileLoadToken
         async let profileResult = try? RouteRepository.shared.fetchMyProfile()
         async let badgesResult = (try? RouteRepository.shared.fetchMyBadges()) ?? []
         async let routesResult = (try? RouteRepository.shared.fetchMyRoutes()) ?? []
         async let activityResult = (try? RouteRepository.shared.fetchPointsLedger(limit: 20)) ?? []
-        profile = await profileResult
-        badges = await badgesResult
-        myRoutes = await routesResult
-        activity = await activityResult
+        let resolvedProfile = await profileResult
+        let resolvedBadges = await badgesResult
+        let resolvedRoutes = await routesResult
+        let resolvedActivity = await activityResult
+        guard myToken == profileLoadToken else { return } // a newer load already superseded this one
+        profile = resolvedProfile
+        badges = resolvedBadges
+        myRoutes = resolvedRoutes
+        activity = resolvedActivity
         isLoading = false
     }
 
