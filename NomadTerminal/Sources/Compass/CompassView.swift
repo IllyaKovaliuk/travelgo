@@ -58,7 +58,11 @@ struct CompassView: View {
         }
         .foregroundStyle(NTColor.milk)
         .fullScreenCover(isPresented: $showSOS) {
-            SOSView(onClose: { showSOS = false })
+            SOSView(
+                onClose: { showSOS = false },
+                onTriggered: { LiveActivityManager.shared.triggerSOS() },
+                onCancelled: { LiveActivityManager.shared.cancelSOS() }
+            )
         }
         .onAppear {
             tracker.start()

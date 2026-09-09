@@ -40,7 +40,7 @@ final class RouteTracker: NSObject {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.activityType = .fitness
-        manager.allowsBackgroundLocationUpdates = false
+        manager.pausesLocationUpdatesAutomatically = false
     }
 
     func start() {
@@ -50,7 +50,16 @@ final class RouteTracker: NSObject {
             manager.requestWhenInUseAuthorization()
         case .denied, .restricted:
             authorizationDenied = true
+        case .authorizedWhenInUse:
+            // Upgrade contextually, right when a recording actually starts
+            // (Apple's recommended pattern) rather than asking for Always
+            // upfront during onboarding — this is also what keeps the
+            // Dynamic Island / lock-screen Live Activity fed with fresh
+            // stats if the phone gets pocketed mid-recording.
+            manager.requestAlwaysAuthorization()
+            manager.startUpdatingLocation()
         default:
+            manager.allowsBackgroundLocationUpdates = manager.authorizationStatus == .authorizedAlways
             manager.startUpdatingLocation()
         }
     }
@@ -83,8 +92,13 @@ extension RouteTracker: CLLocationManagerDelegate {
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             switch manager.authorizationStatus {
-            case .authorizedWhenInUse, .authorizedAlways:
+            case .authorizedAlways:
                 self.authorizationDenied = false
+                manager.allowsBackgroundLocationUpdates = true
+                manager.startUpdatingLocation()
+            case .authorizedWhenInUse:
+                self.authorizationDenied = false
+                manager.allowsBackgroundLocationUpdates = false
                 manager.startUpdatingLocation()
             case .denied, .restricted:
                 self.authorizationDenied = true

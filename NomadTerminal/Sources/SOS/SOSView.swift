@@ -3,6 +3,14 @@ import SwiftUI
 /// 17 · SOS — hold-to-send emergency beacon.
 struct SOSView: View {
     var onClose: () -> Void
+    /// Fired the instant the hold gesture completes — flips the Dynamic
+    /// Island / lock-screen Live Activity into SOS mode (see
+    /// `LiveActivityManager.triggerSOS`). Defaults to a no-op so existing
+    /// call sites don't need to change.
+    var onTriggered: () -> Void = {}
+    /// Fired when leaving this screen — ends or reverts the island's SOS
+    /// state. Safe to call even if SOS was never actually triggered.
+    var onCancelled: () -> Void = {}
 
     @State private var holdProgress: CGFloat = 0
     @State private var isSent = false
@@ -133,7 +141,10 @@ struct SOSView: View {
     }
 
     private var cancelButton: some View {
-        Button(action: onClose) {
+        Button(action: {
+            onCancelled()
+            onClose()
+        }) {
             Text("Cancel")
                 .font(NTFont.body(14, .semibold))
                 .foregroundStyle(NTColor.milk(0.7))
@@ -153,6 +164,7 @@ struct SOSView: View {
             if holdProgress >= 1 {
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { isSent = true }
+                onTriggered()
                 holdTimer?.invalidate()
                 holdTimer = nil
             }

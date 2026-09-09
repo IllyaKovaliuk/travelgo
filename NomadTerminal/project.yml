@@ -24,6 +24,8 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+      - target: NomadTerminalWidgets
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app
@@ -49,6 +51,9 @@ targets:
           - UIInterfaceOrientationPortrait
         NSLocationWhenInUseUsageDescription: "Turn-by-turn on unnamed tracks, and an SOS ping that still works with no signal."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and SOS beacon accurate while the app is in your pocket."
+        NSSupportsLiveActivities: true
+        UIBackgroundModes:
+          - location
         UIAppFonts:
           - BricolageGrotesque-SemiBold.ttf
           - BricolageGrotesque-Bold.ttf
@@ -61,6 +66,30 @@ targets:
           - IBMPlexMono-Medium.ttf
           - IBMPlexMono-SemiBold.ttf
           - Newsreader-LightItalic.ttf
+
+  NomadTerminalWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: WidgetExtension
+      - path: Sources/LiveActivity
+      - path: Sources/DesignSystem/NTColor.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app.widgets
+        PRODUCT_NAME: NomadTerminalWidgets
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 8FKZYTQB3B
+        SKIP_INSTALL: YES
+    info:
+      path: Generated/WidgetExtension-Info.plist
+      properties:
+        CFBundleDisplayName: NomadTerminal
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
 schemes:
   NomadTerminal:
     build:

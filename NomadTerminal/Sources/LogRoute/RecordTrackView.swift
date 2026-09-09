@@ -20,6 +20,7 @@ struct RecordTrackView: View {
     @State private var isPaused = false
     @State private var droppedPOIs: [DraftPOI] = []
     @State private var pendingPin: TrackPoint?
+    @State private var showSOS = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -43,11 +44,35 @@ struct RecordTrackView: View {
         }
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear { tracker.start() }
-        .onDisappear { tracker.stop() }
+        .onAppear {
+            tracker.start()
+            LiveActivityManager.shared.startRecording(routeName: nil)
+        }
+        .onDisappear {
+            tracker.stop()
+            // Covers leaving via the X button (abandoned, never hit
+            // Finish) — idempotent with the explicit call in Finish below.
+            LiveActivityManager.shared.endRecording()
+        }
         .onReceive(timer) { _ in
             guard !isPaused else { return }
             elapsed += 1
+            // Throttled — the island's own elapsed timer ticks visually on
+            // its own, this just needs to keep distance/ascent/pace fresh.
+            if Int(elapsed) % 5 == 0 {
+                let pace = tracker.distanceKM > 0 ? (elapsed / 60) / tracker.distanceKM : nil
+                LiveActivityManager.shared.updateRecording(
+                    distanceKM: tracker.distanceKM, elapsedSeconds: Int(elapsed),
+                    ascentM: tracker.ascentM, paceMinPerKM: pace
+                )
+            }
+        }
+        .fullScreenCover(isPresented: $showSOS) {
+            SOSView(
+                onClose: { showSOS = false },
+                onTriggered: { LiveActivityManager.shared.triggerSOS() },
+                onCancelled: { LiveActivityManager.shared.cancelSOS() }
+            )
         }
         .sheet(isPresented: Binding(get: { pendingPin != nil }, set: { if !$0 { pendingPin = nil } })) {
             if let pin = pendingPin {
@@ -131,7 +156,18 @@ struct RecordTrackView: View {
             .overlay(Capsule().stroke(Color(hex: 0xB33A2B).opacity(0.5), lineWidth: 1))
 
             Spacer()
-            Color.clear.frame(width: 40, height: 40)
+
+            Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                showSOS = true
+            } label: {
+                Image(systemName: "sos")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color(hex: 0xE58272))
+                    .frame(width: 40, height: 40)
+                    .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
@@ -181,6 +217,7 @@ struct RecordTrackView: View {
             Button {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
                 tracker.stop()
+                LiveActivityManager.shared.endRecording()
                 onFinish(RecordResult(
                     distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
                     points: tracker.storedPoints, pois: droppedPOIs
