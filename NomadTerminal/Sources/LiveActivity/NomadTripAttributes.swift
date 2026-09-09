@@ -10,16 +10,29 @@ import Foundation
 /// Shared verbatim between the app target and the widget extension target
 /// (both need the type to encode/decode and render the same content).
 struct NomadTripAttributes: ActivityAttributes {
+    /// Live snapshot pushed from `RouteTracker`'s real GPS math every few
+    /// seconds while recording — never simulated. A struct rather than
+    /// bare associated values so the expanded island's richer layout
+    /// (matches `RecordTrackView.statsCard`'s time/distance/ascent/speed
+    /// four-up exactly) doesn't need a 6-value tuple pattern everywhere.
+    struct RecordingSnapshot: Codable, Hashable {
+        var distanceKM: Double
+        var elapsedSeconds: Int
+        var ascentM: Double
+        var avgSpeedKMH: Double
+        /// Drives the island's Pause/Resume button label and the
+        /// dot-vs-solid indicator, same as the in-app RECORDING/PAUSED pill.
+        var isPaused: Bool
+    }
+
     struct ContentState: Codable, Hashable {
         enum Mode: Codable, Hashable {
-            /// Live snapshot pushed from `RouteTracker`'s real GPS math
-            /// every few seconds while recording — never simulated.
-            case recording(distanceKM: Double, elapsedSeconds: Int, ascentM: Double, paceMinPerKM: Double?)
-            /// `triggeredAt` is the real moment the hold-to-send gesture
-            /// completed. Deliberately shows elapsed time, never a
-            /// "sent" / "help is on the way" claim — there's no real
-            /// dispatch to emergency contacts wired yet (see SOSView),
-            /// and the island is too visible (lock screen!) to overclaim.
+            case recording(RecordingSnapshot)
+            /// `triggeredAt` is the real hold-to-send moment. Deliberately
+            /// shows elapsed time, never a "sent" / "help is on the way"
+            /// claim — there's no real dispatch to emergency contacts wired
+            /// yet (see SOSView), and the island is too visible (lock
+            /// screen!) to overclaim.
             case sos(triggeredAt: Date)
         }
         var mode: Mode

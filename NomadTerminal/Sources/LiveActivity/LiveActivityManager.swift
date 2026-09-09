@@ -37,7 +37,7 @@ final class LiveActivityManager {
         endActivity(dismissalPolicy: .immediate)
 
         let state = NomadTripAttributes.ContentState(
-            mode: .recording(distanceKM: 0, elapsedSeconds: 0, ascentM: 0, paceMinPerKM: nil)
+            mode: .recording(.init(distanceKM: 0, elapsedSeconds: 0, ascentM: 0, avgSpeedKMH: 0, isPaused: false))
         )
         activity = try? Activity.request(
             attributes: NomadTripAttributes(routeName: routeName),
@@ -45,14 +45,13 @@ final class LiveActivityManager {
         )
     }
 
-    /// Throttle this to every few seconds from the call site — ActivityKit
-    /// doesn't need per-second pushes, the elapsed timer ticks visually on
-    /// its own via `Text(timerInterval:)`-style rendering on the widget side.
-    func updateRecording(distanceKM: Double, elapsedSeconds: Int, ascentM: Double, paceMinPerKM: Double?) {
+    /// Call on every meaningful change — a periodic tick while running
+    /// (throttle that to every few seconds, ActivityKit doesn't need
+    /// per-second pushes) and immediately on any pause/resume toggle so the
+    /// island's button label and PAUSED state don't lag behind the app.
+    func updateRecording(_ snapshot: NomadTripAttributes.RecordingSnapshot) {
         guard let activity, case .recording = activity.content.state.mode else { return }
-        let state = NomadTripAttributes.ContentState(
-            mode: .recording(distanceKM: distanceKM, elapsedSeconds: elapsedSeconds, ascentM: ascentM, paceMinPerKM: paceMinPerKM)
-        )
+        let state = NomadTripAttributes.ContentState(mode: .recording(snapshot))
         Task { await activity.update(.init(state: state, staleDate: nil)) }
     }
 

@@ -67,21 +67,15 @@ private func elapsedString(_ seconds: Int) -> String {
     return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%02d:%02d", m, s)
 }
 
-private func paceString(_ pace: Double?) -> String {
-    guard let pace, pace.isFinite, pace > 0 else { return "— /KM" }
-    let m = Int(pace)
-    let s = Int((pace - Double(m)) * 60)
-    return String(format: "%d:%02d /KM", m, s)
-}
-
 // MARK: - Compact / minimal
 
 private struct CompactLeading: View {
     let mode: NomadTripAttributes.ContentState.Mode
     var body: some View {
         switch mode {
-        case .recording:
-            Image(systemName: "figure.hiking").foregroundStyle(NTColor.accent)
+        case .recording(let s):
+            Image(systemName: s.isPaused ? "pause.fill" : "figure.hiking")
+                .foregroundStyle(NTColor.accent)
         case .sos:
             Image(systemName: "sos").foregroundStyle(NTColor.hardBright)
         }
@@ -92,8 +86,8 @@ private struct CompactTrailing: View {
     let mode: NomadTripAttributes.ContentState.Mode
     var body: some View {
         switch mode {
-        case .recording(let distanceKM, _, _, _):
-            Text(String(format: "%.1f", distanceKM) + " KM")
+        case .recording(let s):
+            Text(String(format: "%.1f", s.distanceKM) + " KM")
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundStyle(NTColor.milk)
         case .sos(let triggeredAt):
@@ -111,13 +105,13 @@ private struct ExpandedLeading: View {
     let mode: NomadTripAttributes.ContentState.Mode
     var body: some View {
         switch mode {
-        case .recording(_, let elapsed, _, _):
+        case .recording(let s):
             VStack(alignment: .leading, spacing: 3) {
-                Text("RECORDING")
+                Text(s.isPaused ? "PAUSED" : "RECORDING")
                     .font(.system(size: 9, weight: .semibold)).tracking(1)
-                    .foregroundStyle(NTColor.milk(0.55))
-                Text(elapsedString(elapsed))
-                    .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(s.isPaused ? NTColor.hardBright : NTColor.milk(0.55))
+                Text(elapsedString(s.elapsedSeconds))
+                    .font(.system(size: 24, weight: .semibold, design: .monospaced))
                     .foregroundStyle(NTColor.milk)
             }
         case .sos:
@@ -133,18 +127,18 @@ private struct ExpandedLeading: View {
     }
 }
 
+/// Mirrors `RecordTrackView.statsCard`'s three-up (distance/ascent/speed)
+/// exactly, at island scale — the same stats the user already reads in-app,
+/// not a different subset.
 private struct ExpandedTrailing: View {
     let mode: NomadTripAttributes.ContentState.Mode
     var body: some View {
         switch mode {
-        case .recording(let distanceKM, _, let ascentM, _):
-            VStack(alignment: .trailing, spacing: 3) {
-                Text(String(format: "%.2f KM", distanceKM))
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(NTColor.milk)
-                Text(String(format: "%.0f M ASCENT", ascentM))
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(NTColor.milk(0.55))
+        case .recording(let s):
+            VStack(alignment: .trailing, spacing: 4) {
+                stat(String(format: "%.2f", s.distanceKM), "KM")
+                stat(String(format: "%.0f", s.ascentM), "M ASCENT")
+                stat(String(format: "%.1f", s.avgSpeedKMH), "KM/H")
             }
         case .sos(let triggeredAt):
             Text(triggeredAt, style: .relative)
@@ -152,16 +146,46 @@ private struct ExpandedTrailing: View {
                 .foregroundStyle(NTColor.hardBright)
         }
     }
+
+    private func stat(_ value: String, _ unit: String) -> some View {
+        HStack(spacing: 4) {
+            Text(value).font(.system(size: 13, weight: .semibold, design: .monospaced)).foregroundStyle(NTColor.milk)
+            Text(unit).font(.system(size: 9, weight: .medium)).foregroundStyle(NTColor.milk(0.55))
+        }
+    }
 }
 
+/// The one region with real, tappable functionality — Pause/Resume and
+/// Finish reach `RecordTrackView` via `LiveActivityIntent` +
+/// `NotificationCenter` (see `RecordingControlIntents.swift`), so they work
+/// straight from the island without opening the app. SOS's Cancel button
+/// works the same way through `CancelSOSIntent`.
 private struct ExpandedBottom: View {
     let mode: NomadTripAttributes.ContentState.Mode
     var body: some View {
         switch mode {
-        case .recording(_, _, _, let pace):
-            Text(paceString(pace))
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundStyle(NTColor.milk(0.6))
+        case .recording(let s):
+            HStack(spacing: 10) {
+                Button(intent: ToggleRecordingPauseIntent()) {
+                    Label(s.isPaused ? "Resume" : "Pause", systemImage: s.isPaused ? "play.fill" : "pause.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(NTColor.milk)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(NTColor.milk(0.14), in: Capsule())
+                }
+                .buttonStyle(.plain)
+
+                Button(intent: FinishRecordingIntent()) {
+                    Label("Finish", systemImage: "checkmark")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(NTColor.pine)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(NTColor.milk, in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
         case .sos:
             Button(intent: CancelSOSIntent()) {
                 Text("Cancel SOS")
@@ -183,67 +207,95 @@ private struct LockScreenTripView: View {
     let routeName: String?
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(iconColor)
-                .frame(width: 40, height: 40)
-                .background(Circle().fill(NTColor.milk(0.08)))
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(caption)
-                    .font(.system(size: 10, weight: .bold)).tracking(1)
+        VStack(spacing: 12) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(iconColor)
-                Text(headline)
-                    .font(.system(size: 17, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(NTColor.milk)
-                if let routeName, case .recording = mode {
-                    Text(routeName)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(NTColor.milk(0.6))
-                        .lineLimit(1)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(NTColor.milk(0.08)))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(caption)
+                        .font(.system(size: 10, weight: .bold)).tracking(1)
+                        .foregroundStyle(iconColor)
+                    Text(headline)
+                        .font(.system(size: 17, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(NTColor.milk)
+                    if let routeName, case .recording = mode {
+                        Text(routeName)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(NTColor.milk(0.6))
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer(minLength: 8)
+
+                if case .recording(let s) = mode {
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text(String(format: "%.2f KM", s.distanceKM))
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(NTColor.milk)
+                        Text(String(format: "%.0f M · %.1f KM/H", s.ascentM, s.avgSpeedKMH))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(NTColor.milk(0.55))
+                    }
                 }
             }
 
-            Spacer(minLength: 8)
-
-            if case .recording(let distanceKM, _, let ascentM, _) = mode {
-                VStack(alignment: .trailing, spacing: 3) {
-                    Text(String(format: "%.2f KM", distanceKM))
-                        .font(.system(size: 13, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(NTColor.milk)
-                    Text(String(format: "%.0f M", ascentM))
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(NTColor.milk(0.55))
+            HStack(spacing: 10) {
+                switch mode {
+                case .recording(let s):
+                    Button(intent: ToggleRecordingPauseIntent()) {
+                        Label(s.isPaused ? "Resume" : "Pause", systemImage: s.isPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NTColor.milk)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .background(NTColor.milk(0.14), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    Button(intent: FinishRecordingIntent()) {
+                        Label("Finish", systemImage: "checkmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NTColor.pine)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .background(NTColor.milk, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                case .sos:
+                    Button(intent: CancelSOSIntent()) {
+                        Text("Cancel SOS")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NTColor.milk)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 36)
+                            .background(NTColor.hard, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
-            }
-
-            if case .sos = mode {
-                Button(intent: CancelSOSIntent()) {
-                    Text("Cancel")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(NTColor.milk)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(NTColor.hard, in: Capsule())
-                }
-                .buttonStyle(.plain)
             }
         }
         .padding(16)
     }
 
     private var icon: String {
-        switch mode { case .recording: return "figure.hiking"; case .sos: return "sos" }
+        switch mode { case .recording(let s): return s.isPaused ? "pause.fill" : "figure.hiking"; case .sos: return "sos" }
     }
     private var iconColor: Color {
         switch mode { case .recording: return NTColor.accent; case .sos: return NTColor.hardBright }
     }
     private var caption: String {
-        switch mode { case .recording: return "RECORDING"; case .sos: return "SOS ACTIVE" }
+        switch mode {
+        case .recording(let s): return s.isPaused ? "PAUSED" : "RECORDING"
+        case .sos: return "SOS ACTIVE"
+        }
     }
     private var headline: String {
         switch mode {
-        case .recording(_, let elapsed, _, _): return elapsedString(elapsed)
+        case .recording(let s): return elapsedString(s.elapsedSeconds)
         case .sos(let triggeredAt): return elapsedString(Int(Date.now.timeIntervalSince(triggeredAt)))
         }
     }

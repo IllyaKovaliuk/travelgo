@@ -58,14 +58,16 @@ struct RecordTrackView: View {
             guard !isPaused else { return }
             elapsed += 1
             // Throttled — the island's own elapsed timer ticks visually on
-            // its own, this just needs to keep distance/ascent/pace fresh.
+            // its own, this just needs to keep distance/ascent/speed fresh.
             if Int(elapsed) % 5 == 0 {
-                let pace = tracker.distanceKM > 0 ? (elapsed / 60) / tracker.distanceKM : nil
-                LiveActivityManager.shared.updateRecording(
-                    distanceKM: tracker.distanceKM, elapsedSeconds: Int(elapsed),
-                    ascentM: tracker.ascentM, paceMinPerKM: pace
-                )
+                pushIslandUpdate()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .nomadIslandTogglePause)) { _ in
+            togglePause()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .nomadIslandFinish)) { _ in
+            finishRecording()
         }
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(
@@ -203,8 +205,7 @@ struct RecordTrackView: View {
         HStack(spacing: 16) {
             Button {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                withAnimation { isPaused.toggle() }
-                if isPaused { tracker.pause() } else { tracker.resume() }
+                togglePause()
             } label: {
                 Image(systemName: isPaused ? "play.fill" : "pause.fill")
                     .font(.system(size: 20))
@@ -216,12 +217,7 @@ struct RecordTrackView: View {
 
             Button {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                tracker.stop()
-                LiveActivityManager.shared.endRecording()
-                onFinish(RecordResult(
-                    distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
-                    points: tracker.storedPoints, pois: droppedPOIs
-                ))
+                finishRecording()
             } label: {
                 HStack(spacing: 9) {
                     Image(systemName: "checkmark.circle.fill")
@@ -259,5 +255,35 @@ struct RecordTrackView: View {
         let m = (Int(elapsed) % 3600) / 60
         let s = Int(elapsed) % 60
         return String(format: "%02d:%02d:%02d", h, m, s)
+    }
+
+    /// Shared by the in-app Pause button and the island's own Pause/Resume
+    /// button (`ToggleRecordingPauseIntent`, via NotificationCenter) so
+    /// both paths stay identical.
+    private func togglePause() {
+        withAnimation { isPaused.toggle() }
+        if isPaused { tracker.pause() } else { tracker.resume() }
+        // Not on the periodic throttle — the island's PAUSED state and
+        // button label shouldn't lag behind a toggle that just happened.
+        pushIslandUpdate()
+    }
+
+    /// Shared by the in-app Finish button and the island's own Finish
+    /// button (`FinishRecordingIntent`, via NotificationCenter).
+    private func finishRecording() {
+        tracker.stop()
+        LiveActivityManager.shared.endRecording()
+        onFinish(RecordResult(
+            distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
+            points: tracker.storedPoints, pois: droppedPOIs
+        ))
+    }
+
+    private func pushIslandUpdate() {
+        let avgSpeed = tracker.distanceKM > 0 ? tracker.distanceKM / (elapsed / 3600 + 0.001) : 0
+        LiveActivityManager.shared.updateRecording(.init(
+            distanceKM: tracker.distanceKM, elapsedSeconds: Int(elapsed), ascentM: tracker.ascentM,
+            avgSpeedKMH: avgSpeed, isPaused: isPaused
+        ))
     }
 }
