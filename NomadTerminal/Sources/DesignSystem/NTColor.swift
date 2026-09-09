@@ -1,21 +1,71 @@
 import SwiftUI
+import Observation
+
+/// Which of Settings' two appearance tiles is active. Persisted so the
+/// choice survives relaunch, and drives every `NTColor.pine`/`.milk`-family
+/// lookup below — the whole app is theme-reactive through those tokens
+/// alone, no per-screen wiring needed.
+///
+/// Deliberately NOT `@MainActor`: `NTColor` (and therefore this) gets read
+/// from plain, actor-agnostic model code too (`Route.swift`'s mock data,
+/// `POICategory`'s tint, `RouteDTO`) — not just SwiftUI view bodies —  so
+/// isolating it would cascade `@MainActor` requirements into all of those.
+/// In practice every real read/write still happens on the main thread
+/// (UI-driven), same as `NTColor`'s old plain `static let` constants.
+@Observable
+final class ThemeManager {
+    static let shared = ThemeManager()
+
+    enum AppTheme: String { case pine, milk }
+
+    private let defaultsKey = "io.nomadterminal.theme"
+    var current: AppTheme {
+        didSet { UserDefaults.standard.set(current.rawValue, forKey: defaultsKey) }
+    }
+
+    /// For the handful of call sites (`.preferredColorScheme`,
+    /// `.toolbarColorScheme`) that need SwiftUI's own `ColorScheme` rather
+    /// than our token enum.
+    var colorScheme: ColorScheme { current == .milk ? .light : .dark }
+
+    private init() {
+        let saved = UserDefaults.standard.string(forKey: defaultsKey).flatMap(AppTheme.init(rawValue:))
+        current = saved ?? .pine
+    }
+}
 
 /// NomadTerminal color tokens — mirrors the palette baked into the design doc
 /// (`design_extracted/NomadTerminal.dc.html`). Keep this file as the single
 /// source of truth; never hard-code a hex outside of it.
+///
+/// The "Ground" tokens (`pine`/`pineDeep`/`pineRaised`/`pineShadow`/
+/// `pineLine`/`milk`) are `static var`, not `static let` — they read
+/// `ThemeManager.shared.current` on every access, so every one of their ~50
+/// call sites across the app picks up a theme change automatically just by
+/// SwiftUI re-rendering, with zero per-screen code. `milkSurface`/`ink` and
+/// every accent/status color stay fixed in both themes on purpose — they're
+/// either an explicitly-light local surface (a badge, a swatch preview) or
+/// a brand/status color that shouldn't shift with light/dark.
 enum NTColor {
-    // MARK: Ground
-    static let pine = Color(hex: 0x00311F)          // primary dark surface
-    static let pineDeep = Color(hex: 0x001B10)       // feed / compass / recording backgrounds
-    static let pineRaised = Color(hex: 0x0A4A2F)     // lighter blob / raised surface
-    static let pineShadow = Color(hex: 0x04261A)     // map / card shadow tone
-    static let pineLine = Color(hex: 0x06301F)
+    // MARK: Ground — theme-reactive
+    static var pine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xFAF6EC) : Color(hex: 0x00311F) }
+    static var pineDeep: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xF2ECDD) : Color(hex: 0x001B10) }
+    static var pineRaised: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE8E0C9) : Color(hex: 0x0A4A2F) }
+    static var pineShadow: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xEDE5D0) : Color(hex: 0x04261A) }
+    static var pineLine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE9E0C8) : Color(hex: 0x06301F) }
 
-    static let milk = Color(hex: 0xFAF6EC)           // light ground / primary button fill
-    static let milkSurface = Color(hex: 0xF2ECDD)    // Milk-theme card surface
-    static let ink = Color(hex: 0x0B2A1D)            // text on Milk
+    /// Primary foreground (text/icons) — cream-on-dark in Pine, ink-on-light
+    /// in Milk. Also doubles as most primary-CTA button fills, which is why
+    /// this flipping (not staying literally "cream") is correct: it keeps
+    /// "readable foreground against the current ground" as the actual
+    /// semantic, not a literal color name.
+    static var milk: Color { ThemeManager.shared.current == .milk ? Color(hex: 0x0B2A1D) : Color(hex: 0xFAF6EC) }
 
-    // MARK: Accents
+    // MARK: Ground — fixed regardless of theme
+    static let milkSurface = Color(hex: 0xF2ECDD)    // an explicitly-light local surface (badge, swatch preview)
+    static let ink = Color(hex: 0x0B2A1D)            // text on an explicitly-light local surface
+
+    // MARK: Accents — fixed regardless of theme
     static let accent = Color(hex: 0xE8743B)         // terracotta — primary CTA / record
     static let accentDeep = Color(hex: 0xC2551F)
     static let sage = Color(hex: 0x5FA777)           // success / foot / on-toggles
@@ -25,7 +75,7 @@ enum NTColor {
     static let hard = Color(hex: 0xB33A2B)           // hard / SOS / destructive
     static let hardBright = Color(hex: 0xE58272)
 
-    // MARK: Text on dark
+    // MARK: Foreground at reduced opacity, theme-aware since `milk` is
     static func milk(_ opacity: Double) -> Color { milk.opacity(opacity) }
 }
 

@@ -48,7 +48,7 @@ struct RewardsView: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("NomadPoints")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
@@ -66,7 +66,7 @@ struct RewardsView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
         .task { await load() }
     }
 

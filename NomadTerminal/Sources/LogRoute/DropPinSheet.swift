@@ -61,14 +61,14 @@ struct DropPinSheet: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("Drop a pin")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
         .onAppear { titleFocused = true }
     }
 

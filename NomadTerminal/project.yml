@@ -44,9 +44,10 @@ targets:
       properties:
         CFBundleDisplayName: NomadTerminal
         UILaunchScreen: {}
-        UIUserInterfaceStyle: Dark
-        UIStatusBarStyle: UIStatusBarStyleLightContent
-        UIViewControllerBasedStatusBarAppearance: false
+        # No UIUserInterfaceStyle / UIStatusBarStyle lock, and
+        # UIViewControllerBasedStatusBarAppearance defaults to true — both
+        # would hard-override SwiftUI's .preferredColorScheme, which is now
+        # how the real Pine/Milk theme switch (ThemeManager) actually works.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSLocationWhenInUseUsageDescription: "Turn-by-turn on unnamed tracks, and an SOS ping that still works with no signal."

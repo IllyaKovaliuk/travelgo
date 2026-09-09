@@ -23,7 +23,7 @@ struct GuideCategoryDetailView: View {
         }
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if let first = category.situations.first { expanded.insert(first.id) }

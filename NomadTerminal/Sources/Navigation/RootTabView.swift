@@ -19,6 +19,6 @@ struct RootTabView: View {
             FloatingTabBar(selection: $tab)
                 .padding(.bottom, 12)
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
     }
 }

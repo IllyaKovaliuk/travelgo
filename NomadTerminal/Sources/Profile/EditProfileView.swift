@@ -73,14 +73,14 @@ struct EditProfileView: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("Edit profile")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
     }
 
     private func save() {

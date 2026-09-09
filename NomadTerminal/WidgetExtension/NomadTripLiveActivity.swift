@@ -48,6 +48,7 @@ struct NomadTripLiveActivity: Widget {
 
 // MARK: - Shared color/format helpers
 
+@MainActor
 private func tint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
     switch mode {
     case .recording: return NTColor.accent
@@ -55,6 +56,7 @@ private func tint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
     }
 }
 
+@MainActor
 private func backgroundTint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
     switch mode {
     case .recording: return NTColor.pineDeep

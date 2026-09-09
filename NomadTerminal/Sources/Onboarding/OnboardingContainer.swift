@@ -21,7 +21,7 @@ struct OnboardingContainer: View {
         .tabViewStyle(.page(indexDisplayMode: .never))
         .animation(.spring(response: 0.55, dampingFraction: 0.86), value: page)
         .background(NTColor.pine.ignoresSafeArea())
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
         .fullScreenCover(isPresented: $showAuth) {
             AuthView(onDone: { showAuth = false; onFinished() })
         }

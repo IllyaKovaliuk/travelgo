@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// 10/11 · Settings — appearance card previews both themes; the rest of
-/// the app stays on Pine until a real theming pass wires Milk through
-/// the design tokens.
+/// 10/11 · Settings — Pine/Milk appearance is real now: picking a tile
+/// writes to `ThemeManager.shared`, which every `NTColor.pine`/`.milk`
+/// call site across the app already reads live.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var theme: Theme = .pine
+    @State private var themeManager = ThemeManager.shared
     @State private var wifiOnly = true
     @State private var backgroundLocation = true
     @State private var weatherAlerts = false
@@ -14,8 +14,6 @@ struct SettingsView: View {
     @State private var showRewards = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
-
-    enum Theme { case pine, milk }
 
     var body: some View {
         NavigationStack {
@@ -68,7 +66,7 @@ struct SettingsView: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(themeManager.colorScheme, for: .navigationBar)
             .fullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
             .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
             .sheet(isPresented: $showRewards) { RewardsView() }
@@ -78,7 +76,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(themeManager.colorScheme)
     }
 
     private var proRow: some View {
@@ -142,8 +140,16 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("APPEARANCE").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
             HStack(spacing: 12) {
-                themeTile("Pine", selected: theme == .pine, bg: NTColor.pine, fg: NTColor.milk) { theme = .pine }
-                themeTile("Milk", selected: theme == .milk, bg: NTColor.milkSurface, fg: NTColor.ink) { theme = .milk }
+                // Fixed literal colors here on purpose, not NTColor.pine/
+                // .milk — those are theme-reactive now, so the swatches
+                // must NOT follow the live theme or "Pine" would stop
+                // looking like Pine once Milk is active.
+                themeTile("Pine", selected: themeManager.current == .pine, bg: Color(hex: 0x00311F), fg: Color(hex: 0xFAF6EC)) {
+                    themeManager.current = .pine
+                }
+                themeTile("Milk", selected: themeManager.current == .milk, bg: NTColor.milkSurface, fg: NTColor.ink) {
+                    themeManager.current = .milk
+                }
             }
         }
         .padding(20)

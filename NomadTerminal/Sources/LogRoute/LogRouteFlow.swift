@@ -115,6 +115,6 @@ struct LogRouteFlow: View {
             }
         }
         .tint(NTColor.milk)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
     }
 }

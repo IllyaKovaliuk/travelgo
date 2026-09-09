@@ -30,7 +30,7 @@ struct GuideView: View {
             }
         }
         .tint(NTColor.milk)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
     }
 
     private var header: some View {

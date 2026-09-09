@@ -384,7 +384,7 @@ private struct WaypointsSheet: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("Waypoints")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
         }
         .presentationDetents([.medium, .large])
     }
@@ -422,7 +422,7 @@ private struct LogNoteSheet: View {
             .foregroundStyle(NTColor.milk)
             .navigationTitle("Log a note")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

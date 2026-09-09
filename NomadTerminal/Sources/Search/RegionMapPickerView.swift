@@ -45,7 +45,7 @@ struct RegionMapPickerView: View {
             }
             .navigationTitle("Pick a region")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarColorScheme(ThemeManager.shared.colorScheme, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
@@ -56,7 +56,7 @@ struct RegionMapPickerView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(ThemeManager.shared.colorScheme)
     }
 
     private var statusCard: some View {
