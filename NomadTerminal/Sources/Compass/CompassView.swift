@@ -1,19 +1,25 @@
 import SwiftUI
 import CoreLocation
 
-/// 06 · Compass mode — real device heading via CoreLocation. With a
-/// `targetCoordinate` (a route's recorded track end point), also computes
-/// real live bearing/distance/ETA to it; without one, it's an honest plain
-/// compass instead of faking a waypoint that doesn't exist.
+/// 06 · Compass mode — real device heading via CoreLocation. Given a
+/// route's real segments/POIs, builds a real ordered waypoint list (each
+/// segment's end point along the actual recorded track, plus every dropped
+/// POI) instead of faking a single "WAYPOINT 3 OF 5" label; without route
+/// data at all, it's an honest plain compass instead of faking a waypoint
+/// that doesn't exist.
 struct CompassView: View {
-    var waypointName: String = "Next waypoint"
-    var waypointIndex: Int = 1
-    var waypointTotal: Int = 1
-    var targetCoordinate: CLLocationCoordinate2D? = nil
+    var routeId: String? = nil
+    var segments: [RouteDetailInfo.Segment] = []
+    var trackPoints: [TrackPoint] = []
+    var pois: [RouteDetailInfo.POI] = []
     var onClose: () -> Void
 
     @State private var tracker = CompassTracker()
     @State private var showSOS = false
+    @State private var showWaypoints = false
+    @State private var showLogNote = false
+    @State private var waypoints: [CompassWaypoint] = []
+    @State private var waypointIndex = 0
     /// Compass used to have its own bottom-tab entry for a "no route"
     /// plain compass; that tab is gone now, so this lets the same screen
     /// (opened from a route's Navigate button) drop its waypoint target
@@ -26,8 +32,11 @@ struct CompassView: View {
     /// a real device (where heading updates constantly) looked jerky.
     @State private var displayRotation: Double = 0
 
+    private var currentWaypoint: CompassWaypoint? {
+        waypoints.indices.contains(waypointIndex) ? waypoints[waypointIndex] : nil
+    }
     /// nil while showing the plain compass, even if a real target exists.
-    private var activeTarget: CLLocationCoordinate2D? { showingPlain ? nil : targetCoordinate }
+    private var activeTarget: CLLocationCoordinate2D? { showingPlain ? nil : currentWaypoint?.coordinate }
     private var hasTarget: Bool { activeTarget != nil && distanceKM != nil }
     private var distanceKM: Double? { activeTarget.flatMap { tracker.distanceKM(to: $0) } }
     private var bearingToTarget: Double? { activeTarget.flatMap { tracker.bearing(to: $0) } }
@@ -66,9 +75,22 @@ struct CompassView: View {
         }
         .onAppear {
             tracker.start()
+            waypoints = CompassWaypoint.build(segments: segments, trackPoints: trackPoints, pois: pois)
             displayRotation = needleRotation
         }
         .onDisappear { tracker.stop() }
+        .sheet(isPresented: $showWaypoints) {
+            WaypointsSheet(waypoints: waypoints, current: waypointIndex) { index in
+                UISelectionFeedbackGenerator().selectionChanged()
+                waypointIndex = index
+                showWaypoints = false
+            }
+        }
+        .sheet(isPresented: $showLogNote) {
+            if let routeId {
+                LogNoteSheet(routeId: routeId, waypointName: currentWaypoint?.name)
+            }
+        }
         .onChange(of: needleRotation) { _, newValue in
             var delta = (newValue - displayRotation.truncatingRemainder(dividingBy: 360)).truncatingRemainder(dividingBy: 360)
             if delta > 180 { delta -= 360 }
@@ -92,15 +114,15 @@ struct CompassView: View {
             Spacer()
 
             VStack(spacing: 5) {
-                Text(activeTarget != nil ? "WAYPOINT \(waypointIndex) OF \(waypointTotal)" : "NO ACTIVE ROUTE")
+                Text(activeTarget != nil ? "WAYPOINT \(waypointIndex + 1) OF \(waypoints.count)" : "NO ACTIVE ROUTE")
                     .font(NTFont.mono(10, .medium)).tracking(1.4).foregroundStyle(NTColor.milk(0.5))
-                Text(activeTarget != nil ? waypointName : "Plain compass")
+                Text(activeTarget != nil ? (currentWaypoint?.name ?? "") : "Plain compass")
                     .font(NTFont.body(14, .semibold))
             }
 
             Spacer()
 
-            if targetCoordinate != nil {
+            if !waypoints.isEmpty {
                 Button {
                     UISelectionFeedbackGenerator().selectionChanged()
                     withAnimation { showingPlain.toggle() }
@@ -262,7 +284,10 @@ struct CompassView: View {
             .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
 
             HStack(spacing: 10) {
-                Button {} label: {
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    showWaypoints = true
+                } label: {
                     Text("Waypoints")
                         .font(NTFont.body(14, .semibold))
                         .frame(maxWidth: .infinity)
@@ -270,8 +295,13 @@ struct CompassView: View {
                         .overlay(Capsule().stroke(NTColor.milk(0.4), lineWidth: 1.4))
                 }
                 .buttonStyle(.plain).ntPressable()
+                .disabled(waypoints.isEmpty)
+                .opacity(waypoints.isEmpty ? 0.4 : 1)
 
-                Button {} label: {
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    showLogNote = true
+                } label: {
                     Text("Log a note")
                         .font(NTFont.body(14, .semibold))
                         .foregroundStyle(NTColor.pine)
@@ -280,10 +310,138 @@ struct CompassView: View {
                         .background(NTColor.milk, in: Capsule())
                 }
                 .buttonStyle(.plain).ntPressable()
+                .disabled(routeId == nil)
+                .opacity(routeId == nil ? 0.4 : 1)
             }
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 12)
+    }
+}
+
+/// One stop on a real route — either a segment's end point (derived from
+/// the actual recorded track, same proportional split `MapSegmentStretch`
+/// already draws on the map, so the list and the map polyline can't
+/// disagree) or a user-dropped POI. Ordered document order: segments first
+/// (the route's natural narrative), then POIs.
+struct CompassWaypoint: Identifiable {
+    let id = UUID()
+    let name: String
+    let coordinate: CLLocationCoordinate2D
+    let icon: String
+    let tint: Color
+
+    static func build(segments: [RouteDetailInfo.Segment], trackPoints: [TrackPoint], pois: [RouteDetailInfo.POI]) -> [CompassWaypoint] {
+        var result: [CompassWaypoint] = []
+        let stretches = MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
+        for stretch in stretches {
+            guard let end = stretch.coordinates.last else { continue }
+            result.append(CompassWaypoint(name: stretch.label, coordinate: end, icon: stretch.icon, tint: stretch.tint))
+        }
+        for poi in pois {
+            result.append(CompassWaypoint(name: poi.title, coordinate: poi.coordinate, icon: poi.category.icon, tint: poi.category.tint))
+        }
+        // No segments (route logged with zero transport legs) but a real
+        // track still exists — fall back to a single "route end" waypoint
+        // rather than showing "NO ACTIVE ROUTE" for a route that does have one.
+        if result.isEmpty, let end = trackPoints.last?.coordinate {
+            result.append(CompassWaypoint(name: "Route end", coordinate: end, icon: "flag.checkered", tint: NTColor.accent))
+        }
+        return result
+    }
+}
+
+private struct WaypointsSheet: View {
+    let waypoints: [CompassWaypoint]
+    let current: Int
+    let onSelect: (Int) -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(Array(waypoints.enumerated()), id: \.element.id) { index, wp in
+                    Button { onSelect(index) } label: {
+                        HStack(spacing: 14) {
+                            ZStack {
+                                Circle().fill(wp.tint)
+                                Image(systemName: wp.icon).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                            }
+                            .frame(width: 32, height: 32)
+
+                            Text(wp.name).font(NTFont.body(15, .semibold))
+                            Spacer()
+                            if index == current {
+                                Image(systemName: "checkmark").foregroundStyle(NTColor.accent)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(NTColor.pine)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(NTColor.pineDeep)
+            .foregroundStyle(NTColor.milk)
+            .navigationTitle("Waypoints")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+        }
+        .presentationDetents([.medium, .large])
+    }
+}
+
+/// Real, not decorative — saves as an actual comment on the route (reuses
+/// the same `route_comments` backend `CommentsView` already writes to), so
+/// a field note left mid-hike is genuinely visible to anyone reading the
+/// route afterward, not lost.
+private struct LogNoteSheet: View {
+    let routeId: String
+    let waypointName: String?
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var text = ""
+    @State private var isSaving = false
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 12) {
+                if let waypointName {
+                    Text("NEAR \(waypointName.uppercased())")
+                        .font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
+                }
+                TextEditor(text: $text)
+                    .scrollContentBackground(.hidden)
+                    .font(NTFont.body(15, .regular))
+                    .frame(minHeight: 140)
+                    .padding(10)
+                    .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                Spacer()
+            }
+            .padding(20)
+            .background(NTColor.pineDeep)
+            .foregroundStyle(NTColor.milk)
+            .navigationTitle("Log a note")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(isSaving ? "Saving…" : "Save") {
+                        let body = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !body.isEmpty else { return }
+                        isSaving = true
+                        Task {
+                            try? await RouteRepository.shared.postComment(routeId: routeId, body: body)
+                            dismiss()
+                        }
+                    }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 
@@ -300,5 +458,10 @@ private struct CompassNeedleTip: Shape {
 }
 
 #Preview {
-    CompassView(onClose: {})
+    CompassView(
+        routeId: "00000000-0000-0000-0000-000000000000",
+        segments: RouteDetailInfo.zagarPass.segments,
+        trackPoints: RouteDetailInfo.zagarPass.trackPoints,
+        onClose: {}
+    )
 }
