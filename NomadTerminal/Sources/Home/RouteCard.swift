@@ -10,7 +10,8 @@ struct RouteCard: View {
     @State private var liked = false
     @State private var saved = false
     @State private var following = false
-    @State private var likeCount = 2400
+    @State private var likeCount = 0
+    @State private var commentCount = 0
     @State private var showComments = false
     @State private var showReportDialog = false
     @State private var reported = false
@@ -151,7 +152,11 @@ struct RouteCard: View {
             }
         }
         .clipped()
-        .fullScreenCover(isPresented: $showComments) {
+        .fullScreenCover(isPresented: $showComments, onDismiss: {
+            // Re-fetch rather than guess — covers both a new comment posted
+            // and none, without needing CommentsView to report back.
+            Task { commentCount = (try? await RouteRepository.shared.fetchComments(routeId: route.id).count) ?? commentCount }
+        }) {
             CommentsView(route: route)
         }
         .confirmationDialog("Why are you reporting this route?", isPresented: $showReportDialog, titleVisibility: .visible) {
@@ -162,6 +167,10 @@ struct RouteCard: View {
         }
         .task {
             following = await RouteRepository.shared.isFollowing(authorId: route.author.id)
+            liked = await RouteRepository.shared.isLiked(routeId: route.id)
+            saved = await RouteRepository.shared.isSaved(routeId: route.id)
+            likeCount = route.likeCount
+            commentCount = route.commentCount
         }
     }
 
@@ -210,7 +219,7 @@ struct RouteCard: View {
             }
             .buttonStyle(.plain)
             .simultaneousGesture(TapGesture().onEnded { tapHaptic() })
-            railButton(icon: "bubble.left", tint: NTColor.milk, caption: "28") { showComments = true }
+            railButton(icon: "bubble.left", tint: NTColor.milk, caption: formatCount(commentCount)) { showComments = true }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
         .padding(.trailing, 16)

@@ -19,6 +19,10 @@ struct Route: Identifiable {
     let distanceKM: Double
     let secondaryBadge: (icon: String, label: String)?
     let detail: RouteDetailInfo
+    /// Real aggregate counts (route_likes/route_comments), not per-card
+    /// local state — every route-fetching query embeds these now.
+    var likeCount: Int = 0
+    var commentCount: Int = 0
 
     enum Difficulty: String, CaseIterable {
         case easy = "EASY", moderate = "MODERATE", hard = "HARD"

@@ -20,6 +20,13 @@ struct RouteDetailView: View {
     /// author id) — the Edit entry point below only shows for the actual
     /// author, not decided by anything client-fakeable.
     @State private var isOwner = false
+    // Route Detail had zero way to like or open comments — only the Home
+    // feed card did. Same real actions, same real counts, just reachable
+    // from the screen people actually read the route on.
+    @State private var liked = false
+    @State private var likeCount = 0
+    @State private var commentCount = 0
+    @State private var showComments = false
 
     private var detail: RouteDetailInfo { route.detail }
 
@@ -55,6 +62,8 @@ struct RouteDetailView: View {
                             pill(detail.duration, filled: nil)
                         }
                         .padding(.top, 14)
+
+                        engagementRow.padding(.top, 16)
 
                         HStack(spacing: 0) {
                             statBlock(String(format: "%.1f", route.distanceKM), "KM TOTAL")
@@ -94,6 +103,11 @@ struct RouteDetailView: View {
         .fullScreenCover(isPresented: $showFullMap) {
             RouteFullMapView(route: route, onClose: { showFullMap = false })
         }
+        .fullScreenCover(isPresented: $showComments, onDismiss: {
+            Task { commentCount = (try? await RouteRepository.shared.fetchComments(routeId: route.id).count) ?? commentCount }
+        }) {
+            CommentsView(route: route)
+        }
         .sheet(isPresented: $showEditExtras) {
             EditRouteExtrasView(routeId: route.id, segments: detail.segments, requirements: detail.requirements) { updated in
                 route = updated
@@ -102,6 +116,9 @@ struct RouteDetailView: View {
         .task {
             savedOffline = await RouteRepository.shared.isSaved(routeId: route.id)
             cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
+            liked = await RouteRepository.shared.isLiked(routeId: route.id)
+            likeCount = route.likeCount
+            commentCount = route.commentCount
             if let session = try? await supabase.auth.session {
                 isOwner = session.user.id.uuidString == route.author.id
             }
@@ -128,6 +145,51 @@ struct RouteDetailView: View {
             Text(label).font(NTFont.mono(9, .medium)).tracking(1.1).foregroundStyle(NTColor.milk(0.5))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var engagementRow: some View {
+        HStack(spacing: 22) {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                liked.toggle()
+                likeCount += liked ? 1 : -1
+                let newValue = liked
+                Task { try? await RouteRepository.shared.setLiked(routeId: route.id, liked: newValue) }
+            } label: {
+                HStack(spacing: 7) {
+                    Image(systemName: liked ? "heart.fill" : "heart").font(.system(size: 17))
+                        .foregroundStyle(liked ? NTColor.accent : NTColor.milk(0.8))
+                    Text(formatCount(likeCount)).font(NTFont.mono(12.5, .semibold)).foregroundStyle(NTColor.milk(0.8))
+                }
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showComments = true
+            } label: {
+                HStack(spacing: 7) {
+                    Image(systemName: "bubble.left").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
+                    Text(formatCount(commentCount)).font(NTFont.mono(12.5, .semibold)).foregroundStyle(NTColor.milk(0.8))
+                }
+            }
+            .buttonStyle(.plain)
+
+            ShareLink(item: shareText) {
+                Image(systemName: "square.and.arrow.up").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
+            }
+            .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+
+            Spacer()
+        }
+    }
+
+    private var shareText: String {
+        "Check out \"\(route.title.replacingOccurrences(of: "\n", with: " "))\" on NomadTerminal — \(String(format: "%.1f", route.distanceKM))km in \(route.place)."
+    }
+
+    private func formatCount(_ n: Int) -> String {
+        n >= 1000 ? String(format: "%.1fK", Double(n) / 1000) : "\(n)"
     }
 
     private var requirementsCard: some View {
@@ -168,7 +230,10 @@ struct RouteDetailView: View {
             .padding(.top, 16)
         }
         .padding(22)
-        .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        // milkSurface (fixed), not milk (theme-reactive) — this card's text
+        // is NTColor.ink, which is also fixed dark; pairing it with the
+        // reactive `milk` would go dark-on-dark once Milk theme flips it.
+        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.gold, lineWidth: 2))
         .shadow(color: NTColor.gold.opacity(0.16), radius: 0, x: 0, y: 0)
     }

@@ -89,9 +89,15 @@ struct RouteDTO: Codable {
     let routeSegments: [SegmentDTO]
     let routeRequirements: [RequirementDTO]
     let routePointsOfInterest: [POIDTO]
+    /// Real aggregate counts via the `likes:route_likes(count)` embed —
+    /// PostgREST returns a one-element array wrapper, not a bare int.
+    let likes: [CountWrap]
+    let comments: [CountWrap]
+
+    struct CountWrap: Codable { let count: Int }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, place, difficulty, transport, coordinates, season, duration, quote, profiles
+        case id, title, place, difficulty, transport, coordinates, season, duration, quote, profiles, likes, comments
         case coverImageUrl = "cover_image_url"
         case transportLabel = "transport_label"
         case secondaryBadgeIcon = "secondary_badge_icon"
@@ -163,7 +169,9 @@ extension RouteDTO {
             ],
             distanceKM: distanceKm,
             secondaryBadge: secondaryBadgeIcon.map { (icon: $0, label: secondaryBadgeLabel ?? "") },
-            detail: detail
+            detail: detail,
+            likeCount: likes.first?.count ?? 0,
+            commentCount: comments.first?.count ?? 0
         )
     }
 

@@ -23,7 +23,7 @@ actor RouteRepository {
     func fetchRoutes() async throws -> [Route] {
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .order("created_at")
@@ -48,7 +48,7 @@ actor RouteRepository {
         let ids = follows.map { $0.followee_id.uuidString }
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .in("author_id", values: ids)
@@ -95,7 +95,7 @@ actor RouteRepository {
     func fetchRouteDTO(id: String) async throws -> RouteDTO {
         try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
             .eq("id", value: id)
             .single()
             .execute()
@@ -112,7 +112,7 @@ actor RouteRepository {
     ) async throws -> [Route] {
         var builder = supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .in("transport", values: transports)
@@ -186,6 +186,19 @@ actor RouteRepository {
 
     /// Whether the current session already saved this route — lets a
     /// freshly opened Route Detail show the right button state.
+    func isLiked(routeId: String) async -> Bool {
+        guard let userId = try? await ensureSession(), let routeUUID = UUID(uuidString: routeId) else { return false }
+        struct LikeRow: Decodable { let route_id: String }
+        let rows: [LikeRow]? = try? await supabase
+            .from("route_likes")
+            .select("route_id")
+            .eq("route_id", value: routeUUID.uuidString)
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+            .value
+        return !(rows?.isEmpty ?? true)
+    }
+
     func isSaved(routeId: String) async -> Bool {
         guard let userId = try? await ensureSession(), let routeUUID = UUID(uuidString: routeId) else { return false }
         let rows: [SaveRowInsert]? = try? await supabase
@@ -255,7 +268,7 @@ actor RouteRepository {
 
         let rows: [SaveRow] = try await supabase
             .from("route_saves")
-            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*))")
+            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count))")
             .eq("user_id", value: userId.uuidString)
             .order("created_at")
             .execute()
@@ -367,7 +380,7 @@ actor RouteRepository {
         let inserted: RouteDTO = try await supabase
             .from("routes")
             .insert(payload)
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
             .single()
             .execute()
             .value
