@@ -58,6 +58,8 @@ struct PermissionCard: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 26)
-        .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+        // milkSurface (fixed) — title/description above are NTColor.ink,
+        // also fixed; the reactive `milk` would go dark-on-dark in Milk theme.
+        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
     }
 }

@@ -41,7 +41,7 @@ struct ElevationChart: View {
                         .font(NTFont.mono(9.5, .semibold))
                         .foregroundStyle(NTColor.ink)
                         .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 8))
+                        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 8))
                         .position(x: min(max(p.x, 28), w - 28), y: max(p.y - 16, 10))
                 }
             }

@@ -60,7 +60,7 @@ struct PlaceExploreView: View {
         }
         .padding(.horizontal, 18)
         .frame(height: 56)
-        .background(NTColor.milk, in: Capsule())
+        .background(NTColor.milkSurface, in: Capsule())
         .padding(.horizontal, 20)
         .padding(.top, 12)
     }

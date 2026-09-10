@@ -185,7 +185,9 @@ struct SearchView: View {
         }
         .padding(.horizontal, 18)
         .frame(height: 56)
-        .background(NTColor.milk, in: Capsule())
+        // milkSurface (fixed) — the ink icon/text above needs a reliably
+        // light backing, not the theme-reactive `milk`.
+        .background(NTColor.milkSurface, in: Capsule())
     }
 
     /// Real live matches while typing — was hardcoded "Svaneti…" rows that
@@ -200,13 +202,13 @@ struct SearchView: View {
                     Text("Searching…").font(NTFont.body(13.5, .medium)).foregroundStyle(NTColor.ink.opacity(0.6))
                 }
                 .padding(.vertical, 14).padding(.horizontal, 16)
-                .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             } else if results.isEmpty {
                 Text("No routes match \"\(query)\" yet.")
                     .font(NTFont.body(13.5, .medium))
                     .foregroundStyle(NTColor.ink.opacity(0.6))
                     .padding(.vertical, 14).padding(.horizontal, 16)
-                    .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(results.prefix(4).enumerated()), id: \.element.id) { index, route in
@@ -218,7 +220,7 @@ struct SearchView: View {
                     }
                 }
                 .padding(.vertical, 6)
-                .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(color: .black.opacity(0.3), radius: 24, y: 16)
             }
         }

@@ -171,7 +171,10 @@ struct AuthView: View {
             .foregroundStyle(filled ? NTColor.ink : NTColor.milk)
             .frame(maxWidth: .infinity)
             .frame(height: 54)
-            .background(filled ? NTColor.milk : .clear, in: Capsule())
+            // milkSurface (fixed) when filled — paired with the also-fixed
+            // `ink` text above; the reactive `milk` would go dark-on-dark
+            // in Milk theme.
+            .background(filled ? NTColor.milkSurface : .clear, in: Capsule())
             .overlay(Capsule().stroke(NTColor.milk(0.28), lineWidth: filled ? 0 : 1.4))
         }
         .buttonStyle(.plain)
