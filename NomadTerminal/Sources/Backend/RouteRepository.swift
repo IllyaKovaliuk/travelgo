@@ -410,6 +410,40 @@ actor RouteRepository {
         return inserted.toRoute()
     }
 
+    /// Edits a published route's segments/requirements — RLS already allows
+    /// this ("Owners manage their route's segments/requirements", `for all`,
+    /// same policy publish's insert already relies on); this was purely a
+    /// missing client-side screen, not a missing backend capability. A full
+    /// replace (delete then re-insert) rather than diffing row-by-row —
+    /// simple, and the whole set is always small (a handful of segments/
+    /// requirements), same tradeoff the log-a-route builder UI already makes.
+    func updateRouteExtras(routeId: String, segments: [NewSegment], requirements: [NewRequirement]) async throws -> Route {
+        try await supabase.from("route_segments").delete().eq("route_id", value: routeId).execute()
+        try await supabase.from("route_requirements").delete().eq("route_id", value: routeId).execute()
+
+        if !segments.isEmpty {
+            struct SegmentInsert: Encodable {
+                let route_id: String, icon: String, name: String, distance_km: Double, tint: String, sort_order: Int
+            }
+            let rows = segments.enumerated().map {
+                SegmentInsert(route_id: routeId, icon: $1.icon, name: $1.name, distance_km: $1.distanceKM, tint: $1.tint, sort_order: $0)
+            }
+            try await supabase.from("route_segments").insert(rows).execute()
+        }
+
+        if !requirements.isEmpty {
+            struct RequirementInsert: Encodable {
+                let route_id: String, icon: String, title: String, subtitle: String, tint: String, sort_order: Int
+            }
+            let rows = requirements.enumerated().map {
+                RequirementInsert(route_id: routeId, icon: $1.icon, title: $1.title, subtitle: $1.subtitle, tint: $1.tint, sort_order: $0)
+            }
+            try await supabase.from("route_requirements").insert(rows).execute()
+        }
+
+        return try await fetchRouteDTO(id: routeId).toRoute()
+    }
+
     // MARK: - Comments
 
     struct Comment: Identifiable {

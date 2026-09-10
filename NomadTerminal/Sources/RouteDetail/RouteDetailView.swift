@@ -2,14 +2,24 @@ import SwiftUI
 
 /// 05 · Route detail — scrolls.
 struct RouteDetailView: View {
-    let route: Route
+    @State private var route: Route
     var onNavigate: () -> Void
+
+    init(route: Route, onNavigate: @escaping () -> Void) {
+        _route = State(initialValue: route)
+        self.onNavigate = onNavigate
+    }
 
     @Environment(\.dismiss) private var dismiss
     @State private var savedOffline = false
     @State private var isDownloading = false
     @State private var cachedSnapshot: UIImage?
     @State private var showFullMap = false
+    @State private var showEditExtras = false
+    /// Real ownership check (real session's user id vs. this route's real
+    /// author id) — the Edit entry point below only shows for the actual
+    /// author, not decided by anything client-fakeable.
+    @State private var isOwner = false
 
     private var detail: RouteDetailInfo { route.detail }
 
@@ -84,9 +94,17 @@ struct RouteDetailView: View {
         .fullScreenCover(isPresented: $showFullMap) {
             RouteFullMapView(route: route, onClose: { showFullMap = false })
         }
+        .sheet(isPresented: $showEditExtras) {
+            EditRouteExtrasView(routeId: route.id, segments: detail.segments, requirements: detail.requirements) { updated in
+                route = updated
+            }
+        }
         .task {
             savedOffline = await RouteRepository.shared.isSaved(routeId: route.id)
             cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
+            if let session = try? await supabase.auth.session {
+                isOwner = session.user.id.uuidString == route.author.id
+            }
         }
     }
 
@@ -198,8 +216,22 @@ struct RouteDetailView: View {
 
     private var segmentsSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Segments").font(NTFont.heading(18, .bold)).foregroundStyle(NTColor.milk)
-                .padding(.bottom, 10)
+            HStack {
+                Text("Segments").font(NTFont.heading(18, .bold)).foregroundStyle(NTColor.milk)
+                Spacer()
+                if isOwner {
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        showEditExtras = true
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                            .font(NTFont.body(12.5, .semibold))
+                            .foregroundStyle(NTColor.accent)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 10)
             ForEach(Array(detail.segments.enumerated()), id: \.offset) { i, seg in
                 HStack(spacing: 14) {
                     ZStack {
