@@ -76,6 +76,30 @@ actor RouteRepository {
     /// Every distinct region (`place`) among published public routes, for
     /// Search's Region picker — real values from the actual data instead of
     /// a hardcoded list that drifts from what's really out there.
+    struct RouteLocation {
+        let place: String
+        let coordinate: CLLocationCoordinate2D
+    }
+
+    /// Lightweight — just place + one representative coordinate per route,
+    /// for plotting real per-country pins on the region-picker map. Skips
+    /// the heavy segments/requirements/POI/like/comment embeds `fetchRoutes`
+    /// carries since none of that is needed here.
+    func fetchRouteLocations() async throws -> [RouteLocation] {
+        struct Row: Decodable { let place: String; let track_points: [TrackPoint] }
+        let rows: [Row] = try await supabase
+            .from("routes")
+            .select("place, track_points")
+            .eq("status", value: "published")
+            .eq("visibility", value: "public")
+            .execute()
+            .value
+        return rows.compactMap { row in
+            guard let first = row.track_points.first else { return nil }
+            return RouteLocation(place: row.place, coordinate: first.coordinate)
+        }
+    }
+
     func fetchRegions() async throws -> [String] {
         struct PlaceRow: Decodable { let place: String }
         let rows: [PlaceRow] = try await supabase
