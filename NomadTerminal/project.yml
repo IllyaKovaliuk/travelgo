@@ -18,7 +18,14 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: Sources
-    resources:
+      # Real xcodegen 2.46.0 bug (confirmed in an isolated minimal repro,
+      # unrelated to anything in this project): the top-level `resources:`
+      # key silently produces zero PBXResourcesBuildPhase on this machine's
+      # Xcode — Assets.car and the fonts never made it into the built app
+      # (this is why the app icon showed blank on the home screen).
+      # `sources:` auto-detects non-Swift file types and routes them to
+      # the right build phase correctly, so this is the workaround: list
+      # them here instead of under `resources:`.
       - path: Resources/Fonts
       - path: Resources/Assets.xcassets
     dependencies:
