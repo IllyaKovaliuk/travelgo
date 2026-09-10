@@ -1,27 +1,14 @@
 import SwiftUI
 
-private struct NotifItem: Identifiable {
-    let id = UUID()
-    let icon: String
-    let tint: Color
-    let text: String
-    let sub: String?
-    let time: String
-    let isAlert: Bool
-    let avatarInitials: String?
-}
-
-private let items: [NotifItem] = [
-    .init(icon: "exclamationmark.triangle.fill", tint: NTColor.gold, text: "Ford at WP3 flagged impassable", sub: "Someone logged high water on Zagar Pass, 40 min ago", time: "2H AGO", isAlert: true, avatarInitials: nil),
-    .init(icon: "person.fill", tint: .clear, text: "Ainara Ruiz started following you", sub: nil, time: "3H AGO", isAlert: false, avatarInitials: "AR"),
-    .init(icon: "bubble.left.fill", tint: NTColor.sage, text: "Luka Kranjc commented on Zagar Pass", sub: "\"Did this in June — ford was ankle-deep, no issue\"", time: "5H AGO", isAlert: false, avatarInitials: nil),
-    .init(icon: "star.fill", tint: NTColor.gold, text: "You earned True North", sub: nil, time: "1D AGO", isAlert: false, avatarInitials: nil),
-    .init(icon: "flag.fill", tint: .clear, text: "Luka Kranjc published a new route", sub: "The Emerald Corridor · 18.9 KM", time: "2D AGO", isAlert: false, avatarInitials: "LK")
-]
-
-/// 18 · Notifications
+/// 18 · Notifications — real data now, assembled from follows/likes/
+/// comments/badges/new-routes-from-people-you-follow (see
+/// `RouteRepository.fetchNotifications`). There's no single notifications
+/// table on the backend; this merges four real sources client-side.
 struct NotificationsView: View {
     var onClose: () -> Void
+
+    @State private var items: [RouteRepository.NotificationItem] = []
+    @State private var isLoading = true
 
     var body: some View {
         ZStack {
@@ -40,13 +27,21 @@ struct NotificationsView: View {
                         .buttonStyle(.plain)
 
                         Text("Notifications").font(NTFont.heading(26, .extraBold))
-                        Text("4 NEW").font(NTFont.mono(10, .semibold)).foregroundStyle(NTColor.accent)
+                        if !items.isEmpty {
+                            Text("\(items.count)").font(NTFont.mono(10, .semibold)).foregroundStyle(NTColor.accent)
+                        }
                     }
 
-                    VStack(spacing: 0) {
-                        ForEach(items) { item in row(item) }
+                    if isLoading {
+                        ProgressView().tint(NTColor.milk).padding(.top, 60).frame(maxWidth: .infinity)
+                    } else if items.isEmpty {
+                        emptyState
+                    } else {
+                        VStack(spacing: 0) {
+                            ForEach(items) { row($0) }
+                        }
+                        .padding(.top, 24)
                     }
-                    .padding(.top, 24)
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 20)
@@ -54,9 +49,45 @@ struct NotificationsView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
+        .task {
+            items = (try? await RouteRepository.shared.fetchNotifications()) ?? []
+            isLoading = false
+        }
     }
 
-    private func row(_ item: NotifItem) -> some View {
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "bell.slash").font(.system(size: 26)).foregroundStyle(NTColor.milk(0.3))
+            Text("Nothing yet").font(NTFont.body(14.5, .semibold))
+            Text("Follows, likes, comments and badges will show up here.")
+                .font(NTFont.body(12.5, .light)).foregroundStyle(NTColor.milk(0.55))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 60)
+    }
+
+    private func icon(for kind: RouteRepository.NotificationKind) -> String {
+        switch kind {
+        case .follow: return "person.fill"
+        case .comment: return "bubble.left.fill"
+        case .like: return "heart.fill"
+        case .badge: return "star.fill"
+        case .newRoute: return "flag.fill"
+        }
+    }
+
+    private func tint(for kind: RouteRepository.NotificationKind) -> Color {
+        switch kind {
+        case .follow: return NTColor.extreme
+        case .comment: return NTColor.sage
+        case .like: return NTColor.hardBright
+        case .badge: return NTColor.gold
+        case .newRoute: return NTColor.water
+        }
+    }
+
+    private func row(_ item: RouteRepository.NotificationItem) -> some View {
         HStack(alignment: .top, spacing: 14) {
             if let initials = item.avatarInitials {
                 ZStack {
@@ -67,8 +98,8 @@ struct NotificationsView: View {
                 .clipShape(Circle())
             } else {
                 ZStack {
-                    Circle().fill(item.tint.opacity(0.2))
-                    Image(systemName: item.icon).font(.system(size: 15)).foregroundStyle(item.tint)
+                    Circle().fill(tint(for: item.kind).opacity(0.2))
+                    Image(systemName: icon(for: item.kind)).font(.system(size: 15)).foregroundStyle(tint(for: item.kind))
                 }
                 .frame(width: 38, height: 38)
             }
@@ -82,17 +113,15 @@ struct NotificationsView: View {
                     Text(sub).font(NTFont.body(12.5, .light)).foregroundStyle(NTColor.milk(0.65))
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                Text(item.time).font(NTFont.mono(9.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
+                Text(item.createdAgo).font(NTFont.mono(9.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
             }
             Spacer(minLength: 0)
         }
         .padding(.vertical, 15)
-        .padding(.horizontal, item.isAlert ? 14 : 0)
-        .background(item.isAlert ? NTColor.gold.opacity(0.12) : .clear, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            item.isAlert ? RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.gold.opacity(0.4), lineWidth: 1) : nil
-        )
-        .overlay(!item.isAlert ? Rectangle().fill(NTColor.milk(0.1)).frame(height: 1) : nil, alignment: .bottom)
-        .padding(.bottom, item.isAlert ? 10 : 0)
+        .overlay(Rectangle().fill(NTColor.milk(0.1)).frame(height: 1), alignment: .bottom)
     }
+}
+
+#Preview {
+    NotificationsView(onClose: {})
 }

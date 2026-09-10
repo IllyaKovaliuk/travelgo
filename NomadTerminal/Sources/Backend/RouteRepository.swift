@@ -792,13 +792,149 @@ actor RouteRepository {
     }
 
     private func relativeTime(from iso: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) else { return "" }
-        let seconds = -date.timeIntervalSinceNow
+        let seconds = -(parseISODate(iso)?.timeIntervalSinceNow ?? 0)
         if seconds < 60 { return "JUST NOW" }
         if seconds < 3600 { return "\(Int(seconds / 60))M AGO" }
         if seconds < 86400 { return "\(Int(seconds / 3600))H AGO" }
         return "\(Int(seconds / 86400))D AGO"
+    }
+
+    private func parseISODate(_ iso: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
+    }
+
+    // MARK: - Notifications
+
+    enum NotificationKind: String { case follow, comment, like, badge, newRoute }
+
+    struct NotificationItem: Identifiable {
+        let id: String
+        let kind: NotificationKind
+        let text: String
+        let sub: String?
+        let createdAt: Date
+        let createdAgo: String
+        let avatarInitials: String?
+    }
+
+    /// Assembles a real feed from four independent sources instead of one
+    /// notifications table (there isn't one) — merged and sorted client-side
+    /// by timestamp. Mirrors the same "reuse what already tracks this" move
+    /// as the Profile Activity tab reusing the NomadPoints ledger.
+    func fetchNotifications() async throws -> [NotificationItem] {
+        let userId = try await ensureSession()
+        let uid = userId.uuidString
+
+        struct FollowRow: Decodable { let createdAt: String; let profiles: ProfileDTO
+            enum CodingKeys: String, CodingKey { case profiles; case createdAt = "created_at" } }
+        struct LikeRow: Decodable { let createdAt: String; let profiles: ProfileDTO; let routes: RouteTitleDTO
+            enum CodingKeys: String, CodingKey { case profiles, routes; case createdAt = "created_at" } }
+        struct CommentRow: Decodable { let createdAt: String; let profiles: ProfileDTO; let routes: RouteTitleDTO
+            enum CodingKeys: String, CodingKey { case profiles, routes; case createdAt = "created_at" } }
+        struct RouteTitleDTO: Decodable { let title: String }
+        struct BadgeEarnedRow: Decodable { let earnedAt: String; let badges: BadgeDTO
+            enum CodingKeys: String, CodingKey { case badges; case earnedAt = "earned_at" } }
+        struct BadgeDTO: Decodable { let title: String }
+        struct FollowingIdRow: Decodable { let followeeId: String
+            enum CodingKeys: String, CodingKey { case followeeId = "followee_id" } }
+        struct NewRouteRow: Decodable { let title: String; let createdAt: String; let profiles: ProfileDTO
+            enum CodingKeys: String, CodingKey { case title, profiles; case createdAt = "created_at" } }
+
+        async let follows: [FollowRow] = (try? await supabase
+            .from("follows")
+            .select("created_at, profiles!follows_follower_id_fkey(*)")
+            .eq("followee_id", value: uid)
+            .order("created_at", ascending: false)
+            .limit(15)
+            .execute().value) ?? []
+
+        // !inner qualifies the embed so .eq("routes.author_id", …) actually
+        // filters — a plain embed can't be filtered on in PostgREST.
+        async let likes: [LikeRow] = (try? await supabase
+            .from("route_likes")
+            .select("created_at, profiles!route_likes_user_id_fkey(*), routes!inner(title)")
+            .eq("routes.author_id", value: uid)
+            .neq("user_id", value: uid)
+            .order("created_at", ascending: false)
+            .limit(15)
+            .execute().value) ?? []
+
+        async let comments: [CommentRow] = (try? await supabase
+            .from("route_comments")
+            .select("created_at, profiles!route_comments_author_id_fkey(*), routes!inner(title)")
+            .eq("routes.author_id", value: uid)
+            .neq("author_id", value: uid)
+            .order("created_at", ascending: false)
+            .limit(15)
+            .execute().value) ?? []
+
+        async let badgesEarned: [BadgeEarnedRow] = (try? await supabase
+            .from("user_badges")
+            .select("earned_at, badges(title)")
+            .eq("user_id", value: uid)
+            .order("earned_at", ascending: false)
+            .limit(10)
+            .execute().value) ?? []
+
+        let followingIds: [FollowingIdRow] = (try? await supabase
+            .from("follows")
+            .select("followee_id")
+            .eq("follower_id", value: uid)
+            .execute().value) ?? []
+        async let newRoutes: [NewRouteRow] = followingIds.isEmpty ? [] : ((try? await supabase
+            .from("routes")
+            .select("title, created_at, profiles!routes_author_id_fkey(*)")
+            .in("author_id", values: followingIds.map(\.followeeId))
+            .eq("status", value: "published")
+            .order("created_at", ascending: false)
+            .limit(10)
+            .execute().value) ?? [])
+
+        var items: [NotificationItem] = []
+
+        for row in await follows {
+            items.append(.init(
+                id: "follow-\(row.profiles.id)-\(row.createdAt)", kind: .follow,
+                text: "\(row.profiles.displayName) started following you", sub: nil,
+                createdAt: parseISODate(row.createdAt) ?? .distantPast, createdAgo: relativeTime(from: row.createdAt),
+                avatarInitials: initials(from: row.profiles.displayName)
+            ))
+        }
+        for row in await likes {
+            items.append(.init(
+                id: "like-\(row.profiles.id)-\(row.createdAt)", kind: .like,
+                text: "\(row.profiles.displayName) liked \(row.routes.title)", sub: nil,
+                createdAt: parseISODate(row.createdAt) ?? .distantPast, createdAgo: relativeTime(from: row.createdAt),
+                avatarInitials: nil
+            ))
+        }
+        for row in await comments {
+            items.append(.init(
+                id: "comment-\(row.profiles.id)-\(row.createdAt)", kind: .comment,
+                text: "\(row.profiles.displayName) commented on \(row.routes.title)", sub: nil,
+                createdAt: parseISODate(row.createdAt) ?? .distantPast, createdAgo: relativeTime(from: row.createdAt),
+                avatarInitials: nil
+            ))
+        }
+        for row in await badgesEarned {
+            items.append(.init(
+                id: "badge-\(row.badges.title)-\(row.earnedAt)", kind: .badge,
+                text: "You earned \(row.badges.title)", sub: nil,
+                createdAt: parseISODate(row.earnedAt) ?? .distantPast, createdAgo: relativeTime(from: row.earnedAt),
+                avatarInitials: nil
+            ))
+        }
+        for row in await newRoutes {
+            items.append(.init(
+                id: "route-\(row.profiles.id)-\(row.createdAt)", kind: .newRoute,
+                text: "\(row.profiles.displayName) published a new route", sub: row.title,
+                createdAt: parseISODate(row.createdAt) ?? .distantPast, createdAgo: relativeTime(from: row.createdAt),
+                avatarInitials: initials(from: row.profiles.displayName)
+            ))
+        }
+
+        return items.sorted { $0.createdAt > $1.createdAt }
     }
 }
