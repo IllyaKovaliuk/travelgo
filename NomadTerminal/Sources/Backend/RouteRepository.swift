@@ -79,24 +79,25 @@ actor RouteRepository {
     struct RouteLocation {
         let place: String
         let coordinate: CLLocationCoordinate2D
+        let coverImageUrl: String?
     }
 
-    /// Lightweight — just place + one representative coordinate per route,
-    /// for plotting real per-country pins on the region-picker map. Skips
-    /// the heavy segments/requirements/POI/like/comment embeds `fetchRoutes`
+    /// Lightweight — just place + one representative coordinate (+ cover
+    /// photo, for the region-picker's photo pins) per route. Skips the
+    /// heavy segments/requirements/POI/like/comment embeds `fetchRoutes`
     /// carries since none of that is needed here.
     func fetchRouteLocations() async throws -> [RouteLocation] {
-        struct Row: Decodable { let place: String; let track_points: [TrackPoint] }
+        struct Row: Decodable { let place: String; let track_points: [TrackPoint]; let cover_image_url: String? }
         let rows: [Row] = try await supabase
             .from("routes")
-            .select("place, track_points")
+            .select("place, track_points, cover_image_url")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .execute()
             .value
         return rows.compactMap { row in
             guard let first = row.track_points.first else { return nil }
-            return RouteLocation(place: row.place, coordinate: first.coordinate)
+            return RouteLocation(place: row.place, coordinate: first.coordinate, coverImageUrl: row.cover_image_url)
         }
     }
 

@@ -11,6 +11,9 @@ packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
     from: 2.29.3
+  MapboxMaps:
+    url: https://github.com/mapbox/mapbox-maps-ios.git
+    from: 11.26.0
 targets:
   NomadTerminal:
     type: application
@@ -31,6 +34,8 @@ targets:
     dependencies:
       - package: Supabase
         product: Supabase
+      - package: MapboxMaps
+        product: MapboxMaps
       - target: NomadTerminalWidgets
         embed: true
     settings:
@@ -62,6 +67,10 @@ targets:
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - location
+        # Public runtime token (safe to ship client-embedded, same as
+        # Supabase's anon key) — the separate secret download token lives
+        # only in ~/.netrc for SPM to fetch the SDK, never in the repo.
+        MBXAccessToken: "pk.eyJ1IjoiaWxseWFvdmFsaXVrIiwiYSI6ImNtc21ibmdvcTA5aHQyeXNhbXAwdm1zYmgifQ.UVzACeEXBUp3GyVAGX4w9Q"
         UIAppFonts:
           - BricolageGrotesque-SemiBold.ttf
           - BricolageGrotesque-Bold.ttf
