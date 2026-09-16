@@ -34,7 +34,7 @@ struct SearchView: View {
 
     private var transportKeys: [String] {
         selectedTransport.isEmpty
-            ? [Transport.overland, .foot, .water, .climb].map(\.dbKey)
+            ? Transport.allCases.map(\.dbKey)
             : selectedTransport.map(\.dbKey)
     }
 
@@ -321,7 +321,7 @@ struct SearchView: View {
 
     private var transportGrid: some View {
         HStack(spacing: 10) {
-            ForEach([Transport.overland, .foot, .water, .climb], id: \.self) { t in
+            ForEach(Transport.allCases, id: \.self) { t in
                 let selected = selectedTransport.contains(t)
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()

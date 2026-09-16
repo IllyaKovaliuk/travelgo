@@ -45,8 +45,15 @@ struct Route: Identifiable {
     }
 }
 
-enum Transport: String {
-    case overland = "4×4", foot = "FOOT", water = "WATER", climb = "CLIMB"
+/// `CaseIterable` deliberately — every call site that lists "all transport
+/// types" (Search filters, the segment picker in log-a-route/edit) uses
+/// `Transport.allCases` instead of a hand-typed array now, so adding a new
+/// case here can't silently leave one of those pickers missing it again
+/// (bike/paraglide were added after foot/water/climb/overland already had
+/// several hardcoded `[.overland, .foot, .water, .climb]` arrays scattered
+/// around — exactly the kind of thing that's easy to miss one of).
+enum Transport: String, CaseIterable {
+    case overland = "4×4", foot = "FOOT", water = "WATER", climb = "CLIMB", bike = "BIKE", paraglide = "PARAGLIDE"
 
     var color: Color {
         switch self {
@@ -54,6 +61,8 @@ enum Transport: String {
         case .foot: return NTColor.sage
         case .water: return NTColor.water
         case .climb: return NTColor.extreme
+        case .bike: return NTColor.gold
+        case .paraglide: return NTColor.extreme
         }
     }
 
@@ -63,17 +72,22 @@ enum Transport: String {
         case .foot: return "figure.hiking"
         case .water: return "water.waves"
         case .climb: return "mountain.2.fill"
+        case .bike: return "bicycle"
+        case .paraglide: return "figure.paragliding"
         }
     }
 
-    /// The raw enum key stored in Postgres (`overland`/`foot`/`water`/`climb`),
-    /// as opposed to `rawValue` which is the display label ("4×4"/"FOOT"/…).
+    /// The raw enum key stored in Postgres (`overland`/`foot`/`water`/`climb`/
+    /// `bike`/`paraglide`), as opposed to `rawValue` which is the display
+    /// label ("4×4"/"FOOT"/…).
     var dbKey: String {
         switch self {
         case .overland: return "overland"
         case .foot: return "foot"
         case .water: return "water"
         case .climb: return "climb"
+        case .bike: return "bike"
+        case .paraglide: return "paraglide"
         }
     }
 
@@ -85,6 +99,8 @@ enum Transport: String {
         case .foot: return "#5FA777"
         case .water: return "#3E92CC"
         case .climb: return "#7A5FBF"
+        case .bike: return "#E0A458"
+        case .paraglide: return "#7A5FBF"
         }
     }
 
@@ -94,6 +110,8 @@ enum Transport: String {
         case "foot": self = .foot
         case "water": self = .water
         case "climb": self = .climb
+        case "bike": self = .bike
+        case "paraglide": self = .paraglide
         default: self = .foot
         }
     }

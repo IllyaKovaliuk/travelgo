@@ -36,7 +36,7 @@ struct RouteUploadDetailsView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("TRANSPORT").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
                         HStack(spacing: 10) {
-                            ForEach([Transport.overland, .foot, .water, .climb], id: \.self) { t in
+                            ForEach(Transport.allCases, id: \.self) { t in
                                 Button {
                                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                     draft.transport = t
@@ -241,7 +241,7 @@ struct RouteUploadDetailsView: View {
             ForEach($draft.segments) { $segment in
                 HStack(spacing: 10) {
                     Menu {
-                        ForEach([Transport.overland, .foot, .water, .climb], id: \.self) { t in
+                        ForEach(Transport.allCases, id: \.self) { t in
                             Button { segment.transport = t } label: { Label(t.rawValue, systemImage: t.icon) }
                         }
                     } label: {

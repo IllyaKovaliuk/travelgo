@@ -21,7 +21,7 @@ struct EditRouteExtrasView: View {
     init(routeId: String, segments: [RouteDetailInfo.Segment], requirements: [RouteDetailInfo.Requirement], onSaved: @escaping (Route) -> Void) {
         self.routeId = routeId
         self.onSaved = onSaved
-        let transports: [Transport] = [.overland, .foot, .water, .climb]
+        let transports = Transport.allCases
         _segments = State(initialValue: segments.map { seg in
             var d = DraftSegment()
             d.transport = transports.first(where: { $0.icon == seg.icon }) ?? .foot
@@ -78,7 +78,7 @@ struct EditRouteExtrasView: View {
             ForEach($segments) { $segment in
                 HStack(spacing: 10) {
                     Menu {
-                        ForEach([Transport.overland, .foot, .water, .climb], id: \.self) { t in
+                        ForEach(Transport.allCases, id: \.self) { t in
                             Button { segment.transport = t } label: { Label(t.rawValue, systemImage: t.icon) }
                         }
                     } label: {
