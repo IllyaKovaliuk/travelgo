@@ -4,6 +4,14 @@ import Supabase
 /// 12 · Auth — sign in. Email is real (Supabase email/password); Apple
 /// and Google are visual placeholders until Sign in with Apple's
 /// entitlement and a Google OAuth client are set up.
+///
+/// No "skip for now" here anymore — registration is mandatory for every
+/// user, so this screen is a wall, not a suggestion. `onDone` is only ever
+/// called after a real Supabase session actually exists (signed in, or
+/// signed up and auto-confirmed). It also stamps `authSessionStartedAt` in
+/// UserDefaults, which `RootView` reads to force a re-login after the
+/// session's own max age — real accounts still shouldn't stay signed in
+/// forever on a shared or lost device.
 struct AuthView: View {
     var onDone: () -> Void
 
@@ -63,11 +71,6 @@ struct AuthView: View {
             }
             .buttonStyle(.plain)
 
-            Button("Skip for now", action: onDone)
-                .font(NTFont.body(13, .medium))
-                .foregroundStyle(NTColor.milk(0.4))
-                .frame(maxWidth: .infinity)
-                .padding(.top, 16)
         }
         .padding(.horizontal, 30)
         .padding(.top, 24)
@@ -148,12 +151,6 @@ struct AuthView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 16)
-
-                Button("Skip for now", action: onDone)
-                    .font(NTFont.body(13, .medium))
-                    .foregroundStyle(NTColor.milk(0.4))
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 10)
             }
             .padding(.horizontal, 30)
             .padding(.top, 24)
@@ -214,6 +211,7 @@ struct AuthView: View {
             do {
                 if mode == .signIn {
                     try await supabase.auth.signIn(email: email, password: password)
+                    UserDefaults.standard.set(Date(), forKey: "authSessionStartedAt")
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                     onDone()
                 } else {
@@ -225,6 +223,7 @@ struct AuthView: View {
                     if response.session != nil {
                         // Autoconfirm is on for this project — signing up
                         // really did log them in immediately.
+                        UserDefaults.standard.set(Date(), forKey: "authSessionStartedAt")
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
                         onDone()
                     } else {

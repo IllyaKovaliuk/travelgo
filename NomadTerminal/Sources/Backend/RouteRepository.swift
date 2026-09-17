@@ -2,15 +2,18 @@ import Foundation
 import Supabase
 import CoreLocation
 
-/// Talks to Postgres/Auth on behalf of the app. Auth starts anonymous —
-/// every device gets a real, persisted user row the moment it needs one
-/// (liking, saving) — and later upgrades to a real account without losing
-/// that data, once the Auth screen ships.
+/// Talks to Postgres/Auth on behalf of the app. Registration is mandatory —
+/// `OnboardingContainer` always ends at a real sign-in/sign-up before
+/// anyone reaches the feed — so every call in here should find a real
+/// session already sitting there.
 actor RouteRepository {
     static let shared = RouteRepository()
 
-    /// Ensures there's a logged-in (possibly anonymous) session and
-    /// returns its user id.
+    /// Returns the current session's user id. Falls back to a throwaway
+    /// anonymous sign-in only as a last-resort guard against a caller
+    /// somehow running before onboarding's auth gate — not a supported
+    /// product path anymore (that's what let people browse without ever
+    /// creating a real account, which is exactly what's no longer allowed).
     @discardableResult
     func ensureSession() async throws -> UUID {
         if let session = try? await supabase.auth.session {

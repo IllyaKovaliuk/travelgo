@@ -131,6 +131,7 @@ struct SettingsView: View {
         isSigningOut = true
         Task {
             try? await supabase.auth.signOut()
+            UserDefaults.standard.removeObject(forKey: "authSessionStartedAt")
             isSigningOut = false
             showAuth = true
         }
