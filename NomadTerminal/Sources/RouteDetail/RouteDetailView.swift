@@ -27,6 +27,7 @@ struct RouteDetailView: View {
     @State private var likeCount = 0
     @State private var commentCount = 0
     @State private var showComments = false
+    @State private var downloadToast: String?
 
     private var detail: RouteDetailInfo { route.detail }
 
@@ -100,6 +101,19 @@ struct RouteDetailView: View {
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
+        .overlay(alignment: .bottom) {
+            if let downloadToast {
+                Text(downloadToast)
+                    .font(NTFont.body(13, .semibold))
+                    .foregroundStyle(NTColor.pine)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 18).padding(.vertical, 12)
+                    .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .padding(.horizontal, 30)
+                    .padding(.bottom, 90)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
         .fullScreenCover(isPresented: $showFullMap) {
             RouteFullMapView(route: route, onClose: { showFullMap = false })
         }
@@ -332,15 +346,24 @@ struct RouteDetailView: View {
         isDownloading = true
         Task {
             do {
-                _ = try await OfflineRouteStore.shared.download(routeId: route.id)
+                _ = try await OfflineRouteStore.shared.download(routeId: route.id, wifiOnly: AppPreferences.wifiOnlyDownloads)
                 cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
                 try await RouteRepository.shared.setSaved(routeId: route.id, saved: true, downloadedOffline: true)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline = true }
             } catch {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
+                showDownloadToast((error as? OfflineDownloadError)?.errorDescription ?? "Couldn't save offline — try again.")
             }
             isDownloading = false
+        }
+    }
+
+    private func showDownloadToast(_ text: String) {
+        withAnimation { downloadToast = text }
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            withAnimation { downloadToast = nil }
         }
     }
 

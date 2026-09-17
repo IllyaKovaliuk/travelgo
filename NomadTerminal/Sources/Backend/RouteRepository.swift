@@ -978,4 +978,75 @@ actor RouteRepository {
 
         return items.sorted { $0.createdAt > $1.createdAt }
     }
+
+    // MARK: - Moderation admin (review/reinstate auto-hidden content)
+
+    /// Backs onto `security definer` RPCs (see
+    /// `backend/supabase/migrations/20260914000001_moderation_admin_rpcs.sql`)
+    /// that bypass RLS — there's no admin-role system in this app, so these
+    /// are reachable by any signed-in user, same trust model the original
+    /// moderation migration already accepted ("acceptable trade-off at this
+    /// scale"). Fine while the founder is the only real user of this screen.
+    struct HiddenRoute: Identifiable, Decodable {
+        let id: UUID
+        let title: String
+        let place: String
+        let authorId: UUID
+        let authorName: String
+        let reportCount: Int
+        let reasons: [String]?
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, title, place, reasons
+            case authorId = "author_id"
+            case authorName = "author_name"
+            case reportCount = "report_count"
+            case createdAt = "created_at"
+        }
+    }
+
+    struct HiddenComment: Identifiable, Decodable {
+        let id: UUID
+        let body: String
+        let routeId: UUID
+        let routeTitle: String
+        let authorId: UUID
+        let authorName: String
+        let reportCount: Int
+        let reasons: [String]?
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, body, reasons
+            case routeId = "route_id"
+            case routeTitle = "route_title"
+            case authorId = "author_id"
+            case authorName = "author_name"
+            case reportCount = "report_count"
+            case createdAt = "created_at"
+        }
+    }
+
+    func fetchHiddenRoutes() async throws -> [HiddenRoute] {
+        try await ensureSession()
+        return try await supabase.rpc("admin_list_hidden_routes").execute().value
+    }
+
+    func fetchHiddenComments() async throws -> [HiddenComment] {
+        try await ensureSession()
+        return try await supabase.rpc("admin_list_hidden_comments").execute().value
+    }
+
+    func reinstateRoute(id: String) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let target_id: String }
+        try await supabase.rpc("admin_reinstate_route", params: Params(target_id: id)).execute()
+    }
+
+    func reinstateComment(id: String) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let target_id: String }
+        try await supabase.rpc("admin_reinstate_comment", params: Params(target_id: id)).execute()
+    }
 }

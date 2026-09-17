@@ -1,17 +1,25 @@
 import SwiftUI
+import CoreLocation
 
 /// 10/11 · Settings — Pine/Milk appearance is real now: picking a tile
 /// writes to `ThemeManager.shared`, which every `NTColor.pine`/`.milk`
-/// call site across the app already reads live.
+/// call site across the app already reads live. "Download over Wi-Fi
+/// only" and "Background location" are real now too (see
+/// `AppPreferences`/`OfflineRouteStore` and the location-status row below);
+/// "Ford & weather alerts" stayed an honest "Coming soon" — there's no
+/// weather-alert feature anywhere in the app to back it.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var themeManager = ThemeManager.shared
-    @State private var wifiOnly = true
-    @State private var backgroundLocation = true
-    @State private var weatherAlerts = false
+    @State private var wifiOnly = AppPreferences.wifiOnlyDownloads
+    /// Real `CLLocationManager.authorizationStatus`, not a local toggle —
+    /// an app can't silently grant itself Always location, so this reflects
+    /// truth and routes any tap to Settings rather than pretending to flip.
+    @State private var backgroundLocationGranted = false
     @State private var showPaywall = false
     @State private var showAuth = false
     @State private var showRewards = false
+    @State private var showModeration = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
 
@@ -25,11 +33,14 @@ struct SettingsView: View {
                     appearanceCard
 
                     cardGroup {
-                        toggleRow(icon: "arrow.down.circle.fill", tint: NTColor.sage, title: "Download over Wi-Fi only", isOn: $wifiOnly)
+                        toggleRow(icon: "arrow.down.circle.fill", tint: NTColor.sage, title: "Download over Wi-Fi only", isOn: Binding(
+                            get: { wifiOnly },
+                            set: { wifiOnly = $0; AppPreferences.wifiOnlyDownloads = $0 }
+                        ))
                         divider
-                        toggleRow(icon: "location.fill", tint: NTColor.sage, title: "Background location", isOn: $backgroundLocation)
+                        backgroundLocationRow
                         divider
-                        toggleRow(icon: "cloud.rain.fill", tint: NTColor.milk(0.6), title: "Ford & weather alerts", isOn: $weatherAlerts)
+                        weatherAlertsRow
                         divider
                         valueRow(title: "Units", value: "METRIC")
                     }
@@ -41,6 +52,18 @@ struct SettingsView: View {
                         divider
                         valueRow(title: "About NomadTerminal", value: "v2.4.0")
                     }
+
+                    // No real admin-role system exists — reachable by
+                    // whoever has the app, same trust model the auto-hide
+                    // moderation migration already accepted. See
+                    // AdminModerationView's header comment.
+                    Button { showModeration = true } label: {
+                        valueRow(title: "Moderation (review hidden content)", value: nil)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 18)
+                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
 
                     Button {
                         signOut()
@@ -70,6 +93,7 @@ struct SettingsView: View {
             .fullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
             .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
             .sheet(isPresented: $showRewards) { RewardsView() }
+            .sheet(isPresented: $showModeration) { AdminModerationView() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
@@ -77,6 +101,56 @@ struct SettingsView: View {
             }
         }
         .preferredColorScheme(themeManager.colorScheme)
+        .task { refreshLocationStatus() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // Catches coming back from the system Settings deep link below —
+            // the only way this status can actually change.
+            refreshLocationStatus()
+        }
+    }
+
+    private func refreshLocationStatus() {
+        backgroundLocationGranted = CLLocationManager().authorizationStatus == .authorizedAlways
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private var backgroundLocationRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "location.fill").font(.system(size: 17)).foregroundStyle(NTColor.sage).frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Background location").font(NTFont.body(15, .medium))
+                if !backgroundLocationGranted {
+                    Text("Tap to enable in Settings").font(NTFont.mono(9.5, .medium)).foregroundStyle(NTColor.milk(0.45))
+                }
+            }
+            Spacer()
+            // The switch itself can't grant Always location — any tap,
+            // on or off, routes to the system Settings deep link; the
+            // visible state always reflects the real authorization status.
+            Toggle("", isOn: Binding(get: { backgroundLocationGranted }, set: { _ in openSystemSettings() }))
+                .labelsHidden().tint(NTColor.sage)
+        }
+        .padding(.vertical, 15)
+        .contentShape(Rectangle())
+        .onTapGesture { if !backgroundLocationGranted { openSystemSettings() } }
+    }
+
+    /// Honest placeholder, same pattern Search's Region/Requirements rows
+    /// used before those got real backends — no weather-alert feature
+    /// exists anywhere in this app (no weather API integration at all) to
+    /// back a toggle that looked interactive but did nothing.
+    private var weatherAlertsRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "cloud.rain.fill").font(.system(size: 17)).foregroundStyle(NTColor.milk(0.6)).frame(width: 20)
+            Text("Ford & weather alerts").font(NTFont.body(15, .medium))
+            Spacer()
+            Text("COMING SOON").font(NTFont.mono(9.5, .semibold)).tracking(0.5).foregroundStyle(NTColor.milk(0.4))
+        }
+        .padding(.vertical, 15)
     }
 
     private var proRow: some View {

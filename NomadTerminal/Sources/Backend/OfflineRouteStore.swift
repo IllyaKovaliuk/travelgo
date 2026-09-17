@@ -1,6 +1,14 @@
 import Foundation
 import MapKit
+import Network
 import UIKit
+
+enum OfflineDownloadError: LocalizedError {
+    case wifiRequired
+    var errorDescription: String? {
+        "Wi-Fi required — turn off \"Download over Wi-Fi only\" in Settings, or connect to Wi-Fi."
+    }
+}
 
 /// Makes "Save offline" actually save something. Caches the exact `RouteDTO`
 /// the server sent (so decoding it later reuses the same `toRoute()` mapper
@@ -23,8 +31,16 @@ actor OfflineRouteStore {
     /// Fetches the route fresh, writes its DTO to disk, and — if it has a
     /// real recorded polyline — renders and saves a static map snapshot so
     /// the route detail header has something to show with zero connectivity.
+    /// `wifiOnly` actually enforces Settings' "Download over Wi-Fi only"
+    /// toggle now (was previously decorative — the toggle existed, nothing
+    /// downstream ever read it) via a real `NWPathMonitor` check of the
+    /// current connection, not just a Reachability-style guess.
     @discardableResult
-    func download(routeId: String) async throws -> Route {
+    func download(routeId: String, wifiOnly: Bool = false) async throws -> Route {
+        if wifiOnly {
+            let onWifi = await currentPathIsWiFi()
+            guard onWifi else { throw OfflineDownloadError.wifiRequired }
+        }
         let dto = try await RouteRepository.shared.fetchRouteDTO(id: routeId)
         let data = try JSONEncoder().encode(dto)
         try data.write(to: jsonURL(routeId), options: .atomic)
@@ -71,6 +87,29 @@ actor OfflineRouteStore {
     func snapshotImage(routeId: String) -> UIImage? {
         guard let data = try? Data(contentsOf: imageURL(routeId)) else { return nil }
         return UIImage(data: data)
+    }
+
+    /// One-shot real read of the current network path — resumes on the
+    /// first callback `NWPathMonitor` delivers (it fires immediately with
+    /// the already-known current path, then again on every real change;
+    /// only the first one is needed here) and cancels itself right after.
+    private func currentPathIsWiFi() async -> Bool {
+        await withCheckedContinuation { continuation in
+            let monitor = NWPathMonitor()
+            // `resumed` is only ever touched from `pathUpdateHandler`, and
+            // that handler only ever runs serially on this one dedicated
+            // queue — real exclusion, just not one the compiler can see
+            // through a plain `Bool` capture, hence `nonisolated(unsafe)`.
+            nonisolated(unsafe) var resumed = false
+            let queue = DispatchQueue(label: "io.nomadterminal.pathmonitor")
+            monitor.pathUpdateHandler = { path in
+                guard !resumed else { return }
+                resumed = true
+                continuation.resume(returning: path.usesInterfaceType(.wifi))
+                monitor.cancel()
+            }
+            monitor.start(queue: queue)
+        }
     }
 
     private func snapshot(for points: [TrackPoint]) async throws -> UIImage {
