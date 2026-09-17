@@ -1,4 +1,6 @@
 import SwiftUI
+import MapboxMaps
+import Turf
 import MapKit
 import CoreLocation
 
@@ -8,25 +10,37 @@ import CoreLocation
 /// hand-off to Apple Maps for turn-by-turn to the trailhead (Apple Maps
 /// can't render a third-party app's custom multi-point route, so that's
 /// the honest limit of what deep-linking out can do — the rest of this
-/// screen is where the real route lives).
+/// screen is where the real route lives). Rendering itself is Mapbox
+/// (Standard Satellite — real 3D terrain + satellite, real photo pins);
+/// `MapKit` is still imported here purely for the "Open in Maps" deep link
+/// (`MKMapItem`), not for drawing anything.
 struct RouteFullMapView: View {
     let route: Route
     var onClose: () -> Void
 
     @State private var selectedPOI: RouteDetailInfo.POI?
     @State private var showSatellite = true
+    @State private var viewport: Viewport
 
-    // `elevation: .realistic` (3D terrain) turned out to silently hide
-    // *every* annotation on this map — custom pins, segment label chips,
-    // even Apple's own built-in `Marker` — confirmed by testing a bare
-    // native Marker against a known coordinate and watching it vanish
-    // only when realistic elevation was on. The 3D terrain mesh
-    // apparently renders in front of ground-anchored annotations. `.flat`
-    // keeps the exact same real satellite imagery (hybrid always includes
-    // it, elevation only affects the 3D terrain mesh) without hiding
-    // anything drawn on top of it.
-    private var mapStyle: MapStyle {
-        showSatellite ? .hybrid(elevation: .flat) : .standard(elevation: .flat)
+    init(route: Route, onClose: @escaping () -> Void) {
+        self.route = route
+        self.onClose = onClose
+        let coords = route.detail.trackPoints.map(\.coordinate) + route.detail.pois.map(\.coordinate)
+        if coords.count > 1 {
+            _viewport = State(initialValue: .overview(
+                geometry: Geometry.lineString(LineString(coords)),
+                geometryPadding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40)
+            ))
+        } else {
+            _viewport = State(initialValue: .camera(center: coords.first, zoom: 13))
+        }
+    }
+
+    // `MapKit` and `MapboxMaps` both declare a `MapStyle` type — imported
+    // together here since MapKit is still needed for the Open in Maps deep
+    // link — so this must be qualified.
+    private var mapStyle: MapboxMaps.MapStyle {
+        showSatellite ? .standardSatellite : .standard
     }
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }
@@ -37,44 +51,52 @@ struct RouteFullMapView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Map(initialPosition: .region(trackRegion)) {
+            Map(viewport: $viewport) {
                 if !segmentStretches.isEmpty {
                     // White casing first so the colored line reads against any
                     // terrain color underneath (satellite forest is often green,
                     // same as the "foot" segment tint, otherwise invisible).
-                    ForEach(segmentStretches) { stretch in
-                        MapPolyline(coordinates: stretch.coordinates)
-                            .stroke(.white, style: StrokeStyle(lineWidth: 8.5, lineCap: .round, lineJoin: .round))
+                    ForEvery(segmentStretches) { stretch in
+                        PolylineAnnotation(lineCoordinates: stretch.coordinates)
+                            .lineColor(.white)
+                            .lineWidth(8.5)
+                            .lineJoin(.round)
                     }
-                    ForEach(segmentStretches) { stretch in
-                        MapPolyline(coordinates: stretch.coordinates)
-                            .stroke(stretch.tint, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
+                    ForEvery(segmentStretches) { stretch in
+                        PolylineAnnotation(lineCoordinates: stretch.coordinates)
+                            .lineColor(UIColor(stretch.tint))
+                            .lineWidth(5.5)
+                            .lineJoin(.round)
                     }
-                    ForEach(segmentStretches) { stretch in
-                        Annotation("", coordinate: stretch.midpoint) {
+                    ForEvery(segmentStretches) { stretch in
+                        MapViewAnnotation(coordinate: stretch.midpoint) {
                             SegmentLabelChip(icon: stretch.icon, label: stretch.label, tint: stretch.tint)
                         }
                     }
                 } else if trackPoints.count > 1 {
-                    MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                        .stroke(.white, style: StrokeStyle(lineWidth: 8.5, lineCap: .round, lineJoin: .round))
-                    MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                        .stroke(NTColor.accent, style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
+                    PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                        .lineColor(.white)
+                        .lineWidth(8.5)
+                        .lineJoin(.round)
+                    PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                        .lineColor(UIColor(NTColor.accent))
+                        .lineWidth(5.5)
+                        .lineJoin(.round)
                 }
 
                 if trackPoints.count > 1 {
                     if let start = trackPoints.first {
-                        Annotation("", coordinate: start.coordinate) { MapPin(icon: "flag.fill", tint: NTColor.sage) }
+                        MapViewAnnotation(coordinate: start.coordinate) { MapPin(icon: "flag.fill", tint: NTColor.sage) }
                     }
                     if let end = trackPoints.last {
-                        Annotation("", coordinate: end.coordinate) { MapPin(icon: "flag.checkered", tint: NTColor.pine, iconColor: NTColor.milk) }
+                        MapViewAnnotation(coordinate: end.coordinate) { MapPin(icon: "flag.checkered", tint: NTColor.pine, iconColor: NTColor.milk) }
                     }
                 } else if let only = trackPoints.first {
-                    Annotation("", coordinate: only.coordinate) { MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk) }
+                    MapViewAnnotation(coordinate: only.coordinate) { MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk) }
                 }
 
-                ForEach(pois) { poi in
-                    Annotation("", coordinate: poi.coordinate) {
+                ForEvery(pois) { poi in
+                    MapViewAnnotation(coordinate: poi.coordinate) {
                         Button {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selectedPOI = poi }
@@ -85,16 +107,7 @@ struct RouteFullMapView: View {
                     }
                 }
             }
-            // Satellite, not vector "standard" — see RouteMapHeader for why:
-            // remote trails mostly aren't in Apple's road/vector data at
-            // all, so standard renders a flat color wash there. Real
-            // imagery shows the actual terrain regardless of map data.
             .mapStyle(mapStyle)
-            .mapControls {
-                MapCompass()
-                MapScaleView()
-                MapPitchToggle()
-            }
             .ignoresSafeArea()
 
             VStack {
@@ -204,21 +217,5 @@ struct RouteFullMapView: View {
         let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
         item.name = name
         item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
-    }
-
-    private var trackRegion: MKCoordinateRegion {
-        let allCoords = trackPoints.map(\.coordinate) + pois.map(\.coordinate)
-        guard !allCoords.isEmpty else {
-            return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1))
-        }
-        let lats = allCoords.map(\.latitude), lngs = allCoords.map(\.longitude)
-        let minLat = lats.min()!, maxLat = lats.max()!
-        let minLng = lngs.min()!, maxLng = lngs.max()!
-        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2)
-        let span = MKCoordinateSpan(
-            latitudeDelta: max((maxLat - minLat) * 1.6, 0.01),
-            longitudeDelta: max((maxLng - minLng) * 1.6, 0.01)
-        )
-        return MKCoordinateRegion(center: center, span: span)
     }
 }

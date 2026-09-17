@@ -1,13 +1,20 @@
 import SwiftUI
-import MapKit
+import MapboxMaps
+import Turf
 import CoreLocation
 
 /// The "map" at the top of Route Detail. Any route with at least one real
-/// coordinate (`trackPoints`) gets an actual MapKit map — a full polyline
+/// coordinate (`trackPoints`) gets an actual Mapbox map — a full polyline
 /// for a real recording, or just a centered pin for routes that only have
 /// a single reference point. Only routes with zero coordinates at all
 /// (shouldn't normally happen once publish always records a track, but
 /// guards against edge cases) fall back to the hand-drawn stand-in.
+///
+/// Runs on Mapbox (Standard Satellite — real 3D terrain + satellite
+/// imagery) instead of MapKit: unlike MapKit's `.hybrid(elevation:
+/// .realistic)`, Mapbox's view annotations are documented to always render
+/// above the terrain mesh, so there's no need for the `.flat`-elevation
+/// workaround the old MapKit version needed to keep pins visible.
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
     var trackPoints: [TrackPoint] = []
@@ -101,83 +108,76 @@ struct RouteMapHeader: View {
         MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
     }
 
+    private var initialViewport: Viewport {
+        let coords = trackPoints.map(\.coordinate)
+        guard coords.count > 1 else {
+            return .camera(center: coords.first, zoom: 13)
+        }
+        return .overview(geometry: Geometry.lineString(LineString(coords)), geometryPadding: EdgeInsets(top: 40, leading: 40, bottom: 40, trailing: 40))
+    }
+
     private var realMap: some View {
-        Map(initialPosition: .region(trackRegion)) {
+        Map(initialViewport: initialViewport) {
             if !segmentStretches.isEmpty {
                 // White casing under every stretch first, so the colored
                 // line reads clearly against any terrain color underneath
                 // (green segment over green forest was invisible without it).
-                ForEach(segmentStretches) { stretch in
-                    MapPolyline(coordinates: stretch.coordinates)
-                        .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
+                ForEvery(segmentStretches) { stretch in
+                    PolylineAnnotation(lineCoordinates: stretch.coordinates)
+                        .lineColor(.white)
+                        .lineWidth(8)
+                        .lineJoin(.round)
                 }
                 // One colored stretch per segment, so it's clear at a glance
                 // which transport covers which piece of the route — not
                 // just a single flat line.
-                ForEach(segmentStretches) { stretch in
-                    MapPolyline(coordinates: stretch.coordinates)
-                        .stroke(stretch.tint, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
+                ForEvery(segmentStretches) { stretch in
+                    PolylineAnnotation(lineCoordinates: stretch.coordinates)
+                        .lineColor(UIColor(stretch.tint))
+                        .lineWidth(5)
+                        .lineJoin(.round)
                 }
-                ForEach(segmentStretches) { stretch in
-                    Annotation("", coordinate: stretch.midpoint) {
+                ForEvery(segmentStretches) { stretch in
+                    MapViewAnnotation(coordinate: stretch.midpoint) {
                         SegmentLabelChip(icon: stretch.icon, label: stretch.label, tint: stretch.tint)
                     }
                 }
             } else if trackPoints.count > 1 {
-                MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                    .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round, lineJoin: .round))
-                MapPolyline(coordinates: trackPoints.map(\.coordinate))
-                    .stroke(NTColor.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
+                PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                    .lineColor(.white)
+                    .lineWidth(8)
+                    .lineJoin(.round)
+                PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                    .lineColor(UIColor(NTColor.accent))
+                    .lineWidth(5)
+                    .lineJoin(.round)
             }
 
             if trackPoints.count > 1 {
                 if let start = trackPoints.first {
-                    Annotation("", coordinate: start.coordinate) {
+                    MapViewAnnotation(coordinate: start.coordinate) {
                         MapPin(icon: "flag.fill", tint: NTColor.sage)
                     }
                 }
                 if let end = trackPoints.last {
-                    Annotation("", coordinate: end.coordinate) {
+                    MapViewAnnotation(coordinate: end.coordinate) {
                         MapPin(icon: "flag.checkered", tint: NTColor.pine, iconColor: NTColor.milk)
                     }
                 }
             } else if let only = trackPoints.first {
-                Annotation("", coordinate: only.coordinate) {
+                MapViewAnnotation(coordinate: only.coordinate) {
                     MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk)
                 }
             }
 
-            ForEach(pois) { poi in
-                Annotation("", coordinate: poi.coordinate) {
+            ForEvery(pois) { poi in
+                MapViewAnnotation(coordinate: poi.coordinate) {
                     POIMapMarker(category: poi.category)
                 }
             }
         }
-        // Satellite (not vector "standard") — remote trails/backcountry
-        // routes mostly have no road data in Apple's vector map, which
-        // rendered as a flat color wash with no visible terrain at all.
-        // Real satellite imagery shows the actual land regardless.
-        // `.flat`, not `.realistic`: 3D terrain elevation silently hides
-        // every annotation (pins, segment chips) drawn on the map — real,
-        // confirmed MapKit behavior, not a guess. See RouteFullMapView's
-        // mapStyle comment for how this was isolated. `.flat` keeps the
-        // same real satellite imagery without hiding anything on top of it.
-        .mapStyle(.hybrid(elevation: .flat))
+        .mapStyle(.standardSatellite)
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
-    }
-
-    /// A region that frames the whole recorded track with a little breathing room.
-    private var trackRegion: MKCoordinateRegion {
-        let lats = trackPoints.map(\.lat)
-        let lngs = trackPoints.map(\.lng)
-        let minLat = lats.min() ?? 0, maxLat = lats.max() ?? 0
-        let minLng = lngs.min() ?? 0, maxLng = lngs.max() ?? 0
-        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2)
-        let span = MKCoordinateSpan(
-            latitudeDelta: max((maxLat - minLat) * 1.5, 0.01),
-            longitudeDelta: max((maxLng - minLng) * 1.5, 0.01)
-        )
-        return MKCoordinateRegion(center: center, span: span)
     }
 
     private var terrain: some View {
