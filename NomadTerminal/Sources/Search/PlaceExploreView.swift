@@ -1,16 +1,25 @@
 import SwiftUI
 import MapKit
+import MapboxMaps
+import Turf
 import CoreLocation
 
 /// Real place discovery — restaurants, cafés, hotels, fuel, camping,
 /// attractions, shops — anywhere on Earth via Apple's own places database
 /// (PlaceSearcher/MKLocalSearch). This is what makes "useful on day one in
 /// any city" true without needing a single route logged there yet.
+///
+/// `MapKit` stays imported purely for `MKMapItem`/`MKLocalSearch` plumbing
+/// (`PlaceSearcher`'s own type, `openInMaps`, distance math) — the results
+/// preview itself renders on Mapbox now, matching every other map in the
+/// app (Standard Satellite) instead of being the one screen still on flat
+/// MapKit.
 struct PlaceExploreView: View {
     @State private var searcher = PlaceSearcher()
     @State private var query = ""
     @State private var selectedCategory: PlaceCategory? = nil
     @State private var searchTask: Task<Void, Never>?
+    @State private var mapViewport: Viewport = .camera(center: CLLocationCoordinate2D(latitude: 20, longitude: 15), zoom: 1.4)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -94,9 +103,9 @@ struct PlaceExploreView: View {
     }
 
     private var resultsMap: some View {
-        Map(position: .constant(.region(resultsRegion))) {
-            ForEach(Array(searcher.results.enumerated()), id: \.offset) { _, item in
-                Annotation("", coordinate: item.placemark.coordinate) {
+        Map(viewport: $mapViewport) {
+            ForEvery(Array(searcher.results.enumerated()), id: \.offset) { _, item in
+                MapViewAnnotation(coordinate: item.placemark.coordinate) {
                     ZStack {
                         Circle().fill(NTColor.accent)
                         Image(systemName: icon(for: item))
@@ -109,7 +118,7 @@ struct PlaceExploreView: View {
                 }
             }
         }
-        .mapStyle(.standard)
+        .mapStyle(.standardSatellite)
         .allowsHitTesting(false)
         .frame(height: 170)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -210,6 +219,7 @@ struct PlaceExploreView: View {
             try? await Task.sleep(nanoseconds: 300_000_000)
             if Task.isCancelled { return }
             await searcher.search(query: query, category: selectedCategory?.mkCategory)
+            mapViewport = computeResultsViewport()
         }
     }
 
@@ -220,19 +230,22 @@ struct PlaceExploreView: View {
         return String(format: "%.1f KM AWAY", distanceM / 1000)
     }
 
-    private var resultsRegion: MKCoordinateRegion {
+    /// Real bounding-box fit over whatever's currently on screen — a single
+    /// result gets a sane fixed street-level zoom (an "overview" of one
+    /// point is meaningless), several results auto-fit via Mapbox's own
+    /// `Viewport.overview`, same technique the route maps use for a track.
+    private func computeResultsViewport() -> Viewport {
         let coords = searcher.results.map(\.placemark.coordinate)
-        guard !coords.isEmpty else {
-            let center = searcher.currentLocation?.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
-            return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+        guard let first = coords.first else {
+            let center = searcher.currentLocation?.coordinate ?? CLLocationCoordinate2D(latitude: 20, longitude: 15)
+            return .camera(center: center, zoom: searcher.currentLocation == nil ? 1.4 : 13)
         }
-        let lats = coords.map(\.latitude), lngs = coords.map(\.longitude)
-        let minLat = lats.min()!, maxLat = lats.max()!
-        let minLng = lngs.min()!, maxLng = lngs.max()!
-        let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2)
-        return MKCoordinateRegion(
-            center: center,
-            span: MKCoordinateSpan(latitudeDelta: max((maxLat - minLat) * 1.6, 0.02), longitudeDelta: max((maxLng - minLng) * 1.6, 0.02))
+        guard coords.count > 1 else {
+            return .camera(center: first, zoom: 14)
+        }
+        return .overview(
+            geometry: Geometry.lineString(LineString(coords)),
+            geometryPadding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
         )
     }
 }
