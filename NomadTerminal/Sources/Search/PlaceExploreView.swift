@@ -37,6 +37,16 @@ struct PlaceExploreView: View {
                 resultsList
             }
         }
+        // Real bug: this view sat inside `SearchView`'s plain VStack next
+        // to a `ScrollView` sibling (the Routes tab) that greedily fills
+        // available height on its own — this VStack never did, so the
+        // instant Search switches to Places (any time results/emptyState
+        // don't already fill the screen, which is most of the time before
+        // a real search has run) the whole screen shrank to hug this
+        // view's actual content size and got centered by the tab
+        // container. Same failure shape as a flex item with no
+        // `flex-grow` next to one that has it.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
         .onAppear { searcher.requestLocation() }
