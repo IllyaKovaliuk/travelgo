@@ -35,7 +35,7 @@ struct OnboardingContainer: View {
     }
 
     private func advance() {
-        withAnimation(.spring(response: 0.55, dampingFraction: 0.86)) {
+        withAnimation(NTMotion.spring) {
             page = min(page + 1, 2)
         }
     }

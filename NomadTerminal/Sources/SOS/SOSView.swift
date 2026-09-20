@@ -163,7 +163,7 @@ struct SOSView: View {
             holdProgress = min(1, holdProgress + 0.03 / 2.4)
             if holdProgress >= 1 {
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { isSent = true }
+                withAnimation(NTMotion.spring) { isSent = true }
                 onTriggered()
                 holdTimer?.invalidate()
                 holdTimer = nil

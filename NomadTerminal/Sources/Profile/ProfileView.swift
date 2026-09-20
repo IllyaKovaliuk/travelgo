@@ -40,7 +40,7 @@ struct ProfileView: View {
                         HStack(spacing: 4) {
                             ForEach(Tab.allCases, id: \.self) { t in
                                 Button {
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { tab = t }
+                                    withAnimation(NTMotion.spring) { tab = t }
                                 } label: {
                                     Text(t.rawValue)
                                         .font(NTFont.body(13, .semibold))

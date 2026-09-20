@@ -99,7 +99,7 @@ struct RouteFullMapView: View {
                     MapViewAnnotation(coordinate: poi.coordinate) {
                         Button {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selectedPOI = poi }
+                            withAnimation(NTMotion.spring) { selectedPOI = poi }
                         } label: {
                             POIMapMarker(category: poi.category)
                         }
@@ -197,7 +197,7 @@ struct RouteFullMapView: View {
             Spacer(minLength: 0)
 
             Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selectedPOI = nil }
+                withAnimation(NTMotion.spring) { selectedPOI = nil }
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .bold))

@@ -156,7 +156,7 @@ struct SearchView: View {
     private func modeButton(_ title: String, _ m: Mode) -> some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { mode = m }
+            withAnimation(NTMotion.spring) { mode = m }
         } label: {
             Text(title)
                 .font(NTFont.body(13.5, .semibold))
@@ -263,7 +263,7 @@ struct SearchView: View {
 
     private func applyPreset(_ preset: Preset) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+        withAnimation(NTMotion.spring) {
             switch preset {
             case .weekend4x4:
                 selectedTransport = [.overland]
@@ -292,7 +292,7 @@ struct SearchView: View {
     private func disclosureSection<Content: View>(_ section: Section, title: String, trailing: String?, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                withAnimation(NTMotion.spring) {
                     openSection = openSection == section ? nil : section
                 }
             } label: {
@@ -395,7 +395,7 @@ struct SearchView: View {
     }
 
     private func setDiff(_ i: Int) {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { difficultyIndex = i }
+        withAnimation(NTMotion.spring) { difficultyIndex = i }
     }
 
     private var rangeRows: some View {

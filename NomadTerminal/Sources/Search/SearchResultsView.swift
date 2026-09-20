@@ -32,7 +32,14 @@ struct SearchResultsView: View {
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
                             ForEach(routes) { route in
-                                tile(route).onTapGesture { openRoute = route }
+                                tile(route)
+                                    .onTapGesture { openRoute = route }
+                                    .ntPressable(haptic: nil)
+                                    .scrollTransition { content, phase in
+                                        content
+                                            .opacity(phase.isIdentity ? 1 : 0.6)
+                                            .scaleEffect(phase.isIdentity ? 1 : 0.95)
+                                    }
                             }
                         }
                         .padding(.top, 22)

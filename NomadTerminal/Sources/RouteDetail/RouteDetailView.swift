@@ -336,7 +336,7 @@ struct RouteDetailView: View {
 
     private func toggleOffline() {
         if savedOffline {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline = false }
+            withAnimation(NTMotion.spring) { savedOffline = false }
             Task {
                 await OfflineRouteStore.shared.remove(routeId: route.id)
                 try? await RouteRepository.shared.setSaved(routeId: route.id, saved: false, downloadedOffline: false)
@@ -350,7 +350,7 @@ struct RouteDetailView: View {
                 cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
                 try await RouteRepository.shared.setSaved(routeId: route.id, saved: true, downloadedOffline: true)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) { savedOffline = true }
+                withAnimation(NTMotion.spring) { savedOffline = true }
             } catch {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
                 showDownloadToast((error as? OfflineDownloadError)?.errorDescription ?? "Couldn't save offline — try again.")

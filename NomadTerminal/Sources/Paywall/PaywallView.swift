@@ -214,6 +214,7 @@ struct PaywallView: View {
             .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(selectedProductID == product.id ? NTColor.accent : NTColor.milk(0.16), lineWidth: selectedProductID == product.id ? 1.5 : 1))
         }
         .buttonStyle(.plain)
+        .ntPressable(haptic: nil)
     }
 
     private func purchase() {

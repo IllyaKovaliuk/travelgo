@@ -34,23 +34,28 @@ final class ThemeManager {
     }
 }
 
-/// NomadTerminal color tokens — mirrors the palette baked into the design doc
-/// (`design_extracted/NomadTerminal.dc.html`). Keep this file as the single
-/// source of truth; never hard-code a hex outside of it.
+/// NomadTerminal color tokens.
 ///
-/// Elevation model (both themes): `pine` (ground) → `pineRaised` (card
-/// surface) → `pineElevated` (modals/sheets/the active tab pill) is the
-/// real 3-step depth ramp — each step is a deliberately distinct fill, not
-/// a near-identical shade of the last, so a card actually reads as sitting
-/// on top of the screen instead of blending into it. `pineDeep`/
-/// `pineShadow`/`pineLine` are utility tones off that same ramp (gradient/
-/// scrim endpoints, hairlines) rather than a 4th/5th/6th elevation step in
-/// their own right. Light (Milk) mode is its own independently-tuned ramp,
-/// not an inversion of the dark one — it still runs dusky→bright as
-/// elevation increases (matching how real elevated surfaces catch more
-/// light regardless of base theme), just within a warm off-white band
-/// instead of a near-black one, topping out at true white for the highest
-/// layer.
+/// Rebuilt around a monochrome UI shell — real route/landscape photography
+/// is the only place color should come from now, so the chrome (grounds,
+/// cards, text) is a tight neutral grayscale ramp with no hue in it at all,
+/// not even the pine green this used to carry. `pine` (ground) →
+/// `pineRaised` (card surface) → `pineElevated` (modals/sheets/the active
+/// tab pill) is the real 3-step depth ramp — each step a clearly distinct,
+/// truly neutral gray, so a card reads as sitting on top of the screen
+/// instead of blending into it, and a photo laid on top of any of these
+/// pops instead of competing with a tinted background. `pineDeep`/
+/// `pineShadow`/`pineLine` are utility tones off that same neutral ramp
+/// (gradient/scrim endpoints, hairlines), not additional elevation steps.
+/// Light (Milk) mode is its own independently-tuned neutral ramp, not an
+/// inversion of the dark one — same dusky→bright direction as elevation
+/// increases, just within a true white/light-gray band instead of a
+/// near-black one.
+///
+/// Names keep their old "pine/milk" identity on purpose — renaming ~50
+/// call sites across the app to something like `ground`/`surface` would
+/// touch every screen for zero visual difference; the token *values* below
+/// are what actually changed.
 ///
 /// The "Ground" tokens (`pine`/`pineDeep`/`pineRaised`/`pineElevated`/
 /// `pineShadow`/`pineLine`/`milk`) are `static var`, not `static let` —
@@ -61,38 +66,52 @@ final class ThemeManager {
 /// — they're either an explicitly-light local surface (a badge, a swatch
 /// preview) or a brand/status color that shouldn't shift with light/dark.
 enum NTColor {
-    // MARK: Ground — theme-reactive
-    static var pine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xF0EBDC) : Color(hex: 0x0A0F0D) }
-    static var pineDeep: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE3DAC5) : Color(hex: 0x05080A) }
-    static var pineRaised: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xF8F5EA) : Color(hex: 0x151B18) }
-    /// The 3rd, topmost elevation step — new. Modals/sheets/the active tab
-    /// bar pill should sit on this, one clear step lighter than
-    /// `pineRaised`'s cards, so a sheet presented over a card still reads
-    /// as "higher," not the same surface repeated.
-    static var pineElevated: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xFFFFFF) : Color(hex: 0x212A25) }
-    static var pineShadow: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE7DFCB) : Color(hex: 0x080B09) }
-    static var pineLine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xFCFAF3) : Color(hex: 0x1C2420) }
+    // MARK: Ground — theme-reactive, true neutral grayscale
+    static var pine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xFFFFFF) : Color(hex: 0x0A0A0A) }
+    static var pineDeep: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE8E8E8) : Color(hex: 0x000000) }
+    static var pineRaised: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xF5F5F5) : Color(hex: 0x1A1A1A) }
+    /// The 3rd, topmost elevation step. Modals/sheets/the active tab bar
+    /// pill sit on this, one clear step lighter than `pineRaised`'s cards.
+    static var pineElevated: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xEBEBEB) : Color(hex: 0x262626) }
+    static var pineShadow: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xE2E2E2) : Color(hex: 0x050505) }
+    static var pineLine: Color { ThemeManager.shared.current == .milk ? Color(hex: 0xF8F8F8) : Color(hex: 0x2E2E2E) }
 
-    /// Primary foreground (text/icons) — cream-on-dark in Pine, ink-on-light
-    /// in Milk. Also doubles as most primary-CTA button fills, which is why
-    /// this flipping (not staying literally "cream") is correct: it keeps
-    /// "readable foreground against the current ground" as the actual
-    /// semantic, not a literal color name.
-    static var milk: Color { ThemeManager.shared.current == .milk ? Color(hex: 0x0B2A1D) : Color(hex: 0xFAF6EC) }
+    /// Primary foreground (text/icons) — near-white on dark Pine, near-black
+    /// on light Milk. Also doubles as most primary-CTA button fills, which
+    /// is why this flipping (not staying literally one color) is correct:
+    /// it keeps "readable foreground against the current ground" as the
+    /// actual semantic. Secondary/tertiary text doesn't get its own
+    /// separate gray token — `milk(_:)` below, alpha-blending this
+    /// near-white/near-black against a truly neutral ground, already lands
+    /// on the same mid-gray a dedicated token would (e.g. `milk(0.55)` on
+    /// dark Pine ≈ 0x8C8C8C), so the existing opacity-based call sites
+    /// (~200 of them) needed no changes to get there.
+    static var milk: Color { ThemeManager.shared.current == .milk ? Color(hex: 0x0A0A0A) : Color(hex: 0xF5F5F5) }
 
     // MARK: Ground — fixed regardless of theme
-    static let milkSurface = Color(hex: 0xF2ECDD)    // an explicitly-light local surface (badge, swatch preview)
-    static let ink = Color(hex: 0x0B2A1D)            // text on an explicitly-light local surface
+    static let milkSurface = Color(hex: 0xF5F5F5)    // an explicitly-light local surface (badge, swatch preview)
+    static let ink = Color(hex: 0x0A0A0A)            // text on an explicitly-light local surface
 
     // MARK: Accents — fixed regardless of theme
+    // Terracotta stays the one accent — kept over a pure white/black accent
+    // (the spec's other option) because it's already load-bearing brand
+    // identity (the compass mark, the app icon) that a monochrome accent
+    // would have meant re-deriving from scratch for no real gain; the
+    // discipline the brief actually wants is about *usage* (CTA/record/
+    // active-state only), which is what the accent audit below enforces.
     static let accent = Color(hex: 0xE8743B)         // terracotta — primary CTA / record
     static let accentDeep = Color(hex: 0xC2551F)
-    static let sage = Color(hex: 0x5FA777)           // success / foot / on-toggles
-    static let water = Color(hex: 0x3E92CC)          // water / kayak
-    static let extreme = Color(hex: 0x7A5FBF)        // climb / extreme
-    static let gold = Color(hex: 0xE0A458)           // moderate / POI / warnings
-    static let hard = Color(hex: 0xB33A2B)           // hard / SOS / destructive
-    static let hardBright = Color(hex: 0xE58272)
+    // Status/category hues (difficulty tags, transport icons) stay
+    // distinct — they're functional data, not decoration — but muted
+    // down from their previous, slightly more saturated versions so they
+    // read as quiet data labels next to full-color photography, not
+    // competing cartoon chips.
+    static let sage = Color(hex: 0x6E9C80)           // success / foot / on-toggles
+    static let water = Color(hex: 0x5F8FB0)          // water / kayak
+    static let extreme = Color(hex: 0x7E6FA3)        // climb / extreme
+    static let gold = Color(hex: 0xC9A470)           // moderate / POI / warnings
+    static let hard = Color(hex: 0xA8493D)           // hard / SOS / destructive
+    static let hardBright = Color(hex: 0xD08F82)
 
     // MARK: Foreground at reduced opacity, theme-aware since `milk` is
     static func milk(_ opacity: Double) -> Color { milk.opacity(opacity) }

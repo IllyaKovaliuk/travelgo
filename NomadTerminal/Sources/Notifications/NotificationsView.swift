@@ -1,11 +1,17 @@
 import SwiftUI
 
-/// 18 · Notifications — real data now, assembled from follows/likes/
-/// comments/badges/new-routes-from-people-you-follow (see
+/// 18 · Activity — real data now, assembled from follows/likes/comments/
+/// badges/new-routes-from-people-you-follow (see
 /// `RouteRepository.fetchNotifications`). There's no single notifications
 /// table on the backend; this merges four real sources client-side.
+///
+/// Used both as its own bottom-tab (the social feed — a normal vertical
+/// list of activity rows, same pattern Strava uses, not another full-
+/// screen swipe surface) and, with `onClose` set, as a modal from anywhere
+/// else that still wants to push it — `onClose == nil` hides the back
+/// button since a tab has nowhere to "close" to.
 struct NotificationsView: View {
-    var onClose: () -> Void
+    var onClose: (() -> Void)? = nil
 
     @State private var items: [RouteRepository.NotificationItem] = []
     @State private var isLoading = true
@@ -17,16 +23,18 @@ struct NotificationsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 14) {
-                        Button(action: onClose) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .semibold))
-                                .frame(width: 38, height: 38)
-                                .background(Circle().fill(NTColor.milk(0.08)))
-                                .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                        if let onClose {
+                            Button(action: onClose) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 38, height: 38)
+                                    .background(Circle().fill(NTColor.milk(0.08)))
+                                    .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
 
-                        Text("Notifications").font(NTFont.heading(26, .extraBold))
+                        Text("Activity").font(NTFont.heading(26, .extraBold))
                         if !items.isEmpty {
                             Text("\(items.count)").font(NTFont.mono(10, .semibold)).foregroundStyle(NTColor.accent)
                         }

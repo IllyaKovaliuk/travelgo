@@ -1,38 +1,50 @@
 import SwiftUI
 
-/// 04 · Home feed — vertical Reels-style paging through routes.
+/// 04 · Home feed — a dense, scannable list, not a one-at-a-time swipe.
+/// Used to page full-screen through routes Reels-style, which physically
+/// prevents comparing more than one route at once — exactly the opposite
+/// of how someone planning a trip actually decides (Strava/AllTrails/komoot/
+/// onX all use this same list-of-cards pattern for that reason). Following/
+/// Nearby/Wild are filter chips now, not full-screen tabs.
 struct HomeFeedView: View {
     enum FeedTab: String, CaseIterable { case following = "Following", nearby = "Nearby", wild = "Wild" }
 
     @State private var feedTab: FeedTab = .following
-    @State private var scrollPosition: String?
     @State private var openRoute: Route?
     @State private var routes: [Route] = []
     @State private var isLoading = true
     @State private var isOffline = false
     @State private var showLogRoute = false
-    @State private var showNotifications = false
     @State private var locationSearcher = PlaceSearcher()
     @State private var loadToken = 0
 
     var body: some View {
         ZStack(alignment: .top) {
+            NTColor.pine.ignoresSafeArea()
+
             if routes.isEmpty && !isLoading {
-                emptyTabState
+                emptyTabState.padding(.top, 130)
             } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    LazyVStack(spacing: 0) {
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 14) {
                         ForEach(routes) { route in
-                            RouteCard(route: route, onOpen: { openRoute = route })
-                                .containerRelativeFrame(.vertical)
-                                .id(route.id)
+                            routeRow(route)
+                                .scrollTransition { content, phase in
+                                    // Cheap, system-driven depth-on-scroll —
+                                    // no per-frame GeometryReader math: cards
+                                    // ease in as they enter the viewport
+                                    // instead of just appearing.
+                                    content
+                                        .opacity(phase.isIdentity ? 1 : 0.6)
+                                        .scaleEffect(phase.isIdentity ? 1 : 0.96)
+                                }
                         }
                     }
-                    .scrollTargetLayout()
+                    .padding(.horizontal, 18)
+                    .padding(.top, 118)
+                    .padding(.bottom, 110)
                 }
-                .scrollPosition(id: $scrollPosition)
-                .scrollTargetBehavior(.paging)
-                .ignoresSafeArea()
+                .transition(.opacity)
             }
 
             topBar
@@ -48,15 +60,11 @@ struct HomeFeedView: View {
                     .allowsHitTesting(false)
             }
         }
-        .background(NTColor.pineDeep)
         .fullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
         .fullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
             LogRouteFlow()
-        }
-        .fullScreenCover(isPresented: $showNotifications) {
-            NotificationsView(onClose: { showNotifications = false })
         }
         .task { await loadRoutes() }
         .onChange(of: feedTab) { _, _ in Task { await loadRoutes() } }
@@ -78,7 +86,7 @@ struct HomeFeedView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
     }
 
     private func loadRoutes() async {
@@ -91,7 +99,7 @@ struct HomeFeedView: View {
         // know which data we're showing, makes that swap impossible.
         loadToken += 1
         let myToken = loadToken
-        withAnimation { isLoading = true }
+        withAnimation(NTMotion.spring) { isLoading = true }
         do {
             try await RouteRepository.shared.ensureSession()
             let live: [Route]
@@ -107,7 +115,9 @@ struct HomeFeedView: View {
                 live = try await RouteRepository.shared.fetchRoutes()
             }
             if myToken != loadToken { return } // a newer tab switch already superseded this fetch
-            routes = feedTab == .wild && live.isEmpty ? Route.mock : live
+            withAnimation(NTMotion.spring) {
+                routes = feedTab == .wild && live.isEmpty ? Route.mock : live
+            }
             isOffline = false
         } catch {
             // Offline or backend hiccup — fall back to the mock feed so the
@@ -115,10 +125,12 @@ struct HomeFeedView: View {
             // days without a bar of service" promise from onboarding.
             print("Route fetch failed, falling back to mock feed: \(error)")
             if myToken != loadToken { return }
-            routes = feedTab == .wild ? Route.mock : []
+            withAnimation(NTMotion.spring) {
+                routes = feedTab == .wild ? Route.mock : []
+            }
             isOffline = feedTab == .wild
         }
-        if myToken == loadToken { withAnimation { isLoading = false } }
+        if myToken == loadToken { withAnimation(NTMotion.spring) { isLoading = false } }
     }
 
     /// Waits briefly for a real GPS fix before falling back to "no location
@@ -146,58 +158,150 @@ struct HomeFeedView: View {
             .padding(.horizontal, 16).padding(.vertical, 10)
             .background(NTColor.gold.opacity(0.22), in: Capsule())
             .overlay(Capsule().stroke(NTColor.gold.opacity(0.5), lineWidth: 1))
-            .padding(.top, 62)
+            .padding(.top, 118)
             Spacer()
         }
         .allowsHitTesting(false)
     }
 
+    // MARK: - Top bar + filter chips
+
     private var topBar: some View {
-        HStack(spacing: 20) {
-            HStack(spacing: 20) {
-                ForEach(FeedTab.allCases, id: \.self) { tab in
-                    Button {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { feedTab = tab }
-                    } label: {
-                        Text(tab.rawValue)
-                            .font(NTFont.body(14, .semibold))
-                            .foregroundStyle(feedTab == tab ? NTColor.milk : NTColor.milk(0.55))
-                            .overlay(alignment: .bottom) {
-                                if feedTab == tab {
-                                    Rectangle().fill(NTColor.milk).frame(height: 2).offset(y: 7)
-                                }
-                            }
-                    }
-                    .buttonStyle(.plain)
+        VStack(spacing: 14) {
+            HStack {
+                Text("Home").font(NTFont.heading(24, .extraBold)).foregroundStyle(NTColor.milk)
+                Spacer()
+                Button { showLogRoute = true } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color(hex: 0x231007))
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(NTColor.accent))
+                        .shadow(color: NTColor.accent.opacity(0.5), radius: 10, y: 4)
                 }
+                .buttonStyle(.plain)
+                .ntPressable()
             }
 
-            Spacer()
-
-            Button { showNotifications = true } label: {
-                Image(systemName: "bell.fill")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(NTColor.milk(0.85))
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(NTColor.milk(0.1)))
-                    .overlay(Circle().stroke(NTColor.milk(0.2), lineWidth: 1))
+            HStack(spacing: 8) {
+                ForEach(FeedTab.allCases, id: \.self) { tab in
+                    filterChip(tab)
+                }
+                Spacer(minLength: 0)
             }
-            .buttonStyle(.plain)
-            .ntPressable(haptic: nil)
-
-            Button { showLogRoute = true } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x231007))
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(NTColor.accent))
-                    .shadow(color: NTColor.accent.opacity(0.6), radius: 12, y: 4)
-            }
-            .buttonStyle(.plain)
-            .ntPressable()
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, 20)
         .padding(.top, 12)
+        .background(
+            LinearGradient(colors: [NTColor.pine, NTColor.pine.opacity(0.94), .clear], startPoint: .top, endPoint: .bottom)
+                .frame(height: 150)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .allowsHitTesting(false)
+        )
+    }
+
+    private func filterChip(_ tab: FeedTab) -> some View {
+        let selected = feedTab == tab
+        return Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            withAnimation(NTMotion.spring) { feedTab = tab }
+        } label: {
+            Text(tab.rawValue)
+                .font(NTFont.body(13, .semibold))
+                .foregroundStyle(selected ? NTColor.pine : NTColor.milk(0.7))
+                .padding(.horizontal, 16)
+                .frame(height: 38)
+                .background(Capsule().fill(selected ? NTColor.milk : NTColor.milk(0.08)))
+                .overlay(Capsule().stroke(NTColor.milk(0.16), lineWidth: selected ? 0 : 1))
+        }
+        .buttonStyle(.plain)
+        .ntPressable(haptic: nil)
+    }
+
+    // MARK: - Route row
+
+    private func routeRow(_ route: Route) -> some View {
+        Button { openRoute = route } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack(alignment: .bottomLeading) {
+                    RouteCoverImage(url: route.coverImageUrl, tint: route.transport.color)
+                        .aspectRatio(16 / 10, contentMode: .fill)
+                        .frame(height: 190)
+                        .clipped()
+
+                    // A bottom-only scrim so the place pill stays legible —
+                    // never a wash over the whole photo.
+                    LinearGradient(
+                        colors: [.clear, .black.opacity(0.55)],
+                        startPoint: .center, endPoint: .bottom
+                    )
+                    .frame(height: 190)
+                    .allowsHitTesting(false)
+
+                    HStack(spacing: 6) {
+                        Image(systemName: "location.fill").font(.system(size: 10))
+                        Text(route.place)
+                            .font(NTFont.mono(10, .semibold))
+                            .tracking(1)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(Capsule().fill(.ultraThinMaterial).environment(\.colorScheme, .dark))
+                    .background(Capsule().fill(.black.opacity(0.2)))
+                    .padding(12)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(route.title.replacingOccurrences(of: "\n", with: " "))
+                        .font(NTFont.heading(18, .bold))
+                        .foregroundStyle(NTColor.milk)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+
+                    HStack(spacing: 8) {
+                        Text(route.difficulty.rawValue)
+                            .font(NTFont.mono(9.5, .semibold))
+                            .tracking(0.6)
+                            .foregroundStyle(NTColor.pine)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(Capsule().fill(route.difficulty.color))
+                        HStack(spacing: 5) {
+                            Image(systemName: route.transport.icon).font(.system(size: 10))
+                            Text(route.transportLabel).font(NTFont.mono(9.5, .semibold)).tracking(0.4)
+                        }
+                        .foregroundStyle(NTColor.milk(0.75))
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .overlay(Capsule().stroke(NTColor.milk(0.2), lineWidth: 1))
+                    }
+
+                    HStack {
+                        ZStack {
+                            LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+                            Text(route.author.initials).font(NTFont.heading(10, .semibold)).foregroundStyle(.white)
+                        }
+                        .frame(width: 24, height: 24)
+                        .clipShape(Circle())
+
+                        Text(route.author.name)
+                            .font(NTFont.body(12.5, .medium))
+                            .foregroundStyle(NTColor.milk(0.7))
+                            .lineLimit(1)
+
+                        Spacer(minLength: 8)
+
+                        Text(String(format: "%.1f KM", route.distanceKM))
+                            .font(NTFont.mono(11, .semibold))
+                            .tracking(0.4)
+                            .foregroundStyle(NTColor.milk(0.55))
+                    }
+                }
+                .padding(14)
+            }
+            .background(NTColor.pineRaised, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .ntPressable(haptic: nil)
     }
 }
 

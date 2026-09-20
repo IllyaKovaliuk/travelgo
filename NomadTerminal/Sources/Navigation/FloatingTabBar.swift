@@ -4,14 +4,21 @@ enum RootTab: Int, CaseIterable {
     // Compass used to be its own tab; it's reached from a route's
     // "Navigate" button now (with a plain-compass toggle right there,
     // next to SOS) since a standalone tab for it didn't earn its keep
-    // visually against 5 other primary destinations.
-    case home, search, guide, saved, profile
+    // visually against the other primary destinations.
+    //
+    // Activity (the social/follow feed — comments, likes, badges, new
+    // routes from people you follow) used to be a bell button opening a
+    // modal from Home. Promoted to a real tab: it's a whole browsing
+    // surface in its own right (a normal vertical list, same pattern
+    // Strava uses for its feed), not a one-off notification tray.
+    case home, search, guide, activity, saved, profile
 
     var icon: String {
         switch self {
         case .home: return "house.fill"
         case .search: return "magnifyingglass"
         case .guide: return "book.closed.fill"
+        case .activity: return "bell.fill"
         case .saved: return "bookmark.fill"
         case .profile: return ""
         }
@@ -30,7 +37,7 @@ struct FloatingTabBar: View {
                 Button {
                     let generator = UISelectionFeedbackGenerator()
                     generator.selectionChanged()
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                    withAnimation(NTMotion.spring) {
                         selection = tab
                     }
                 } label: {

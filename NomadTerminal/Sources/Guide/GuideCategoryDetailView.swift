@@ -48,7 +48,7 @@ struct GuideCategoryDetailView: View {
         let isOpen = expanded.contains(situation.id)
         return VStack(alignment: .leading, spacing: 0) {
             Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                withAnimation(NTMotion.spring) {
                     if isOpen { expanded.remove(situation.id) } else { expanded.insert(situation.id) }
                 }
             } label: {

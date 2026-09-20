@@ -92,7 +92,7 @@ struct SavedView: View {
 
     private func libTab(_ l: Lib, count: Int) -> some View {
         Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) { lib = l }
+            withAnimation(NTMotion.spring) { lib = l }
         } label: {
             Text("\(l.rawValue) · \(count)")
                 .font(NTFont.body(13.5, .semibold))
