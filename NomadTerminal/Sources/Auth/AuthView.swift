@@ -27,11 +27,6 @@ struct AuthView: View {
     var body: some View {
         ZStack {
             NTColor.pine.ignoresSafeArea()
-            OrganicBlob((0.54, 0.46, 0.48, 0.52), (0.5, 0.54, 0.46, 0.5))
-                .fill(NTColor.pineRaised)
-                .frame(width: 460, height: 400)
-                .position(x: 80, y: -110)
-                .ignoresSafeArea()
 
             if confirmEmailSent {
                 confirmEmailView
@@ -194,8 +189,8 @@ struct AuthView: View {
         }
         .padding(.horizontal, 16)
         .frame(height: 54)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
     }
 
     private var canSubmit: Bool {

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A single organic-blob pick on the Interests screen. Selection drives a
-/// bouncy spring (scale + opacity), on top of the shared press micro-bounce.
+/// A single pick on the Interests screen. Selection drives a bouncy spring
+/// (scale + opacity), on top of the shared press micro-bounce.
 struct InterestCard: View {
     let interest: Interest
     let isSelected: Bool
@@ -33,19 +33,19 @@ struct InterestCard: View {
         .animation(.spring(response: 0.42, dampingFraction: 0.58), value: isSelected)
     }
 
-    private var blob: OrganicBlob { OrganicBlob(interest.blobX, interest.blobY) }
+    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous) }
 
     @ViewBuilder private var background: some View {
         if interest.isOutline {
-            blob.fill(NTColor.milk(0.1))
+            shape.fill(NTColor.milk(0.1))
         } else {
-            blob.fill(interest.color.opacity(0.9))
+            shape.fill(interest.color.opacity(0.9))
         }
     }
 
     @ViewBuilder private var border: some View {
         if interest.isOutline {
-            blob.stroke(style: StrokeStyle(lineWidth: 1.5, dash: [5, 5]))
+            shape.stroke(style: StrokeStyle(lineWidth: 1.5, dash: [5, 5]))
                 .foregroundStyle(NTColor.milk(0.3))
         }
     }

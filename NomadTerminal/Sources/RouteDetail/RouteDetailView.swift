@@ -108,7 +108,7 @@ struct RouteDetailView: View {
                     .foregroundStyle(NTColor.pine)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 18).padding(.vertical, 12)
-                    .background(NTColor.milk, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .background(NTColor.milk, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                     .padding(.horizontal, 30)
                     .padding(.bottom, 90)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -247,8 +247,8 @@ struct RouteDetailView: View {
         // milkSurface (fixed), not milk (theme-reactive) — this card's text
         // is NTColor.ink, which is also fixed dark; pairing it with the
         // reactive `milk` would go dark-on-dark once Milk theme flips it.
-        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.gold, lineWidth: 2))
+        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.gold, lineWidth: 2))
         .shadow(color: NTColor.gold.opacity(0.16), radius: 0, x: 0, y: 0)
     }
 
@@ -267,8 +267,8 @@ struct RouteDetailView: View {
                 }
             }
             .padding(14)
-            .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
+            .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
         }
     }
 
@@ -290,7 +290,7 @@ struct RouteDetailView: View {
         .padding(20)
         .background(NTColor.milk(0.06))
         .overlay(Rectangle().fill(NTColor.sage).frame(width: 2), alignment: .leading)
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
     }
 
     private var segmentsSection: some View {

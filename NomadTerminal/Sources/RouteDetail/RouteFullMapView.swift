@@ -208,8 +208,8 @@ struct RouteFullMapView: View {
             .buttonStyle(.plain)
         }
         .padding(16)
-        .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .shadow(color: .black.opacity(0.3), radius: 16, y: 8)
     }
 

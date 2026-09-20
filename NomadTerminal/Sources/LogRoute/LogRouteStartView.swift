@@ -76,8 +76,8 @@ struct LogRouteStartView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
                 .revealOnAppear(delay: 0.3)
             }
             .padding(.horizontal, 26)
@@ -113,11 +113,11 @@ struct LogRouteStartView: View {
             }
             .padding(22)
             .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                     .fill(filled ? tint.opacity(0.14) : NTColor.milk(0.07))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                     .stroke(filled ? tint.opacity(0.45) : NTColor.milk(0.12), lineWidth: filled ? 1.5 : 1)
             )
         }

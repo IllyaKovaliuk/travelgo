@@ -62,8 +62,8 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .padding(.horizontal, 18)
-                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
 
                     Button {
                         signOut()
@@ -174,8 +174,8 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .padding(18)
-        .background(NTColor.gold.opacity(0.1), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.gold.opacity(0.3), lineWidth: 1))
+        .background(NTColor.gold.opacity(0.1), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.gold.opacity(0.3), lineWidth: 1))
     }
 
     private var pointsRow: some View {
@@ -197,8 +197,8 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .padding(18)
-        .background(NTColor.sage.opacity(0.1), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.sage.opacity(0.3), lineWidth: 1))
+        .background(NTColor.sage.opacity(0.1), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.sage.opacity(0.3), lineWidth: 1))
     }
 
     private func signOut() {
@@ -228,8 +228,8 @@ struct SettingsView: View {
             }
         }
         .padding(20)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private func themeTile(_ label: String, selected: Bool, bg: Color, fg: Color, action: @escaping () -> Void) -> some View {
@@ -256,8 +256,8 @@ struct SettingsView: View {
             }
             .padding(13)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(selected ? NTColor.accent : NTColor.milk(0.14), lineWidth: selected ? 2 : 1))
+            .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(selected ? NTColor.accent : NTColor.milk(0.14), lineWidth: selected ? 2 : 1))
         }
         .buttonStyle(.plain)
     }
@@ -266,8 +266,8 @@ struct SettingsView: View {
     private func cardGroup<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         VStack(spacing: 0) { content() }
             .padding(.horizontal, 18)
-            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 28, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private var divider: some View {

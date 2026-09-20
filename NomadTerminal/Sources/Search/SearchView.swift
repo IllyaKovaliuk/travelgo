@@ -202,13 +202,13 @@ struct SearchView: View {
                     Text("Searching…").font(NTFont.body(13.5, .medium)).foregroundStyle(NTColor.ink.opacity(0.6))
                 }
                 .padding(.vertical, 14).padding(.horizontal, 16)
-                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             } else if results.isEmpty {
                 Text("No routes match \"\(query)\" yet.")
                     .font(NTFont.body(13.5, .medium))
                     .foregroundStyle(NTColor.ink.opacity(0.6))
                     .padding(.vertical, 14).padding(.horizontal, 16)
-                    .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(results.prefix(4).enumerated()), id: \.element.id) { index, route in
@@ -220,7 +220,7 @@ struct SearchView: View {
                     }
                 }
                 .padding(.vertical, 6)
-                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                 .shadow(color: .black.opacity(0.3), radius: 24, y: 16)
             }
         }
@@ -315,8 +315,8 @@ struct SearchView: View {
             }
         }
         .padding(20)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private var transportGrid: some View {
@@ -335,11 +335,11 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity)
                     .aspectRatio(1, contentMode: .fit)
                     .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                             .fill(selected ? t.color : NTColor.milk(0.08))
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                             .stroke(NTColor.milk(0.16), lineWidth: selected ? 0 : 1)
                     )
                 }
@@ -454,8 +454,8 @@ struct SearchView: View {
                     Image(systemName: "chevron.up.chevron.down").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.5))
                 }
                 .padding(20)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
             }
             .disabled(availableRegions.isEmpty)
 
@@ -469,8 +469,8 @@ struct SearchView: View {
                     .font(.system(size: 18))
                     .foregroundStyle(NTColor.milk)
                     .frame(width: 60, height: 60)
-                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
             }
             .buttonStyle(.plain)
         }
@@ -487,8 +487,8 @@ struct SearchView: View {
             Text("COMING SOON").font(NTFont.mono(10, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.4))
         }
         .padding(20)
-        .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
+        .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
     }
 
     private var resultsBar: some View {

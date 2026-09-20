@@ -20,7 +20,7 @@ struct RouteReviewPublishView: View {
                     stepHeader
 
                     ZStack(alignment: .bottomLeading) {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                             .fill(LinearGradient(colors: [NTColor.pineRaised, NTColor.pineShadow], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(height: 150)
                         VStack(alignment: .leading, spacing: 6) {
@@ -58,7 +58,7 @@ struct RouteReviewPublishView: View {
                             Text(errorMessage).font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.milk(0.85))
                         }
                         .padding(16)
-                        .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                         .padding(.top, 20)
                     }
 
@@ -68,7 +68,7 @@ struct RouteReviewPublishView: View {
                             Text("Published — live at ID \(published.id.prefix(8))…").font(NTFont.body(12.5, .medium))
                         }
                         .padding(16)
-                        .background(NTColor.sage.opacity(0.15), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        .background(NTColor.sage.opacity(0.15), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                         .padding(.top, 20)
                     }
                 }

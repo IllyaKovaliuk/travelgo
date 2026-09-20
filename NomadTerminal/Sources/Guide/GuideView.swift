@@ -67,8 +67,8 @@ struct GuideView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 148, alignment: .topLeading)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 }
 

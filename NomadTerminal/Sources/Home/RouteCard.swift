@@ -19,7 +19,7 @@ struct RouteCard: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                RouteCoverImage(url: route.coverImageUrl, caption: route.coverPlaceholder)
+                RouteCoverImage(url: route.coverImageUrl, caption: route.coverPlaceholder, tint: route.transport.color)
                     .contentShape(Rectangle())
                     .onTapGesture(perform: onOpen)
                     .contextMenu {

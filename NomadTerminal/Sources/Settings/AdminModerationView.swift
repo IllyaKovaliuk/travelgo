@@ -114,8 +114,8 @@ struct AdminModerationView: View {
             }
         }
         .padding(16)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private func commentCard(_ comment: RouteRepository.HiddenComment) -> some View {
@@ -135,8 +135,8 @@ struct AdminModerationView: View {
             }
         }
         .padding(16)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private func reinstateButton(id: String, action: @escaping () async throws -> Void) -> some View {

@@ -205,8 +205,8 @@ struct RegionMapPickerView: View {
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.ultraThinMaterial.opacity(0.001), in: Rectangle()) // keeps taps below from passing through
-        .background(NTColor.pine.opacity(0.94), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.pine.opacity(0.94), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .padding(16)
     }
 

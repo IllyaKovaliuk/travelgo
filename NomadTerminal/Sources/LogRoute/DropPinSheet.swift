@@ -27,8 +27,8 @@ struct DropPinSheet: View {
                             .foregroundStyle(NTColor.milk)
                             .padding(.horizontal, 16)
                             .frame(height: 52)
-                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
@@ -38,8 +38,8 @@ struct DropPinSheet: View {
                             .foregroundStyle(NTColor.milk)
                             .lineLimit(2...3)
                             .padding(14)
-                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
                     }
 
                     Button {
@@ -92,8 +92,8 @@ struct DropPinSheet: View {
                         .foregroundStyle(category == c ? Color(hex: 0x231007) : NTColor.milk(0.8))
                         .frame(maxWidth: .infinity)
                         .frame(height: 74)
-                        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(category == c ? c.tint : NTColor.milk(0.07)))
-                        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: category == c ? 0 : 1))
+                        .background(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).fill(category == c ? c.tint : NTColor.milk(0.07)))
+                        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: category == c ? 0 : 1))
                     }
                     .buttonStyle(.plain)
                 }

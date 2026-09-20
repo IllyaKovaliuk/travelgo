@@ -16,7 +16,7 @@ struct PermissionCard: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 14) {
                 ZStack {
-                    OrganicBlob.soft(seed: 2)
+                    Circle()
                         .fill(iconTint.opacity(0.18))
                     Image(systemName: icon)
                         .font(.system(size: 19, weight: .medium))
@@ -60,6 +60,6 @@ struct PermissionCard: View {
         .padding(.vertical, 26)
         // milkSurface (fixed) — title/description above are NTColor.ink,
         // also fixed; the reactive `milk` would go dark-on-dark in Milk theme.
-        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .background(NTColor.milkSurface, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
     }
 }

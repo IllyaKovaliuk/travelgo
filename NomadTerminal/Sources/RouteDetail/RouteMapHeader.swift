@@ -183,14 +183,13 @@ struct RouteMapHeader: View {
     private var terrain: some View {
         ZStack {
             NTColor.pineShadow
-            OrganicBlob((0.15, 0.55, 0.3, 0.1), (0.1, 0.2, 0.7, 0.5))
-                .fill(NTColor.pineLine)
-                .frame(width: 460, height: 340)
-                .position(x: 120, y: 60)
-            OrganicBlob((0.4, 0.2, 0.35, 0.5), (0.4, 0.1, 0.55, 0.35))
-                .fill(NTColor.pineRaised.opacity(0.75))
-                .frame(width: 420, height: 300)
-                .position(x: 300, y: 190)
+            // Flat ground + a faint straight-line contour pattern instead of
+            // the old soft organic blobs — still reads as "terrain," just
+            // without the decorative shapes that don't belong in this
+            // aesthetic anymore.
+            TopoLines(lineCount: 6, spacing: 26)
+                .stroke(NTColor.pineLine, lineWidth: 1)
+                .opacity(0.5)
         }
     }
 

@@ -89,7 +89,7 @@ struct RecordTrackView: View {
 
     private var droppedPinsRow: some View {
         HStack(spacing: 8) {
-            Image(systemName: "mappin.circle.fill").font(.system(size: 14)).foregroundStyle(NTColor.accent)
+            Image(systemName: "mappin.circle.fill").font(.system(size: 14)).foregroundStyle(NTColor.sage)
             Text("\(droppedPOIs.count) PIN\(droppedPOIs.count == 1 ? "" : "S") DROPPED")
                 .font(NTFont.mono(10.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
             Spacer()
@@ -106,25 +106,22 @@ struct RecordTrackView: View {
                 .multilineTextAlignment(.center)
         }
         .padding(24)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .padding(.horizontal, 22)
     }
 
     private var terrain: some View {
         ZStack {
             NTColor.pineDeep.ignoresSafeArea()
-            OrganicBlob((0.15, 0.55, 0.3, 0.1), (0.1, 0.2, 0.7, 0.5))
-                .fill(NTColor.pineShadow)
-                .frame(width: 500, height: 400)
-                .position(x: 120, y: 200)
+            // Flat ground + a faint straight-line contour pattern instead of
+            // the old soft organic blobs — still reads as "terrain," just
+            // without the decorative shapes that don't belong in this
+            // aesthetic anymore.
+            TopoLines(lineCount: 6, spacing: 28)
+                .stroke(NTColor.pineShadow, lineWidth: 1)
+                .opacity(0.6)
                 .ignoresSafeArea()
-            OrganicBlob((0.4, 0.2, 0.35, 0.5), (0.4, 0.1, 0.55, 0.35))
-                .fill(NTColor.pineRaised.opacity(0.6))
-                .frame(width: 460, height: 360)
-                .position(x: 320, y: 480)
-                .ignoresSafeArea()
-                .ambientDrift(dx: 6, dy: 8, duration: 9)
         }
     }
 
@@ -188,8 +185,8 @@ struct RecordTrackView: View {
             }
         }
         .padding(24)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .padding(.horizontal, 22)
     }
 

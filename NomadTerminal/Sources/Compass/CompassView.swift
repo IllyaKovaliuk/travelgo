@@ -280,8 +280,8 @@ struct CompassView: View {
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 16).padding(.vertical, 13)
-            .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+            .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
 
             HStack(spacing: 10) {
                 Button {
@@ -414,7 +414,7 @@ private struct LogNoteSheet: View {
                     .font(NTFont.body(15, .regular))
                     .frame(minHeight: 140)
                     .padding(10)
-                    .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                 Spacer()
             }
             .padding(20)

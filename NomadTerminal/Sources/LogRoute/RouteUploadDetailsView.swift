@@ -48,8 +48,8 @@ struct RouteUploadDetailsView: View {
                                     .foregroundStyle(draft.transport == t ? Color(hex: 0x231007) : NTColor.milk(0.75))
                                     .frame(maxWidth: .infinity)
                                     .aspectRatio(1, contentMode: .fit)
-                                    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(draft.transport == t ? t.color : NTColor.milk(0.08)))
-                                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: draft.transport == t ? 0 : 1))
+                                    .background(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).fill(draft.transport == t ? t.color : NTColor.milk(0.08)))
+                                    .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: draft.transport == t ? 0 : 1))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -104,8 +104,8 @@ struct RouteUploadDetailsView: View {
                             .foregroundStyle(NTColor.milk)
                             .lineLimit(2...4)
                             .padding(14)
-                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
                     }
                     .padding(.top, 14)
 
@@ -136,7 +136,7 @@ struct RouteUploadDetailsView: View {
     private var coverSlot: some View {
         PhotosPicker(selection: $pickerItem, matching: .images) {
             ZStack {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                     .fill(NTColor.milk(0.05))
                     .frame(height: 150)
 
@@ -146,9 +146,9 @@ struct RouteUploadDetailsView: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(height: 150)
                         .frame(maxWidth: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                 } else {
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                         .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
                         .foregroundStyle(NTColor.milk(0.28))
                         .frame(height: 150)
@@ -156,7 +156,7 @@ struct RouteUploadDetailsView: View {
 
                 if isUploadingCover {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 26, style: .continuous).fill(.black.opacity(0.4))
+                        RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).fill(.black.opacity(0.4))
                         ProgressView().tint(NTColor.milk)
                     }
                     .frame(height: 150)
@@ -263,7 +263,7 @@ struct RouteUploadDetailsView: View {
                 }
                 .padding(.horizontal, 14)
                 .frame(height: 54)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             }
         }
     }
@@ -299,7 +299,7 @@ struct RouteUploadDetailsView: View {
                         .foregroundStyle(NTColor.milk(0.8))
                 }
                 .padding(14)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             }
         }
     }
@@ -327,7 +327,7 @@ struct RouteUploadDetailsView: View {
                     removeButton { draft.pois.removeAll { $0.id == poi.id } }
                 }
                 .padding(12)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             }
         }
     }
@@ -361,8 +361,8 @@ struct RouteUploadDetailsView: View {
                 .foregroundStyle(NTColor.milk)
                 .padding(.horizontal, 16)
                 .frame(height: 54)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
         }
     }
 }

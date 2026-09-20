@@ -65,27 +65,4 @@ enum Interest: String, CaseIterable, Identifiable {
         case .huts: return (174, 342, 134, 124)
         }
     }
-
-    /// Exact asymmetric corner fractions, lifted 1:1 from the doc's CSS
-    /// `border-radius` values for each pick (e.g. `58% 42% 48% 52% / 52% 56% 44% 48%`).
-    var blobX: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat) {
-        switch self {
-        case .overland: return (0.58, 0.42, 0.48, 0.52)
-        case .water: return (0.46, 0.54, 0.60, 0.40)
-        case .extreme: return (0.52, 0.48, 0.42, 0.58)
-        case .hiking: return (0.60, 0.40, 0.52, 0.48)
-        case .cycling: return (0.44, 0.56, 0.56, 0.44)
-        case .huts: return (0.56, 0.44, 0.40, 0.60)
-        }
-    }
-    var blobY: (topLeft: CGFloat, topRight: CGFloat, bottomRight: CGFloat, bottomLeft: CGFloat) {
-        switch self {
-        case .overland: return (0.52, 0.56, 0.44, 0.48)
-        case .water: return (0.56, 0.44, 0.56, 0.44)
-        case .extreme: return (0.46, 0.58, 0.42, 0.54)
-        case .hiking: return (0.50, 0.46, 0.54, 0.50)
-        case .cycling: return (0.58, 0.42, 0.58, 0.42)
-        case .huts: return (0.48, 0.56, 0.44, 0.52)
-        }
-    }
 }

@@ -36,6 +36,13 @@ struct SearchResultsView: View {
                             }
                         }
                         .padding(.top, 22)
+
+                        // A short grid (under a full 2-row page) otherwise
+                        // leaves a large dead patch of ground color below —
+                        // a designed module instead of bare whitespace.
+                        if routes.count < 4 {
+                            refineHint.padding(.top, 32)
+                        }
                     }
                 }
                 .padding(.horizontal, 22)
@@ -51,7 +58,7 @@ struct SearchResultsView: View {
 
     private func tile(_ route: Route) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            RouteCoverImage(url: route.coverImageUrl, tint: NTColor.pineRaised)
+            RouteCoverImage(url: route.coverImageUrl, tint: route.transport.color)
                 .frame(height: 120)
             VStack(alignment: .leading, spacing: 8) {
                 Text(route.title.replacingOccurrences(of: "\n", with: " "))
@@ -70,9 +77,33 @@ struct SearchResultsView: View {
             }
             .padding(12)
         }
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+    }
+
+    /// Shown under a short (but non-empty) result set, in the space that
+    /// would otherwise just be dead ground color under one or two tiles —
+    /// same "widen your filters" guidance as the fully-empty state, since
+    /// a handful of matches usually means the filters are still narrow.
+    private var refineHint: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "slider.horizontal.3")
+                .font(.system(size: 22, weight: .light))
+                .foregroundStyle(NTColor.milk(0.35))
+            Text("That's everything that matches")
+                .font(NTFont.body(13.5, .semibold))
+                .foregroundStyle(NTColor.milk(0.7))
+            Text("Widen distance or drop a requirement to see more.")
+                .font(NTFont.body(12.5, .light))
+                .foregroundStyle(NTColor.milk(0.5))
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 28)
+        .padding(.horizontal, 20)
+        .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
     }
 
     private var emptyState: some View {

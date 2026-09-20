@@ -121,7 +121,7 @@ struct PlaceExploreView: View {
         .mapStyle(.standardSatellite)
         .allowsHitTesting(false)
         .frame(height: 170)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
         .padding(.horizontal, 20)
         .padding(.top, 12)
     }
@@ -166,8 +166,8 @@ struct PlaceExploreView: View {
                     .foregroundStyle(NTColor.milk(0.5))
             }
             .padding(14)
-            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }

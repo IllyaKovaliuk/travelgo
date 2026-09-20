@@ -19,11 +19,6 @@ struct ProfileView: View {
     var body: some View {
         ZStack(alignment: .top) {
             NTColor.pine.ignoresSafeArea()
-            OrganicBlob((0.52, 0.48, 0.58, 0.42), (0.48, 0.54, 0.46, 0.52))
-                .fill(NTColor.pineRaised)
-                .frame(width: 420, height: 340)
-                .position(x: 80, y: -60)
-                .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -185,8 +180,8 @@ struct ProfileView: View {
             .buttonStyle(.plain)
         }
         .padding(18)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
         .padding(.top, 22)
     }
 
@@ -255,7 +250,7 @@ struct ProfileView: View {
 
     private func routeRow(title: String, meta: String, likes: String, downloads: String) -> some View {
         HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
+            RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                 .fill(LinearGradient(colors: [NTColor.pineRaised, NTColor.pineShadow], startPoint: .topLeading, endPoint: .bottomTrailing))
                 .frame(width: 74, height: 74)
             VStack(alignment: .leading, spacing: 8) {
@@ -270,8 +265,8 @@ struct ProfileView: View {
             Spacer()
         }
         .padding(14)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     /// Repurposes the NomadPoints ledger (real earn/spend events, already

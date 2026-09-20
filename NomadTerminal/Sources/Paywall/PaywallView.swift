@@ -18,16 +18,6 @@ struct PaywallView: View {
     var body: some View {
         ZStack {
             NTColor.pine.ignoresSafeArea()
-            OrganicBlob((0.56, 0.44, 0.48, 0.52), (0.46, 0.56, 0.44, 0.54))
-                .fill(NTColor.pineRaised.opacity(0.9))
-                .frame(width: 480, height: 420)
-                .position(x: 60, y: -60)
-                .ignoresSafeArea()
-            OrganicBlob((0.46, 0.54, 0.62, 0.38), (0.58, 0.44, 0.56, 0.42))
-                .fill(NTColor.accent.opacity(0.14))
-                .frame(width: 320, height: 280)
-                .position(x: 380, y: 320)
-                .ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
@@ -78,7 +68,7 @@ struct PaywallView: View {
                             Text(error).font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.milk(0.85))
                         }
                         .padding(14)
-                        .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                         .padding(.bottom, 14)
                     }
 
@@ -220,8 +210,8 @@ struct PaywallView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
-            .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(selectedProductID == product.id ? NTColor.accent.opacity(0.14) : NTColor.milk(0.06)))
-            .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(selectedProductID == product.id ? NTColor.accent : NTColor.milk(0.16), lineWidth: selectedProductID == product.id ? 1.5 : 1))
+            .background(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).fill(selectedProductID == product.id ? NTColor.accent.opacity(0.14) : NTColor.milk(0.06)))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(selectedProductID == product.id ? NTColor.accent : NTColor.milk(0.16), lineWidth: selectedProductID == product.id ? 1.5 : 1))
         }
         .buttonStyle(.plain)
     }

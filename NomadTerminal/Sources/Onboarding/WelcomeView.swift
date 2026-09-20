@@ -63,35 +63,13 @@ struct WelcomeView: View {
         ZStack {
             NTColor.pine
 
-            OrganicBlob(
-                (topLeft: 0.58, topRight: 0.42, bottomRight: 0.46, bottomLeft: 0.54),
-                (topLeft: 0.52, topRight: 0.48, bottomRight: 0.55, bottomLeft: 0.45)
-            )
-            .fill(NTColor.pineRaised.opacity(0.85))
-            .frame(width: 520, height: 460)
-            .position(x: 80, y: -60)
-            .ambientDrift(dx: 10, dy: 6, duration: 10)
-
-            OrganicBlob(
-                (topLeft: 0.46, topRight: 0.54, bottomRight: 0.62, bottomLeft: 0.38),
-                (topLeft: 0.58, topRight: 0.44, bottomRight: 0.56, bottomLeft: 0.42)
-            )
-            .fill(NTColor.sage.opacity(0.22))
-            .frame(width: 340, height: 300)
-            .position(x: size.width + 60, y: 340)
-            .ambientDrift(dx: 8, dy: -8, duration: 12)
-
-            OrganicBlob(
-                (topLeft: 0.62, topRight: 0.38, bottomRight: 0.48, bottomLeft: 0.52),
-                (topLeft: 0.44, topRight: 0.58, bottomRight: 0.42, bottomLeft: 0.56)
-            )
-            .fill(NTColor.accent.opacity(0.16))
-            .frame(width: 300, height: 260)
-            .position(x: 10, y: size.height - 150)
-            .ambientDrift(dx: -6, dy: 8, duration: 11)
-
-            TopoLines(lineCount: 5, spacing: 30)
-                .stroke(NTColor.milk(0.16), lineWidth: 1)
+            // Flat ground + a faint straight-line contour pattern — the old
+            // three color-tinted organic blobs were pure decoration with no
+            // data function; this is the one place the redesign keeps any
+            // background texture at all, and it's a straight-line pattern
+            // now, not a soft shape.
+            TopoLines(lineCount: 6, spacing: 30)
+                .stroke(NTColor.milk(0.08), lineWidth: 1)
                 .frame(width: size.width, height: size.height)
         }
         .clipped()

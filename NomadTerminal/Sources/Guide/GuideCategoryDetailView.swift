@@ -76,8 +76,8 @@ struct GuideCategoryDetailView: View {
             }
         }
         .padding(18)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(category.tint.opacity(isOpen ? 0.4 : 0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(category.tint.opacity(isOpen ? 0.4 : 0.12), lineWidth: 1))
     }
 }
 

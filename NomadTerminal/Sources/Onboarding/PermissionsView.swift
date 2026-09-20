@@ -11,16 +11,6 @@ struct PermissionsView: View {
         ZStack {
             NTColor.pine.ignoresSafeArea()
 
-            OrganicBlob(
-                (topLeft: 0.52, topRight: 0.48, bottomRight: 0.6, bottomLeft: 0.4),
-                (topLeft: 0.46, topRight: 0.56, bottomRight: 0.44, bottomLeft: 0.54)
-            )
-            .fill(NTColor.sage.opacity(0.14))
-            .frame(width: 420, height: 380)
-            .position(x: 460, y: 780)
-            .ambientDrift(dx: 8, dy: -6, duration: 10)
-            .ignoresSafeArea()
-
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     PageDots(count: 3, index: 2)
@@ -48,7 +38,7 @@ struct PermissionsView: View {
 
                         PermissionCard(
                             icon: "arrow.down.circle.fill",
-                            iconTint: NTColor.accent,
+                            iconTint: NTColor.gold,
                             title: "Offline storage",
                             description: "Cache tiles, elevation and gear lists so the route survives four days without a bar of service.",
                             buttonLabel: "Allow",
@@ -72,9 +62,9 @@ struct PermissionsView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
                             .stroke(NTColor.milk(0.12), lineWidth: 1)
                     )
                     .padding(.top, 26)

@@ -117,8 +117,8 @@ struct SOSView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .padding(.horizontal, 24)
         .padding(.top, 10)
     }

@@ -100,7 +100,7 @@ struct EditRouteExtrasView: View {
                 }
                 .padding(.horizontal, 14)
                 .frame(height: 54)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             }
         }
     }
@@ -136,7 +136,7 @@ struct EditRouteExtrasView: View {
                         .foregroundStyle(NTColor.milk(0.8))
                 }
                 .padding(14)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             }
         }
     }

@@ -107,7 +107,7 @@ struct SavedView: View {
     private func savedTile(item: RouteRepository.SavedRoute) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .topTrailing) {
-                RouteCoverImage(url: item.route.coverImageUrl, tint: NTColor.pineRaised)
+                RouteCoverImage(url: item.route.coverImageUrl, tint: item.route.transport.color)
                     .frame(height: 132)
                     .clipped()
                 Image(systemName: item.downloadedOffline ? "checkmark" : "arrow.down")
@@ -127,19 +127,19 @@ struct SavedView: View {
             }
             .padding(14)
         }
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
     }
 
     private func emptyState(title: String, body: String, buttonTitle: String?) -> some View {
         VStack(spacing: 22) {
             ZStack {
-                OrganicBlob((0.56, 0.44, 0.48, 0.52), (0.5, 0.56, 0.44, 0.5))
+                Circle()
                     .fill(NTColor.pineRaised)
-                    .frame(width: 200, height: 180)
+                    .frame(width: 96, height: 96)
                 Image(systemName: "arrow.down.circle")
-                    .font(.system(size: 44, weight: .light))
+                    .font(.system(size: 40, weight: .light))
                     .foregroundStyle(NTColor.milk(0.7))
             }
             VStack(spacing: 10) {

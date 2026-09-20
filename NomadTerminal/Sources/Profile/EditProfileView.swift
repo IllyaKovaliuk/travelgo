@@ -111,8 +111,8 @@ struct EditProfileView: View {
                 .foregroundStyle(NTColor.milk)
                 .padding(.horizontal, 16)
                 .frame(height: 54)
-                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+                .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
         }
     }
 }

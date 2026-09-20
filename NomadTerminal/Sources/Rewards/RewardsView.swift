@@ -32,8 +32,8 @@ struct RewardsView: View {
                         sectionLabel("ACTIVITY")
                         VStack(spacing: 0) { ForEach(ledger) { ledgerRow($0) } }
                             .padding(.horizontal, 18)
-                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
                     } else if !isLoading {
                         Text("Publish a route, get liked or saved by someone, or gain a follower — your first points will show up here.")
                             .font(NTFont.body(13, .light))
@@ -91,10 +91,10 @@ struct RewardsView: View {
         .padding(.vertical, 28)
         .background(
             RadialGradient(colors: [NTColor.accent.opacity(0.25), .clear], center: .center, startRadius: 0, endRadius: 220),
-            in: RoundedRectangle(cornerRadius: 30, style: .continuous)
+            in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous)
         )
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 30, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 30, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
     }
 
     private var aboutCard: some View {
@@ -114,8 +114,8 @@ struct RewardsView: View {
                 .padding(.top, 4)
         }
         .padding(18)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private func earnLine(_ text: String) -> some View {
@@ -166,8 +166,8 @@ struct RewardsView: View {
             .disabled(!affordable || redeemingKey != nil)
         }
         .padding(14)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
     private func redeem(_ reward: RouteRepository.PointReward) async {
