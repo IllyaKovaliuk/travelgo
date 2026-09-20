@@ -279,7 +279,7 @@ struct RouteDetailView: View {
                 .tracking(0.9)
                 .foregroundStyle(NTColor.milk(0.5))
             Text(detail.quote)
-                .font(NTFont.quote(18))
+                .font(NTFont.body(17, .light))
                 .foregroundStyle(NTColor.milk(0.92))
                 .fixedSize(horizontal: false, vertical: true)
             Text(detail.quoteAuthor)

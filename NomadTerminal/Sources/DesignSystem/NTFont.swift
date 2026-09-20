@@ -1,15 +1,28 @@
 import SwiftUI
 
-/// Type tokens — Bricolage Grotesque for display, Public Sans for body,
-/// IBM Plex Mono for every measured value (distance, bearing, labels),
-/// Newsreader italic for the rare editorial quote. Matches the doc 1:1.
+/// Type tokens — SF Pro (system, `.default` design) for display headings,
+/// Public Sans for body, IBM Plex Mono for every measured value (distance,
+/// bearing, labels).
+///
+/// Headings used to run on Bricolage Grotesque, a rounded/editorial display
+/// face that read as travel-blog rather than the tight, high-contrast
+/// "terminal" look the app is moving to — replaced with the system face at
+/// `.default` design (not `.rounded`) so headings render as a plain
+/// geometric grotesque with no custom license to manage. `Font.system`
+/// auto-selects the SF Pro Display optical size at heading sizes without
+/// needing to name it explicitly the way a bundled `.custom` font would.
+///
+/// There used to be a `quote(_:)` case here too (Newsreader italic, for a
+/// single "from the author" pull-quote in Route Detail) — dropped entirely,
+/// serif italic doesn't belong in this aesthetic at all; that call site now
+/// renders on `body` like any other paragraph text.
 enum NTFont {
     enum HeadingWeight { case semibold, bold, extraBold
-        var psName: String {
+        var weight: Font.Weight {
             switch self {
-            case .semibold: return "BricolageGrotesque-SemiBold"
-            case .bold: return "BricolageGrotesque-Bold"
-            case .extraBold: return "BricolageGrotesque-ExtraBold"
+            case .semibold: return .semibold
+            case .bold: return .bold
+            case .extraBold: return .heavy
             }
         }
     }
@@ -34,16 +47,13 @@ enum NTFont {
     }
 
     static func heading(_ size: CGFloat, _ weight: HeadingWeight = .bold) -> Font {
-        .custom(weight.psName, size: size)
+        .system(size: size, weight: weight.weight, design: .default)
     }
     static func body(_ size: CGFloat, _ weight: BodyWeight = .regular) -> Font {
         .custom(weight.psName, size: size)
     }
     static func mono(_ size: CGFloat, _ weight: MonoWeight = .medium) -> Font {
         .custom(weight.psName, size: size)
-    }
-    static func quote(_ size: CGFloat) -> Font {
-        .custom("Newsreader-LightItalic", size: size)
     }
 }
 

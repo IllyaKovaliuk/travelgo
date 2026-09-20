@@ -72,9 +72,6 @@ targets:
         # only in ~/.netrc for SPM to fetch the SDK, never in the repo.
         MBXAccessToken: "pk.eyJ1IjoiaWxseWFvdmFsaXVrIiwiYSI6ImNtc21ibmdvcTA5aHQyeXNhbXAwdm1zYmgifQ.UVzACeEXBUp3GyVAGX4w9Q"
         UIAppFonts:
-          - BricolageGrotesque-SemiBold.ttf
-          - BricolageGrotesque-Bold.ttf
-          - BricolageGrotesque-ExtraBold.ttf
           - PublicSans-Light.ttf
           - PublicSans-Regular.ttf
           - PublicSans-Medium.ttf
@@ -82,7 +79,6 @@ targets:
           - IBMPlexMono-Regular.ttf
           - IBMPlexMono-Medium.ttf
           - IBMPlexMono-SemiBold.ttf
-          - Newsreader-LightItalic.ttf
 
   NomadTerminalWidgets:
     type: app-extension
