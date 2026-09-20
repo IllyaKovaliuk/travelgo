@@ -300,8 +300,7 @@ struct HomeFeedView: View {
             .background(NTColor.pineRaised, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
         }
-        .buttonStyle(.plain)
-        .ntPressable(haptic: nil)
+        .buttonStyle(.ntCard)
     }
 }
 

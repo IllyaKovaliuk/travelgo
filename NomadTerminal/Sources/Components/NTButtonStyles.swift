@@ -33,6 +33,28 @@ extension View {
     }
 }
 
+/// Real bug this fixes: `ntPressable`'s `DragGesture(minimumDistance: 0)`
+/// is fine on a small, standalone button (the bell, the "+"), but attached
+/// to a row/tile that fills most of a `ScrollView`'s width — every card in
+/// Home's list, every tile in Search results — it competes with the
+/// ScrollView's own pan gesture for the touch and regularly wins, so the
+/// list stops scrolling and only registers taps. A `ButtonStyle` reading
+/// `configuration.isPressed` uses the *same* gesture SwiftUI's Button (and
+/// therefore the ScrollView it sits in) already recognizes, instead of a
+/// second gesture layered on top competing for the same touch — same scale
+/// feedback, no competing recognizer, scrolls correctly.
+struct NTCardPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(response: 0.28, dampingFraction: 0.55), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == NTCardPressStyle {
+    static var ntCard: NTCardPressStyle { NTCardPressStyle() }
+}
+
 /// Solid Milk pill — the primary action on dark Pine screens
 /// ("Start exploring", "Continue", …).
 struct NTPrimaryButton: View {

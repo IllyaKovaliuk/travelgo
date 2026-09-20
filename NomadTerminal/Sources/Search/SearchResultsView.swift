@@ -32,9 +32,13 @@ struct SearchResultsView: View {
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
                             ForEach(routes) { route in
-                                tile(route)
-                                    .onTapGesture { openRoute = route }
-                                    .ntPressable(haptic: nil)
+                                // A real `Button` + `.ntCard` style, not
+                                // `.onTapGesture` + `.ntPressable()` — that
+                                // combination's extra drag-gesture layer
+                                // fought the parent ScrollView for the touch
+                                // (see `NTButtonStyles.swift`'s doc comment).
+                                Button { openRoute = route } label: { tile(route) }
+                                    .buttonStyle(.ntCard)
                                     .scrollTransition { content, phase in
                                         content
                                             .opacity(phase.isIdentity ? 1 : 0.6)
