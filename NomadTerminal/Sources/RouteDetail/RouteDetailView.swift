@@ -1,4 +1,5 @@
 import SwiftUI
+import MapboxMaps
 
 /// 05 · Route detail — scrolls.
 struct RouteDetailView: View {
@@ -16,6 +17,12 @@ struct RouteDetailView: View {
     @State private var cachedSnapshot: UIImage?
     @State private var showFullMap = false
     @State private var showEditExtras = false
+    @State private var showPaywall = false
+    @State private var subscription = SubscriptionManager.shared
+    /// Lives here, not inside `RouteMapHeader`, so the itinerary panel below
+    /// can drive the same camera when a leg is tapped — one connected
+    /// experience, not a map and a list that don't know about each other.
+    @State private var mapViewport: Viewport = .styleDefault
     /// Real ownership check (real session's user id vs. this route's real
     /// author id) — the Edit entry point below only shows for the actual
     /// author, not decided by anything client-fakeable.
@@ -30,6 +37,9 @@ struct RouteDetailView: View {
     @State private var downloadToast: String?
 
     private var detail: RouteDetailInfo { route.detail }
+    private var segmentStretches: [MapSegmentStretch] {
+        MapSegmentStretch.compute(trackPoints: detail.trackPoints, segments: detail.segments)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,7 +47,7 @@ struct RouteDetailView: View {
                 VStack(spacing: 0) {
                     RouteMapHeader(
                         segments: detail.segments, trackPoints: detail.trackPoints, pois: detail.pois,
-                        cachedSnapshot: cachedSnapshot, onBack: { dismiss() },
+                        cachedSnapshot: cachedSnapshot, viewport: $mapViewport, onBack: { dismiss() },
                         onOpenFullMap: { showFullMap = true }
                     )
 
@@ -82,7 +92,7 @@ struct RouteDetailView: View {
 
                         quoteCard.padding(.top, 26)
 
-                        segmentsSection.padding(.top, 26)
+                        itineraryPanel.padding(.top, 26)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 26)
@@ -116,6 +126,9 @@ struct RouteDetailView: View {
         }
         .fullScreenCover(isPresented: $showFullMap) {
             RouteFullMapView(route: route, onClose: { showFullMap = false })
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView(onClose: { showPaywall = false })
         }
         .fullScreenCover(isPresented: $showComments, onDismiss: {
             Task { commentCount = (try? await RouteRepository.shared.fetchComments(routeId: route.id).count) ?? commentCount }
@@ -293,10 +306,9 @@ struct RouteDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
     }
 
-    private var segmentsSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+    private var itineraryPanel: some View {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Segments").font(NTFont.heading(18, .bold)).foregroundStyle(NTColor.milk)
                 Spacer()
                 if isOwner {
                     Button {
@@ -310,28 +322,37 @@ struct RouteDetailView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.bottom, 10)
-            ForEach(Array(detail.segments.enumerated()), id: \.offset) { i, seg in
-                HStack(spacing: 14) {
-                    ZStack {
-                        Circle().fill(seg.tint.opacity(0.2))
-                        Image(systemName: seg.icon).font(.system(size: 14)).foregroundStyle(seg.tint)
-                    }
-                    .frame(width: 30, height: 30)
-                    Text(seg.name).font(NTFont.body(14.5, .medium)).foregroundStyle(NTColor.milk)
-                    Spacer()
-                    Text(String(format: "%.1f KM", seg.distanceKM))
-                        .font(NTFont.mono(12.5, .semibold))
-                        .foregroundStyle(NTColor.milk(0.7))
+
+            RouteItineraryPanel(
+                stretches: segmentStretches.isEmpty ? fallbackStretches : segmentStretches,
+                isPro: subscription.isPro,
+                onSelect: { stretch in focusMap(on: stretch) },
+                onUnlockTapped: {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showPaywall = true
                 }
-                .padding(.vertical, 14)
-                .overlay(
-                    Rectangle().fill(NTColor.milk(0.12)).frame(height: 1),
-                    alignment: .bottom
-                )
-                .opacity(i == detail.segments.count - 1 ? 1 : 1)
-            }
+            )
         }
+    }
+
+    /// Routes with no real recorded track (a single reference point, or
+    /// mock data predating live recording) have segments but no polyline
+    /// to split — the itinerary panel still needs *something* to show, so
+    /// each segment becomes its own zero-length "stretch" centered on the
+    /// route's one known point rather than the panel just being empty.
+    private var fallbackStretches: [MapSegmentStretch] {
+        guard let anchor = detail.trackPoints.first?.coordinate else { return [] }
+        return detail.segments.map { seg in
+            MapSegmentStretch(
+                coordinates: [anchor], tint: seg.tint, icon: seg.icon, label: seg.name,
+                midpoint: anchor, transport: seg.transport, distanceKM: seg.distanceKM
+            )
+        }
+    }
+
+    private func focusMap(on stretch: MapSegmentStretch) {
+        let target = Viewport.fitting(stretch.coordinates, padding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40))
+        withViewportAnimation(.easeInOut(duration: 0.7)) { mapViewport = target }
     }
 
     private func toggleOffline() {

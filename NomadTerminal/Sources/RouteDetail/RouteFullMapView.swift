@@ -17,23 +17,22 @@ import CoreLocation
 struct RouteFullMapView: View {
     let route: Route
     var onClose: () -> Void
+    /// Focuses this one segment on open, when arriving from an itinerary
+    /// row tap rather than the map header — the full map still shows every
+    /// segment, just framed to the one the user tapped into.
+    var focusStretchID: MapSegmentStretch.ID? = nil
 
     @State private var selectedPOI: RouteDetailInfo.POI?
     @State private var showSatellite = true
     @State private var viewport: Viewport
+    @State private var hasFlownIn = false
+    @State private var flowStep = 0
 
-    init(route: Route, onClose: @escaping () -> Void) {
+    init(route: Route, onClose: @escaping () -> Void, focusStretchID: MapSegmentStretch.ID? = nil) {
         self.route = route
         self.onClose = onClose
-        let coords = route.detail.trackPoints.map(\.coordinate) + route.detail.pois.map(\.coordinate)
-        if coords.count > 1 {
-            _viewport = State(initialValue: .overview(
-                geometry: Geometry.lineString(LineString(coords)),
-                geometryPadding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40)
-            ))
-        } else {
-            _viewport = State(initialValue: .camera(center: coords.first, zoom: 13))
-        }
+        self.focusStretchID = focusStretchID
+        _viewport = State(initialValue: .styleDefault)
     }
 
     // `MapKit` and `MapboxMaps` both declare a `MapStyle` type — imported
@@ -49,39 +48,25 @@ struct RouteFullMapView: View {
         MapSegmentStretch.compute(trackPoints: trackPoints, segments: route.detail.segments)
     }
 
+    private var fullRouteTarget: Viewport {
+        .fitting(trackPoints.map(\.coordinate) + pois.map(\.coordinate), padding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40))
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Map(viewport: $viewport) {
                 if !segmentStretches.isEmpty {
-                    // White casing first so the colored line reads against any
-                    // terrain color underneath (satellite forest is often green,
-                    // same as the "foot" segment tint, otherwise invisible).
-                    ForEvery(segmentStretches) { stretch in
-                        PolylineAnnotation(lineCoordinates: stretch.coordinates)
-                            .lineColor(.white)
-                            .lineWidth(8.5)
-                            .lineJoin(.round)
-                    }
-                    ForEvery(segmentStretches) { stretch in
-                        PolylineAnnotation(lineCoordinates: stretch.coordinates)
-                            .lineColor(UIColor(stretch.tint))
-                            .lineWidth(5.5)
-                            .lineJoin(.round)
-                    }
-                    ForEvery(segmentStretches) { stretch in
-                        MapViewAnnotation(coordinate: stretch.midpoint) {
-                            SegmentLabelChip(icon: stretch.icon, label: stretch.label, tint: stretch.tint)
-                        }
-                    }
+                    RouteSegmentMapContent(stretches: segmentStretches, flowStep: flowStep)
                 } else if trackPoints.count > 1 {
-                    PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
-                        .lineColor(.white)
-                        .lineWidth(8.5)
-                        .lineJoin(.round)
-                    PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                    let sourceId = "route-plain-full"
+                    GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
+                    LineLayer(id: "\(sourceId)-line", source: sourceId)
                         .lineColor(UIColor(NTColor.accent))
-                        .lineWidth(5.5)
+                        .lineWidth(5)
+                        .lineCap(.round)
                         .lineJoin(.round)
+                        .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                        .lineBorderWidth(1.4)
                 }
 
                 if trackPoints.count > 1 {
@@ -109,6 +94,20 @@ struct RouteFullMapView: View {
             }
             .mapStyle(mapStyle)
             .ignoresSafeArea()
+            .task {
+                guard !hasFlownIn else { return }
+                hasFlownIn = true
+                let target = focusTarget ?? fullRouteTarget
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                withViewportAnimation(.fly(duration: 1.6)) { viewport = target }
+            }
+            .task {
+                guard segmentStretches.contains(where: { $0.transport == .water }) else { return }
+                while !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: UInt64(FlowPhase.period * 1_000_000_000))
+                    flowStep += 1
+                }
+            }
 
             VStack {
                 topBar
@@ -122,6 +121,11 @@ struct RouteFullMapView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
+    }
+
+    private var focusTarget: Viewport? {
+        guard let focusStretchID, let stretch = segmentStretches.first(where: { $0.id == focusStretchID }) else { return nil }
+        return .fitting(stretch.coordinates, padding: EdgeInsets(top: 100, leading: 60, bottom: 200, trailing: 60))
     }
 
     private var topBar: some View {

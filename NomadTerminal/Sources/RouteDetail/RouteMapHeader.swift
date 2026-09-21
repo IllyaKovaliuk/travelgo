@@ -15,6 +15,13 @@ import CoreLocation
 /// .realistic)`, Mapbox's view annotations are documented to always render
 /// above the terrain mesh, so there's no need for the `.flat`-elevation
 /// workaround the old MapKit version needed to keep pins visible.
+///
+/// `viewport` is a live binding, not a one-shot initial camera — on first
+/// appearance this flies the camera in from a wide establishing shot to
+/// the real route bounds (a "flyover," not a hard cut), and afterwards the
+/// itinerary panel below can drive the same binding to reframe on just one
+/// leg when a row is tapped, so the map and the list stay one connected
+/// experience instead of two disconnected pieces.
 struct RouteMapHeader: View {
     let segments: [RouteDetailInfo.Segment]
     var trackPoints: [TrackPoint] = []
@@ -23,11 +30,15 @@ struct RouteMapHeader: View {
     /// live `Map` when present, since a live map still needs network for
     /// tiles even with the real coordinates already on hand.
     var cachedSnapshot: UIImage? = nil
+    @Binding var viewport: Viewport
     var onBack: () -> Void
     /// Tapping the map (anywhere but the back button) opens the real
     /// full-screen, pannable/zoomable map — this header is a preview, not
     /// the actual navigable map.
     var onOpenFullMap: (() -> Void)? = nil
+
+    @State private var hasFlownIn = false
+    @State private var flowStep = 0
 
     var body: some View {
         ZStack {
@@ -108,49 +119,24 @@ struct RouteMapHeader: View {
         MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
     }
 
-    private var initialViewport: Viewport {
-        let coords = trackPoints.map(\.coordinate)
-        guard coords.count > 1 else {
-            return .camera(center: coords.first, zoom: 13)
-        }
-        return .overview(geometry: Geometry.lineString(LineString(coords)), geometryPadding: EdgeInsets(top: 40, leading: 40, bottom: 40, trailing: 40))
+    private var fullRouteTarget: Viewport {
+        .fitting(trackPoints.map(\.coordinate), padding: EdgeInsets(top: 40, leading: 40, bottom: 40, trailing: 40))
     }
 
     private var realMap: some View {
-        Map(initialViewport: initialViewport) {
+        Map(viewport: $viewport) {
             if !segmentStretches.isEmpty {
-                // White casing under every stretch first, so the colored
-                // line reads clearly against any terrain color underneath
-                // (green segment over green forest was invisible without it).
-                ForEvery(segmentStretches) { stretch in
-                    PolylineAnnotation(lineCoordinates: stretch.coordinates)
-                        .lineColor(.white)
-                        .lineWidth(8)
-                        .lineJoin(.round)
-                }
-                // One colored stretch per segment, so it's clear at a glance
-                // which transport covers which piece of the route — not
-                // just a single flat line.
-                ForEvery(segmentStretches) { stretch in
-                    PolylineAnnotation(lineCoordinates: stretch.coordinates)
-                        .lineColor(UIColor(stretch.tint))
-                        .lineWidth(5)
-                        .lineJoin(.round)
-                }
-                ForEvery(segmentStretches) { stretch in
-                    MapViewAnnotation(coordinate: stretch.midpoint) {
-                        SegmentLabelChip(icon: stretch.icon, label: stretch.label, tint: stretch.tint)
-                    }
-                }
+                RouteSegmentMapContent(stretches: segmentStretches, flowStep: flowStep)
             } else if trackPoints.count > 1 {
-                PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
-                    .lineColor(.white)
-                    .lineWidth(8)
-                    .lineJoin(.round)
-                PolylineAnnotation(lineCoordinates: trackPoints.map(\.coordinate))
+                let sourceId = "route-plain"
+                GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
+                LineLayer(id: "\(sourceId)-line", source: sourceId)
                     .lineColor(UIColor(NTColor.accent))
                     .lineWidth(5)
+                    .lineCap(.round)
                     .lineJoin(.round)
+                    .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                    .lineBorderWidth(1.4)
             }
 
             if trackPoints.count > 1 {
@@ -178,6 +164,24 @@ struct RouteMapHeader: View {
         }
         .mapStyle(.standardSatellite)
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
+        .task {
+            // Flyover on first appearance, not a hard cut — starts from
+            // whatever `viewport` the parent initialized (a wide,
+            // establishing-shot default) and eases the camera in to the
+            // route's real bounds.
+            guard !hasFlownIn else { return }
+            hasFlownIn = true
+            let target = fullRouteTarget
+            try? await Task.sleep(nanoseconds: 150_000_000) // lets the style finish its own initial load first
+            withViewportAnimation(.fly(duration: 1.6)) { viewport = target }
+        }
+        .task {
+            guard segmentStretches.contains(where: { $0.transport == .water }) else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(FlowPhase.period * 1_000_000_000))
+                flowStep += 1
+            }
+        }
     }
 
     private var terrain: some View {

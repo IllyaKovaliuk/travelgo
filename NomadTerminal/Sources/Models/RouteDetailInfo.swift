@@ -67,6 +67,12 @@ struct RouteDetailInfo {
         let name: String
         let distanceKM: Double
         let tint: Color
+
+        /// Recovered from `icon` (see `Transport.init(fromIcon:)`) — `nil`
+        /// only if a segment's icon somehow isn't one of the six real
+        /// transport icons, which display logic treats as a plain/default
+        /// line rather than guessing.
+        var transport: Transport? { Transport(fromIcon: icon) }
     }
 }
 

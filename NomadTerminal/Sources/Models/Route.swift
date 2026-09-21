@@ -115,6 +115,18 @@ enum Transport: String, CaseIterable {
         default: self = .foot
         }
     }
+
+    /// Reverse of `icon` — `route_segments` has no `transport` column of its
+    /// own (only `icon`/`tint`/`name`, set from a `Transport` case at write
+    /// time — see `EditRouteExtrasView`), so this recovers which transport a
+    /// already-published segment used, for display logic that needs the
+    /// real case (dash pattern, transition markers) rather than just the
+    /// baked icon/color. Every `Segment.icon` is always one of these six
+    /// exact SF Symbol names, so the match is exhaustive in practice.
+    init?(fromIcon icon: String) {
+        guard let match = Transport.allCases.first(where: { $0.icon == icon }) else { return nil }
+        self = match
+    }
 }
 
 struct Author: Identifiable {
