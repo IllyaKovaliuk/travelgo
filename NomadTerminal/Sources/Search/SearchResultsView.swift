@@ -32,13 +32,17 @@ struct SearchResultsView: View {
                     } else {
                         LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
                             ForEach(routes) { route in
-                                // A real `Button` + `.ntCard` style, not
-                                // `.onTapGesture` + `.ntPressable()` — that
-                                // combination's extra drag-gesture layer
-                                // fought the parent ScrollView for the touch
-                                // (see `NTButtonStyles.swift`'s doc comment).
-                                Button { openRoute = route } label: { tile(route) }
-                                    .buttonStyle(.ntCard)
+                                // Plain `.onTapGesture`, not a `Button` at
+                                // all (tried `Button` + a custom
+                                // `ButtonStyle` first — still reported as
+                                // breaking scroll in practice) — this is
+                                // the one pattern already proven, in this
+                                // exact codebase, to coexist with a
+                                // scrollable grid: `SavedView`'s tiles use
+                                // the identical `.onTapGesture`, no `Button`.
+                                tile(route)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { openRoute = route }
                                     .scrollTransition { content, phase in
                                         content
                                             .opacity(phase.isIdentity ? 1 : 0.6)

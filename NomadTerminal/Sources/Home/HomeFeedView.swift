@@ -7,9 +7,22 @@ import SwiftUI
 /// onX all use this same list-of-cards pattern for that reason). Following/
 /// Nearby/Wild are filter chips now, not full-screen tabs.
 struct HomeFeedView: View {
-    enum FeedTab: String, CaseIterable { case following = "Following", nearby = "Nearby", wild = "Wild" }
+    enum FeedTab: String, CaseIterable {
+        case following = "Following", nearby = "Nearby", wild = "Wild"
 
-    @State private var feedTab: FeedTab = .following
+        /// Chip label — decoupled from `rawValue` on purpose. `.nearby`
+        /// displays as "All" per an explicit ask, while the case's own
+        /// identity/fetch behind it (real GPS-proximity filtering via
+        /// `fetchNearbyRoutes`, not the actual full catalog — that's
+        /// `.wild`) stays exactly what it was; only the chip's own text
+        /// changed.
+        var label: String { self == .nearby ? "All" : rawValue }
+    }
+
+    /// `.nearby`, not `.following`, is what a new install lands on — most
+    /// people haven't followed anyone yet, so `.following` defaulted to an
+    /// empty state on first open.
+    @State private var feedTab: FeedTab = .nearby
     @State private var openRoute: Route?
     @State private var routes: [Route] = []
     @State private var isLoading = true
@@ -75,12 +88,12 @@ struct HomeFeedView: View {
             Image(systemName: feedTab == .following ? "person.2" : "location.slash")
                 .font(.system(size: 30, weight: .light))
                 .foregroundStyle(NTColor.milk(0.4))
-            Text(feedTab == .following ? "Not following anyone yet" : "No nearby routes yet")
+            Text(feedTab == .following ? "Not following anyone yet" : "Nothing near you yet")
                 .font(NTFont.body(15, .semibold))
                 .foregroundStyle(NTColor.milk(0.8))
             Text(feedTab == .following
                  ? "Follow someone from a route you like and their routes show up here."
-                 : "Nearby needs your location and routes with a real recorded track — check Wild for everything published so far.")
+                 : "\"All\" still means routes near you — it needs your location and a real recorded track nearby. Check Wild for everything published so far.")
                 .font(NTFont.body(12.5, .light))
                 .foregroundStyle(NTColor.milk(0.5))
                 .multilineTextAlignment(.center)
@@ -206,7 +219,7 @@ struct HomeFeedView: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             withAnimation(NTMotion.spring) { feedTab = tab }
         } label: {
-            Text(tab.rawValue)
+            Text(tab.label)
                 .font(NTFont.body(13, .semibold))
                 .foregroundStyle(selected ? NTColor.pine : NTColor.milk(0.7))
                 .padding(.horizontal, 16)
@@ -220,9 +233,17 @@ struct HomeFeedView: View {
 
     // MARK: - Route row
 
+    // Plain view + `.onTapGesture`, deliberately NOT a real `Button` (with
+    // or without a custom `ButtonStyle`) — the previous fix swapped
+    // `.ntPressable()`'s competing `DragGesture` for a `ButtonStyle`, which
+    // should have been gesture-safe in principle but evidently still wasn't
+    // enough in practice (reported still broken after that fix). This is
+    // the one interaction pattern already proven, in this exact codebase,
+    // to coexist with a `ScrollView`/`LazyVGrid` without eating its scroll
+    // gesture — `SavedView`'s grid tiles use the identical pattern. Trading
+    // the scale-on-press visual for a guaranteed-correct scroll.
     private func routeRow(_ route: Route) -> some View {
-        Button { openRoute = route } label: {
-            VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
                 ZStack(alignment: .bottomLeading) {
                     RouteCoverImage(url: route.coverImageUrl, tint: route.transport.color)
                         .aspectRatio(16 / 10, contentMode: .fill)
@@ -297,10 +318,10 @@ struct HomeFeedView: View {
                 }
                 .padding(14)
             }
-            .background(NTColor.pineRaised, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
-        }
-        .buttonStyle(.ntCard)
+        .background(NTColor.pineRaised, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
+        .contentShape(Rectangle())
+        .onTapGesture { openRoute = route }
     }
 }
 
