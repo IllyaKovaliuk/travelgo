@@ -24,6 +24,7 @@ struct HomeFeedView: View {
     /// empty state on first open.
     @State private var feedTab: FeedTab = .nearby
     @State private var openRoute: Route?
+    @State private var openAuthor: String?
     @State private var routes: [Route] = []
     @State private var isLoading = true
     @State private var isOffline = false
@@ -75,6 +76,11 @@ struct HomeFeedView: View {
         }
         .fullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
+        }
+        .fullScreenCover(isPresented: Binding(get: { openAuthor != nil }, set: { if !$0 { openAuthor = nil } })) {
+            if let openAuthor {
+                AuthorProfileView(userId: openAuthor, onClose: { self.openAuthor = nil })
+            }
         }
         .fullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
             LogRouteFlow()
@@ -296,17 +302,24 @@ struct HomeFeedView: View {
                     }
 
                     HStack {
-                        ZStack {
-                            LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
-                            Text(route.author.initials).font(NTFont.heading(10, .semibold)).foregroundStyle(.white)
-                        }
-                        .frame(width: 24, height: 24)
-                        .clipShape(Circle())
+                        HStack(spacing: 8) {
+                            ZStack {
+                                LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+                                Text(route.author.initials).font(NTFont.heading(10, .semibold)).foregroundStyle(.white)
+                            }
+                            .frame(width: 24, height: 24)
+                            .clipShape(Circle())
 
-                        Text(route.author.name)
-                            .font(NTFont.body(12.5, .medium))
-                            .foregroundStyle(NTColor.milk(0.7))
-                            .lineLimit(1)
+                            Text(route.author.name)
+                                .font(NTFont.body(12.5, .medium))
+                                .foregroundStyle(NTColor.milk(0.7))
+                                .lineLimit(1)
+                        }
+                        // A real, separate tap target from the card's own
+                        // "open this route" tap — was previously just inert
+                        // text with nowhere to go.
+                        .contentShape(Rectangle())
+                        .onTapGesture { openAuthor = route.author.id }
 
                         Spacer(minLength: 8)
 

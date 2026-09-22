@@ -35,6 +35,65 @@ actor RouteRepository {
         return rows.map { $0.toRoute() }
     }
 
+    struct PublicProfile {
+        let id: String
+        let username: String
+        let displayName: String
+        let homeLocation: String?
+        let kmLogged: Double
+        /// Real column on `profiles`, but nothing anywhere in the app
+        /// actually increments it (no "mark this route done" action
+        /// exists yet) — always 0 for every real account today. Kept in
+        /// the model since it's real schema, not fabricated, but callers
+        /// should treat it as "not implemented yet," not a real stat.
+        let routesCompleted: Int
+        let initials: String
+    }
+
+    /// Any user's real public profile — `fetchMyProfile()` only ever reads
+    /// the *current* session's own row; this is the same shape for an
+    /// arbitrary `userId`, for a real "view this person's profile" screen
+    /// (tapping an author anywhere) rather than just the "my profile" tab.
+    func fetchPublicProfile(userId: String) async throws -> PublicProfile {
+        struct Row: Decodable {
+            let id: UUID
+            let username: String
+            let display_name: String
+            let home_location: String?
+            let km_logged: Double
+            let routes_completed: Int
+        }
+        let row: Row = try await supabase
+            .from("profiles")
+            .select("id, username, display_name, home_location, km_logged, routes_completed")
+            .eq("id", value: userId)
+            .single()
+            .execute()
+            .value
+        let initials = row.display_name.split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
+        return PublicProfile(
+            id: row.id.uuidString, username: row.username, displayName: row.display_name,
+            homeLocation: row.home_location, kmLogged: row.km_logged, routesCompleted: row.routes_completed,
+            initials: initials.isEmpty ? "?" : initials
+        )
+    }
+
+    /// A specific author's real published routes — same shape/filters as
+    /// `fetchRoutes()`, just scoped to one author instead of everyone, for
+    /// "routes this person created" on their public profile.
+    func fetchUserRoutes(authorId: String) async throws -> [Route] {
+        let rows: [RouteDTO] = try await supabase
+            .from("routes")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .eq("author_id", value: authorId)
+            .eq("status", value: "published")
+            .eq("visibility", value: "public")
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return rows.map { $0.toRoute() }
+    }
+
     /// "Following" feed tab — routes from authors the current session
     /// actually follows. Was previously just relabeled `fetchRoutes()` —
     /// same content under all 3 tabs regardless of which was selected.

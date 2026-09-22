@@ -35,6 +35,7 @@ struct RouteDetailView: View {
     @State private var commentCount = 0
     @State private var showComments = false
     @State private var downloadToast: String?
+    @State private var showAuthorProfile = false
 
     private var detail: RouteDetailInfo { route.detail }
     private var segmentStretches: [MapSegmentStretch] {
@@ -73,6 +74,8 @@ struct RouteDetailView: View {
                             pill(detail.duration, filled: nil)
                         }
                         .padding(.top, 14)
+
+                        authorRow.padding(.top, 16)
 
                         engagementRow.padding(.top, 16)
 
@@ -129,6 +132,9 @@ struct RouteDetailView: View {
         }
         .fullScreenCover(isPresented: $showPaywall) {
             PaywallView(onClose: { showPaywall = false })
+        }
+        .fullScreenCover(isPresented: $showAuthorProfile) {
+            AuthorProfileView(userId: route.author.id, onClose: { showAuthorProfile = false })
         }
         .fullScreenCover(isPresented: $showComments, onDismiss: {
             Task { commentCount = (try? await RouteRepository.shared.fetchComments(routeId: route.id).count) ?? commentCount }
@@ -209,6 +215,35 @@ struct RouteDetailView: View {
 
             Spacer()
         }
+    }
+
+    /// Route Detail never showed who actually made the route — real name
+    /// data was already sitting right there on `route.author`, just never
+    /// rendered or made tappable. Real entry point into `AuthorProfileView`
+    /// now, not inert text.
+    private var authorRow: some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            showAuthorProfile = true
+        } label: {
+            HStack(spacing: 10) {
+                ZStack {
+                    LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
+                    Text(route.author.initials).font(NTFont.heading(12, .semibold)).foregroundStyle(.white)
+                }
+                .frame(width: 34, height: 34)
+                .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(route.author.name).font(NTFont.body(13.5, .semibold)).foregroundStyle(NTColor.milk)
+                    Text("\(route.author.handle) · \(route.author.routeCount) routes")
+                        .font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.5))
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(NTColor.milk(0.4))
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var shareText: String {
