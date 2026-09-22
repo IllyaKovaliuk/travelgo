@@ -101,17 +101,20 @@ enum NTColor {
     // active-state only), which is what the accent audit below enforces.
     static let accent = Color(hex: 0xE8743B)         // terracotta — primary CTA / record
     static let accentDeep = Color(hex: 0xC2551F)
-    // Status/category hues (difficulty tags, transport icons) stay
-    // distinct — they're functional data, not decoration — but muted
-    // down from their previous, slightly more saturated versions so they
-    // read as quiet data labels next to full-color photography, not
-    // competing cartoon chips.
-    static let sage = Color(hex: 0x6E9C80)           // success / foot / on-toggles
-    static let water = Color(hex: 0x5F8FB0)          // water / kayak
-    static let extreme = Color(hex: 0x7E6FA3)        // climb / extreme
-    static let gold = Color(hex: 0xC9A470)           // moderate / POI / warnings
-    static let hard = Color(hex: 0xA8493D)           // hard / SOS / destructive
-    static let hardBright = Color(hex: 0xD08F82)
+    // Status/category hues (difficulty tags, transport icons, the map's
+    // per-segment line colors) — a real, direct reversal: an earlier pass
+    // muted these down on the theory that photography/map imagery should
+    // be the only vivid thing on screen, but that read as flatly gray on
+    // the actual route map, which is exactly the opposite of "premium."
+    // Real color-coded data (which leg is which transport) needs to
+    // actually pop, not apologize for existing — vivid, saturated hues,
+    // not the desaturated versions from that pass.
+    static let sage = Color(hex: 0x2FBF71)           // success / foot / on-toggles
+    static let water = Color(hex: 0x1E9DE3)          // water / kayak
+    static let extreme = Color(hex: 0x9B4DEB)        // climb / extreme
+    static let gold = Color(hex: 0xF5A623)           // moderate / POI / warnings
+    static let hard = Color(hex: 0xE8382B)           // hard / SOS / destructive
+    static let hardBright = Color(hex: 0xFF5C46)
 
     // MARK: Foreground at reduced opacity, theme-aware since `milk` is
     static func milk(_ opacity: Double) -> Color { milk.opacity(opacity) }
