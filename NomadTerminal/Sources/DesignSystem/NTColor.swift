@@ -109,12 +109,12 @@ enum NTColor {
     // Real color-coded data (which leg is which transport) needs to
     // actually pop, not apologize for existing — vivid, saturated hues,
     // not the desaturated versions from that pass.
-    static let sage = Color(hex: 0x2FBF71)           // success / foot / on-toggles
-    static let water = Color(hex: 0x1E9DE3)          // water / kayak
-    static let extreme = Color(hex: 0x9B4DEB)        // climb / extreme
-    static let gold = Color(hex: 0xF5A623)           // moderate / POI / warnings
-    static let hard = Color(hex: 0xE8382B)           // hard / SOS / destructive
-    static let hardBright = Color(hex: 0xFF5C46)
+    static let sage = Color(hex: 0x16D97A)           // success / foot / on-toggles
+    static let water = Color(hex: 0x0AAEFF)          // water / kayak
+    static let extreme = Color(hex: 0xA855F7)        // climb / extreme
+    static let gold = Color(hex: 0xFFB020)           // moderate / POI / warnings
+    static let hard = Color(hex: 0xFF3B30)           // hard / SOS / destructive
+    static let hardBright = Color(hex: 0xFF6B52)
 
     // MARK: Foreground at reduced opacity, theme-aware since `milk` is
     static func milk(_ opacity: Double) -> Color { milk.opacity(opacity) }

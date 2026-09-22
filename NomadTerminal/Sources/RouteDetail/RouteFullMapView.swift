@@ -62,11 +62,11 @@ struct RouteFullMapView: View {
                     GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
                     LineLayer(id: "\(sourceId)-line", source: sourceId)
                         .lineColor(UIColor(NTColor.accent))
-                        .lineWidth(5)
+                        .lineWidth(7.5)
                         .lineCap(.round)
                         .lineJoin(.round)
                         .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
-                        .lineBorderWidth(1.4)
+                        .lineBorderWidth(1.6)
                 }
 
                 if trackPoints.count > 1 {

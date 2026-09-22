@@ -223,18 +223,19 @@ struct RouteSegmentMapContent: MapContent {
 
             LineLayer(id: "\(sourceId)-line", source: sourceId)
                 .lineColor(UIColor(stretch.tint))
-                .lineWidth(5)
+                .lineOpacity(1)
+                .lineWidth(7.5)
                 .lineCap(.round)
                 .lineJoin(.round)
-                .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
-                .lineBorderWidth(1.4)
+                .lineBorderColor(UIColor.black.withAlphaComponent(0.35))
+                .lineBorderWidth(1.6)
                 .applyingDashArray(SegmentLineStyle.dashArray(for: stretch.transport))
 
             if SegmentLineStyle.hasFlowOverlay(stretch.transport) {
                 LineLayer(id: "\(sourceId)-flow", source: sourceId)
                     .lineColor(.white)
-                    .lineOpacity(0.55)
-                    .lineWidth(2.2)
+                    .lineOpacity(0.65)
+                    .lineWidth(3.2)
                     .lineCap(.round)
                     .lineDashArray(FlowPhase.dashArray(step: flowStep))
             }
