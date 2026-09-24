@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 /// 08 · Profile & badges — real data throughout (was entirely hardcoded
 /// "Sana Kadyrova" mock content before). Anonymous sessions (never signed
@@ -14,7 +15,18 @@ struct ProfileView: View {
     @State private var badges: [RouteRepository.MyBadge] = []
     @State private var myRoutes: [RouteRepository.MyRoute] = []
     @State private var activity: [RouteRepository.PointsLedgerEntry] = []
+    @State private var followerCount = 0
     @State private var isLoading = true
+
+    @State private var avatarPickerItem: PhotosPickerItem?
+    @State private var avatarPreview: UIImage?
+    @State private var isUploadingAvatar = false
+    @State private var avatarError: String?
+
+    /// Real sum across this session's own published routes — same
+    /// `likes:route_likes(count)` embed `fetchMyRoutes` already fetches
+    /// per route, just totalled client-side rather than a second query.
+    private var totalLikes: Int { myRoutes.reduce(0) { $0 + $1.likes } }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -24,13 +36,25 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header
 
+                    if let avatarError {
+                        Text(avatarError)
+                            .font(NTFont.body(11.5, .medium))
+                            .foregroundStyle(Color(hex: 0xE58272))
+                            .padding(.top, 8)
+                    }
+
                     if profile?.isAnonymous == true {
                         anonymousPrompt
                     } else {
-                        HStack(spacing: 0) {
-                            statBlock(formatKM(profile?.kmLogged ?? 0), "KM LOGGED")
-                            statBlock("\(profile?.routesCompleted ?? 0)", "COMPLETED")
-                            statBlock("\(badges.filter(\.earned).count)", "BADGES")
+                        VStack(spacing: 14) {
+                            HStack(spacing: 0) {
+                                statBlock(formatKM(profile?.kmLogged ?? 0), "KM LOGGED")
+                                statBlock("\(myRoutes.count)", "ROUTES")
+                            }
+                            HStack(spacing: 0) {
+                                statBlock("\(followerCount)", "FOLLOWERS")
+                                statBlock(formatCount(totalLikes), "LIKES")
+                            }
                         }
                         .padding(.vertical, 18)
                         .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .top)
@@ -105,12 +129,21 @@ struct ProfileView: View {
         let resolvedBadges = await badgesResult
         let resolvedRoutes = await routesResult
         let resolvedActivity = await activityResult
+        // Needs the real user id, which only exists once `profile` itself
+        // resolved — can't run alongside the `async let`s above.
+        let resolvedFollowers = await (resolvedProfile != nil ? followerCountForCurrentUser() : 0)
         guard myToken == profileLoadToken else { return } // a newer load already superseded this one
         profile = resolvedProfile
         badges = resolvedBadges
         myRoutes = resolvedRoutes
         activity = resolvedActivity
+        followerCount = resolvedFollowers
         isLoading = false
+    }
+
+    private func followerCountForCurrentUser() async -> Int {
+        guard let session = try? await supabase.auth.session else { return 0 }
+        return await RouteRepository.shared.fetchFollowerCount(userId: session.user.id.uuidString)
     }
 
     private var initials: String {
@@ -120,20 +153,7 @@ struct ProfileView: View {
 
     private var header: some View {
         HStack(spacing: 16) {
-            ZStack(alignment: .bottomTrailing) {
-                Circle()
-                    .fill(LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 84, height: 84)
-                    .overlay(Text(initials).font(NTFont.heading(28, .semibold)).foregroundStyle(NTColor.milk))
-                if profile?.routesCompleted ?? 0 > 0 {
-                    Text("\(profile?.routesCompleted ?? 0)")
-                        .font(NTFont.mono(10, .semibold))
-                        .foregroundStyle(Color(hex: 0x2B1B05))
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(NTColor.gold))
-                        .overlay(Circle().stroke(NTColor.pine, lineWidth: 3))
-                }
-            }
+            avatarPicker
             VStack(alignment: .leading, spacing: 6) {
                 Text(profile?.isAnonymous == true ? "Anonymous nomad" : (profile?.displayName ?? "—"))
                     .font(NTFont.heading(26, .extraBold)).foregroundStyle(NTColor.milk)
@@ -162,6 +182,90 @@ struct ProfileView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    /// Tap-to-change, same as most apps — real upload via `PhotosPicker`
+    /// (already the established pattern in this codebase for route cover
+    /// photos, just aimed at `profiles.avatar_url`/a fixed per-user
+    /// storage path instead). Anonymous sessions don't get the picker —
+    /// there's no real account to attach a photo to yet.
+    private var avatarPicker: some View {
+        let isReal = profile?.isAnonymous == false
+        return PhotosPicker(selection: $avatarPickerItem, matching: .images) {
+            ZStack(alignment: .bottomTrailing) {
+                Group {
+                    if let avatarPreview {
+                        Image(uiImage: avatarPreview).resizable().aspectRatio(contentMode: .fill)
+                    } else if let urlString = profile?.avatarUrl, let url = URL(string: urlString) {
+                        AsyncImage(url: url) { phase in
+                            if let image = phase.image {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } else {
+                                avatarFallback
+                            }
+                        }
+                    } else {
+                        avatarFallback
+                    }
+                }
+                .frame(width: 84, height: 84)
+                .clipShape(Circle())
+
+                if isReal {
+                    ZStack {
+                        Circle().fill(NTColor.pine)
+                        if isUploadingAvatar {
+                            ProgressView().tint(NTColor.milk).scaleEffect(0.6)
+                        } else {
+                            Image(systemName: "camera.fill").font(.system(size: 11, weight: .semibold)).foregroundStyle(NTColor.milk)
+                        }
+                    }
+                    .frame(width: 26, height: 26)
+                    .overlay(Circle().stroke(NTColor.pine, lineWidth: 2))
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!isReal || isUploadingAvatar)
+        .onChange(of: avatarPickerItem) { _, newItem in
+            guard let newItem else { return }
+            Task { await uploadAvatar(newItem) }
+        }
+    }
+
+    private var avatarFallback: some View {
+        ZStack {
+            LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Text(initials).font(NTFont.heading(28, .semibold)).foregroundStyle(NTColor.milk)
+        }
+    }
+
+    private func uploadAvatar(_ item: PhotosPickerItem) async {
+        avatarError = nil
+        guard let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) else {
+            avatarError = "Couldn't load that photo — try another."
+            return
+        }
+        withAnimation(NTMotion.spring) { avatarPreview = image }
+        let resized = image.resized(maxDimension: 600)
+        guard let jpeg = resized.jpegData(compressionQuality: 0.85) else { return }
+
+        isUploadingAvatar = true
+        do {
+            let url = try await RouteRepository.shared.uploadAvatarImage(jpeg)
+            try await RouteRepository.shared.updateMyAvatarUrl(url)
+            profile = profile.map {
+                RouteRepository.MyProfile(
+                    username: $0.username, displayName: $0.displayName, homeLocation: $0.homeLocation,
+                    kmLogged: $0.kmLogged, routesCompleted: $0.routesCompleted, badgeCount: $0.badgeCount,
+                    avatarUrl: url, isAnonymous: $0.isAnonymous
+                )
+            }
+        } catch {
+            avatarError = "Upload failed — check your connection and try again."
+            avatarPreview = nil
+        }
+        isUploadingAvatar = false
     }
 
     private var anonymousPrompt: some View {

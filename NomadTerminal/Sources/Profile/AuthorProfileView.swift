@@ -7,14 +7,14 @@ import SwiftUI
 /// name was just inert text everywhere it appeared.
 ///
 /// Shows their real published routes ("routes he created" — a real,
-/// queryable list) and a real Follow button. Does **not** show "routes he
-/// completed" as a list — `profiles.routes_completed` is a real column,
-/// but nothing anywhere in this app increments it (there's no "mark this
-/// route done" action yet), so it's always 0 for every real account today.
-/// Showing a fake completed-routes list would be exactly the kind of
-/// thing this project has consistently refused to fake; the stat number
-/// itself is shown, honestly labeled, and that's the limit of what's real
-/// right now.
+/// queryable list), a real Follow button, real follower count, and the
+/// real total likes across everything they've published. Does **not**
+/// show "routes he completed" at all, as a list or even as a number —
+/// `profiles.routes_completed` is a real column, but nothing anywhere in
+/// this app increments it (there's no "mark this route done" action
+/// yet), so it's always 0 for every real account today. Showing it would
+/// be exactly the kind of fake-looking stat this project has
+/// consistently refused to display.
 struct AuthorProfileView: View {
     let userId: String
     var onClose: () -> Void
@@ -24,6 +24,12 @@ struct AuthorProfileView: View {
     @State private var isLoading = true
     @State private var isFollowing = false
     @State private var isOwnProfile = false
+    @State private var followerCount = 0
+
+    /// Real sum across their published routes — `fetchUserRoutes` already
+    /// embeds each route's real `likes:route_likes(count)`, so this is
+    /// totalling data already on hand, not a second query.
+    private var totalLikes: Int { routes.reduce(0) { $0 + $1.likeCount } }
     /// Opens its own `RouteDetailFlow` rather than bouncing the tap back up
     /// to whoever presented this screen — self-contained, so any call site
     /// (a route card, Route Detail's author row, …) can present this the
@@ -80,9 +86,18 @@ struct AuthorProfileView: View {
 
     private func header(_ profile: RouteRepository.PublicProfile) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            ZStack {
-                LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
-                Text(profile.initials).font(NTFont.heading(28, .semibold)).foregroundStyle(.white)
+            Group {
+                if let urlString = profile.avatarUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        if let image = phase.image {
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } else {
+                            avatarFallback(profile)
+                        }
+                    }
+                } else {
+                    avatarFallback(profile)
+                }
             }
             .frame(width: 84, height: 84)
             .clipShape(Circle())
@@ -95,15 +110,32 @@ struct AuthorProfileView: View {
         }
     }
 
+    private func avatarFallback(_ profile: RouteRepository.PublicProfile) -> some View {
+        ZStack {
+            LinearGradient(colors: [NTColor.accent, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Text(profile.initials).font(NTFont.heading(28, .semibold)).foregroundStyle(.white)
+        }
+    }
+
     private func statsRow(_ profile: RouteRepository.PublicProfile) -> some View {
-        HStack(spacing: 0) {
-            statBlock(formatKM(profile.kmLogged), "KM LOGGED")
-            statBlock("\(routes.count)", "ROUTES CREATED")
+        VStack(spacing: 14) {
+            HStack(spacing: 0) {
+                statBlock(formatKM(profile.kmLogged), "KM LOGGED")
+                statBlock("\(routes.count)", "ROUTES CREATED")
+            }
+            HStack(spacing: 0) {
+                statBlock("\(followerCount)", "FOLLOWERS")
+                statBlock(formatCount(totalLikes), "LIKES")
+            }
         }
         .padding(.vertical, 18)
         .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .top)
         .overlay(Rectangle().fill(NTColor.milk(0.14)).frame(height: 1), alignment: .bottom)
         .padding(.top, 22)
+    }
+
+    private func formatCount(_ n: Int) -> String {
+        n >= 1000 ? String(format: "%.1fK", Double(n) / 1000) : "\(n)"
     }
 
     private func statBlock(_ value: String, _ label: String) -> some View {
@@ -199,9 +231,11 @@ struct AuthorProfileView: View {
         async let profileResult: RouteRepository.PublicProfile? = try? RouteRepository.shared.fetchPublicProfile(userId: userId)
         async let routesResult: [Route] = (try? RouteRepository.shared.fetchUserRoutes(authorId: userId)) ?? []
         async let followingResult: Bool = RouteRepository.shared.isFollowing(authorId: userId)
+        async let followerResult: Int = RouteRepository.shared.fetchFollowerCount(userId: userId)
         profile = await profileResult
         routes = await routesResult
         isFollowing = await followingResult
+        followerCount = await followerResult
         if let session = try? await supabase.auth.session {
             isOwnProfile = session.user.id.uuidString == userId
         }

@@ -12,6 +12,7 @@ struct ProfileDTO: Codable {
     let homeLocation: String?
     let kmLogged: Double
     let routesCompleted: Int
+    let avatarUrl: String?
 
     enum CodingKeys: String, CodingKey {
         case id, username
@@ -19,6 +20,7 @@ struct ProfileDTO: Codable {
         case homeLocation = "home_location"
         case kmLogged = "km_logged"
         case routesCompleted = "routes_completed"
+        case avatarUrl = "avatar_url"
     }
 }
 
@@ -161,7 +163,8 @@ extension RouteDTO {
                 handle: "@" + profiles.username,
                 routeCount: profiles.routesCompleted,
                 initials: initials(from: profiles.displayName),
-                gradient: authorGradientPairs
+                gradient: authorGradientPairs,
+                avatarUrl: profiles.avatarUrl
             ),
             stats: [
                 .init(value: String(format: "%.1f", distanceKm), unit: "KM", label: "DISTANCE"),

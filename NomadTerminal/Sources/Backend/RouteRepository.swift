@@ -47,6 +47,7 @@ actor RouteRepository {
         /// the model since it's real schema, not fabricated, but callers
         /// should treat it as "not implemented yet," not a real stat.
         let routesCompleted: Int
+        let avatarUrl: String?
         let initials: String
     }
 
@@ -62,10 +63,11 @@ actor RouteRepository {
             let home_location: String?
             let km_logged: Double
             let routes_completed: Int
+            let avatar_url: String?
         }
         let row: Row = try await supabase
             .from("profiles")
-            .select("id, username, display_name, home_location, km_logged, routes_completed")
+            .select("id, username, display_name, home_location, km_logged, routes_completed, avatar_url")
             .eq("id", value: userId)
             .single()
             .execute()
@@ -74,7 +76,7 @@ actor RouteRepository {
         return PublicProfile(
             id: row.id.uuidString, username: row.username, displayName: row.display_name,
             homeLocation: row.home_location, kmLogged: row.km_logged, routesCompleted: row.routes_completed,
-            initials: initials.isEmpty ? "?" : initials
+            avatarUrl: row.avatar_url, initials: initials.isEmpty ? "?" : initials
         )
     }
 
@@ -377,6 +379,52 @@ actor RouteRepository {
         return try supabase.storage.from("route-covers").getPublicURL(path: path).absoluteString
     }
 
+    // MARK: - Avatar photo
+
+    /// Same bucket as cover photos (no new bucket/policy needed — the
+    /// existing `route-covers` insert policy is just "any authenticated
+    /// user," not scoped per-folder, so this is exactly as safe/unsafe as
+    /// cover uploads already were), but at a *fixed* path per user
+    /// (`avatars/<id>/avatar.jpg`, `upsert: true`) so re-uploading replaces
+    /// the old photo instead of piling up orphaned files every time
+    /// someone changes it.
+    func uploadAvatarImage(_ data: Data) async throws -> String {
+        let userId = try await ensureSession()
+        let path = "avatars/\(userId.uuidString)/avatar.jpg"
+        try await supabase.storage.from("route-covers").upload(
+            path, data: data, options: FileOptions(contentType: "image/jpeg", upsert: true)
+        )
+        // The bucket is public and the same file path is reused every time,
+        // so a CDN/browser cache would otherwise keep serving the old photo
+        // under the same URL — a real cache-busting query param, not
+        // decoration.
+        let base = try supabase.storage.from("route-covers").getPublicURL(path: path).absoluteString
+        return "\(base)?v=\(Int(Date().timeIntervalSince1970))"
+    }
+
+    func updateMyAvatarUrl(_ url: String) async throws {
+        let userId = try await ensureSession()
+        struct Update: Encodable { let avatar_url: String }
+        try await supabase.from("profiles")
+            .update(Update(avatar_url: url))
+            .eq("id", value: userId.uuidString)
+            .execute()
+    }
+
+    /// Real count of rows in `follows` where this user is the one being
+    /// followed — backs the "FOLLOWERS" stat on both the current session's
+    /// own profile and anyone else's.
+    func fetchFollowerCount(userId: String) async -> Int {
+        struct CountRow: Decodable { let followee_id: String }
+        let rows: [CountRow] = (try? await supabase
+            .from("follows")
+            .select("followee_id")
+            .eq("followee_id", value: userId)
+            .execute()
+            .value) ?? []
+        return rows.count
+    }
+
     // MARK: - Publishing
 
     struct NewRoute {
@@ -627,6 +675,7 @@ actor RouteRepository {
         let kmLogged: Double
         let routesCompleted: Int
         let badgeCount: Int
+        let avatarUrl: String?
         /// True for a device that's only ever been anonymously
         /// auto-signed-in (liked/saved something pre-signup) — Profile
         /// shows a "sign in" prompt instead of pretending this is a real
@@ -640,6 +689,7 @@ actor RouteRepository {
         let home_location: String?
         let km_logged: Double
         let routes_completed: Int
+        let avatar_url: String?
     }
 
     func fetchMyProfile() async throws -> MyProfile {
@@ -647,7 +697,7 @@ actor RouteRepository {
         let isAnon = (try? await supabase.auth.session)?.user.isAnonymous ?? true
         let row: MyProfileRow = try await supabase
             .from("profiles")
-            .select("username, display_name, home_location, km_logged, routes_completed")
+            .select("username, display_name, home_location, km_logged, routes_completed, avatar_url")
             .eq("id", value: userId.uuidString)
             .single()
             .execute()
@@ -662,7 +712,7 @@ actor RouteRepository {
         return MyProfile(
             username: row.username, displayName: row.display_name, homeLocation: row.home_location,
             kmLogged: row.km_logged, routesCompleted: row.routes_completed, badgeCount: badgeRows.count,
-            isAnonymous: isAnon
+            avatarUrl: row.avatar_url, isAnonymous: isAnon
         )
     }
 

@@ -227,12 +227,7 @@ struct RouteDetailView: View {
             showAuthorProfile = true
         } label: {
             HStack(spacing: 10) {
-                ZStack {
-                    LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Text(route.author.initials).font(NTFont.heading(12, .semibold)).foregroundStyle(.white)
-                }
-                .frame(width: 34, height: 34)
-                .clipShape(Circle())
+                AvatarView(author: route.author, size: 34)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(route.author.name).font(NTFont.body(13.5, .semibold)).foregroundStyle(NTColor.milk)

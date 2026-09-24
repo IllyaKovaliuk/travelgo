@@ -303,12 +303,7 @@ struct HomeFeedView: View {
 
                     HStack {
                         HStack(spacing: 8) {
-                            ZStack {
-                                LinearGradient(colors: route.author.gradient, startPoint: .topLeading, endPoint: .bottomTrailing)
-                                Text(route.author.initials).font(NTFont.heading(10, .semibold)).foregroundStyle(.white)
-                            }
-                            .frame(width: 24, height: 24)
-                            .clipShape(Circle())
+                            AvatarView(author: route.author, size: 24)
 
                             Text(route.author.name)
                                 .font(NTFont.body(12.5, .medium))

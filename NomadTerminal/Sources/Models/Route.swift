@@ -136,6 +136,7 @@ struct Author: Identifiable {
     let routeCount: Int
     let initials: String
     let gradient: [Color]
+    var avatarUrl: String? = nil
 }
 
 extension Route {
