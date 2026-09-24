@@ -80,7 +80,13 @@ enum Transport: String, CaseIterable {
         case .water: return "water.waves"
         case .climb: return "mountain.2.fill"
         case .bike: return "bicycle"
-        case .paraglide: return "figure.paragliding"
+        // "figure.paragliding" was never a real SF Symbol — confirmed
+        // against the actual SF Symbols name catalog on this machine, not
+        // a guess. SF Symbols has no dedicated paragliding/hang-gliding
+        // glyph at all; "wind" is the closest real, honest match (riding
+        // air currents) without misclaiming a powered aircraft the way
+        // "airplane" would.
+        case .paraglide: return "wind"
         }
     }
 
