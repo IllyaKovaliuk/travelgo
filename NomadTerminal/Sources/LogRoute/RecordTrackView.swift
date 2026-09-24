@@ -44,7 +44,8 @@ struct RecordTrackView: View {
                 if tracker.authorizationDenied {
                     locationDeniedCard
                 } else {
-                    transportPicker.padding(.horizontal, 22).padding(.bottom, 12)
+                    TransportPicker(selection: $transport, onChange: { _ in pushIslandUpdate() })
+                        .padding(.horizontal, 22).padding(.bottom, 12)
                     statsCard
                     if !droppedPOIs.isEmpty {
                         droppedPinsRow.padding(.horizontal, 22).padding(.top, 12)
@@ -184,32 +185,6 @@ struct RecordTrackView: View {
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
-    }
-
-    /// Real tap-to-pick, not a decoration — changes what icon/color the
-    /// Live Activity and Dynamic Island show (see `pushIslandUpdate()`),
-    /// and seeds `NewRouteDraft.transport` when the recording finishes.
-    /// Free to change mid-recording (someone parks the 4×4 and hikes the
-    /// last stretch) — the island just reflects whatever's picked right now.
-    private var transportPicker: some View {
-        HStack(spacing: 8) {
-            ForEach(Transport.allCases, id: \.self) { t in
-                Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    transport = t
-                    pushIslandUpdate()
-                } label: {
-                    Image(systemName: t.icon)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(transport == t ? Color(hex: 0x231007) : t.color)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(transport == t ? t.color : t.color.opacity(0.14)))
-                        .overlay(Circle().stroke(t.color.opacity(transport == t ? 0 : 0.4), lineWidth: 1))
-                }
-                .buttonStyle(.plain)
-            }
-            Spacer(minLength: 0)
-        }
     }
 
     private var statsCard: some View {

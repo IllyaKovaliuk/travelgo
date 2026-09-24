@@ -3,6 +3,8 @@ import SwiftUI
 /// 13 · Log a route — choose method.
 struct LogRouteStartView: View {
     var onRecord: () -> Void
+    var onImportFile: () -> Void
+    var onDrawMap: () -> Void
     var onClose: () -> Void
 
     var body: some View {
@@ -43,12 +45,11 @@ struct LogRouteStartView: View {
                     optionCard(
                         icon: "doc.badge.plus",
                         title: "Import a file",
-                        subtitle: "GPX, KML or a Garmin / Strava export",
+                        subtitle: "A GPX or KML export — Garmin Connect, Strava, AllTrails, Komoot",
                         tint: NTColor.water,
                         filled: false,
-                        action: {}
+                        action: onImportFile
                     )
-                    .opacity(0.5)
                     .revealOnAppear(delay: 0.17, distance: 20)
 
                     optionCard(
@@ -57,9 +58,8 @@ struct LogRouteStartView: View {
                         subtitle: "Trace waypoints by hand over satellite imagery",
                         tint: NTColor.extreme,
                         filled: false,
-                        action: {}
+                        action: onDrawMap
                     )
-                    .opacity(0.5)
                     .revealOnAppear(delay: 0.22, distance: 20)
                 }
                 .padding(.top, 28)

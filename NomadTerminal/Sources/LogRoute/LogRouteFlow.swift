@@ -88,26 +88,24 @@ struct LogRouteFlow: View {
     @State private var path: [Step] = []
     @State private var draft = NewRouteDraft()
 
-    enum Step: Hashable { case record, details, publish }
+    enum Step: Hashable { case record, importFile, drawMap, details, publish }
 
     var body: some View {
         NavigationStack(path: $path) {
             LogRouteStartView(
                 onRecord: { path.append(.record) },
+                onImportFile: { path.append(.importFile) },
+                onDrawMap: { path.append(.drawMap) },
                 onClose: { dismiss() }
             )
             .navigationDestination(for: Step.self) { step in
                 switch step {
                 case .record:
-                    RecordTrackView(onFinish: { result in
-                        draft.distanceKM = String(format: "%.2f", result.distanceKM)
-                        draft.ascentM = result.ascentM
-                        draft.highPointM = result.highPointM
-                        draft.trackPoints = result.points
-                        draft.pois = result.pois
-                        draft.transport = result.transport
-                        path.append(.details)
-                    })
+                    RecordTrackView(onFinish: { result in applyResult(result) })
+                case .importFile:
+                    ImportRouteView(onFinish: { result in applyResult(result) })
+                case .drawMap:
+                    DrawRouteView(onFinish: { result in applyResult(result) })
                 case .details:
                     RouteUploadDetailsView(draft: $draft, onContinue: { path.append(.publish) })
                 case .publish:
@@ -117,5 +115,18 @@ struct LogRouteFlow: View {
         }
         .tint(NTColor.milk)
         .preferredColorScheme(ThemeManager.shared.colorScheme)
+    }
+
+    /// Shared by all three "how did you get the line" paths — record,
+    /// import a file, draw on the map all end up producing the same
+    /// `RecordResult` shape, so they all merge into the draft identically.
+    private func applyResult(_ result: RecordResult) {
+        draft.distanceKM = String(format: "%.2f", result.distanceKM)
+        draft.ascentM = result.ascentM
+        draft.highPointM = result.highPointM
+        draft.trackPoints = result.points
+        draft.pois = result.pois
+        draft.transport = result.transport
+        path.append(.details)
     }
 }
