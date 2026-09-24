@@ -72,6 +72,16 @@ targets:
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - location
+        # Catches Google's OAuth redirect back into the app — GoTrue's own
+        # web flow (ASWebAuthenticationSession, driven by Supabase's
+        # signInWithOAuth) needs a custom scheme to hand control back once
+        # Google's consent page finishes. Apple Sign In doesn't use this —
+        # native ASAuthorizationController + Supabase's ID-token flow never
+        # leaves the app.
+        CFBundleURLTypes:
+          - CFBundleURLSchemes:
+              - io.nomadterminal.app
+            CFBundleURLName: io.nomadterminal.app.oauth
         # Public runtime token (safe to ship client-embedded, same as
         # Supabase's anon key) — the separate secret download token lives
         # only in ~/.netrc for SPM to fetch the SDK, never in the repo.

@@ -670,7 +670,13 @@ actor RouteRepository {
 
     struct MyProfile {
         let username: String
-        let displayName: String
+        /// `nil` is real now, not a decoding bug — `profiles.display_name`
+        /// became nullable so `handle_new_user()` could stop faking a
+        /// "New Nomad" identity for accounts without one yet (see the
+        /// `require_real_author_name_trigger` migration). A brand-new
+        /// social sign-in genuinely has no name until `AuthView` sets one
+        /// right after auth succeeds.
+        let displayName: String?
         let homeLocation: String?
         let kmLogged: Double
         let routesCompleted: Int
@@ -685,7 +691,7 @@ actor RouteRepository {
 
     private struct MyProfileRow: Decodable {
         let username: String
-        let display_name: String
+        let display_name: String?
         let home_location: String?
         let km_logged: Double
         let routes_completed: Int
@@ -750,6 +756,22 @@ actor RouteRepository {
             }
             throw ProfileUpdateError.other(message)
         }
+    }
+
+    /// Display-name-only partial update — used right after a real Apple/
+    /// Google sign-in when the provider actually handed over a name
+    /// (Apple's `fullName`, only ever shared on someone's very first
+    /// authorization; Google's `full_name`/`name` claim). Deliberately not
+    /// `updateMyProfile` — that one replaces `username` too, and would risk
+    /// clobbering the auto-generated one with nothing to put back since a
+    /// social sign-in never collects a username at all.
+    func updateDisplayName(_ displayName: String) async throws {
+        let userId = try await ensureSession()
+        struct Update: Encodable { let display_name: String }
+        try await supabase.from("profiles")
+            .update(Update(display_name: displayName))
+            .eq("id", value: userId.uuidString)
+            .execute()
     }
 
     struct MyBadge: Identifiable {

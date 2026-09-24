@@ -18,7 +18,7 @@ struct EditProfileView: View {
     init(current: RouteRepository.MyProfile, onSaved: @escaping () -> Void) {
         self.current = current
         self.onSaved = onSaved
-        _displayName = State(initialValue: current.displayName)
+        _displayName = State(initialValue: current.displayName ?? "")
         _username = State(initialValue: current.username)
         _homeLocation = State(initialValue: current.homeLocation ?? "")
     }
