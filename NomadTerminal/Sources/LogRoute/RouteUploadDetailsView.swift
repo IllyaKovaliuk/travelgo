@@ -13,6 +13,19 @@ struct RouteUploadDetailsView: View {
     @State private var isUploadingCover = false
     @State private var coverUploadError: String?
 
+    /// Real fix for a real bug: Continue used to only check the title, so
+    /// tapping it right after picking a photo (completely normal — nobody
+    /// waits and watches a progress spinner) could push into Review &
+    /// Publish while `uploadCover(_:)`'s background `Task` was still
+    /// running. The upload itself finished fine and the file really is in
+    /// Storage — it just never made it into `draft.coverImageUrl` before
+    /// `RouteReviewPublishView` had already captured (and published) the
+    /// draft's old value. Blocking Continue until the upload actually
+    /// resolves closes that race outright, rather than patching around it.
+    private var canContinue: Bool {
+        !draft.title.trimmingCharacters(in: .whitespaces).isEmpty && !isUploadingCover
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
@@ -120,13 +133,13 @@ struct RouteUploadDetailsView: View {
                 .padding(.bottom, 20)
             }
 
-            NTPrimaryButton(title: "Continue", icon: "arrow.right", action: onContinue)
+            NTPrimaryButton(title: isUploadingCover ? "Uploading photo…" : "Continue", icon: "arrow.right", action: onContinue)
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
                 .padding(.bottom, 14)
                 .background(NTColor.pine)
-                .disabled(draft.title.trimmingCharacters(in: .whitespaces).isEmpty)
-                .opacity(draft.title.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1)
+                .disabled(!canContinue)
+                .opacity(canContinue ? 1 : 0.5)
         }
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
