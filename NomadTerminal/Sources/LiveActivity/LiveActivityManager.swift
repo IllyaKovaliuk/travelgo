@@ -30,17 +30,20 @@ final class LiveActivityManager {
 
     // MARK: Recording
 
-    func startRecording(routeName: String?) {
+    func startRecording(routeName: String?, transportIcon: String, transportColorHex: UInt32, plannedLengthKM: Double? = nil) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         // A fresh recording replaces any stale activity (e.g. left over
         // from a force-quit session) rather than stacking a second one.
         endActivity(dismissalPolicy: .immediate)
 
         let state = NomadTripAttributes.ContentState(
-            mode: .recording(.init(distanceKM: 0, elapsedSeconds: 0, ascentM: 0, avgSpeedKMH: 0, isPaused: false))
+            mode: .recording(.init(
+                distanceKM: 0, elapsedSeconds: 0, ascentM: 0, avgSpeedKMH: 0, isPaused: false,
+                transportIcon: transportIcon, transportColorHex: transportColorHex
+            ))
         )
         activity = try? Activity.request(
-            attributes: NomadTripAttributes(routeName: routeName),
+            attributes: NomadTripAttributes(routeName: routeName, plannedLengthKM: plannedLengthKM),
             content: .init(state: state, staleDate: nil)
         )
     }

@@ -23,6 +23,17 @@ struct NomadTripAttributes: ActivityAttributes {
         /// Drives the island's Pause/Resume button label and the
         /// dot-vs-solid indicator, same as the in-app RECORDING/PAUSED pill.
         var isPaused: Bool
+        /// The real selected `Transport`'s SF Symbol name + `NTColor`
+        /// hex — plain data rather than the `Transport` type itself, since
+        /// the widget extension target doesn't compile
+        /// `Sources/Models/Route.swift` (only `Sources/LiveActivity` and
+        /// `Sources/DesignSystem/NTColor.swift`). Lives on the per-update
+        /// snapshot rather than the static `NomadTripAttributes` because
+        /// ActivityKit has no API to change an activity's `attributes`
+        /// after `Activity.request` — only `content.state` — and
+        /// `RecordTrackView` lets transport change mid-recording.
+        var transportIcon: String
+        var transportColorHex: UInt32
     }
 
     struct ContentState: Codable, Hashable {
@@ -41,4 +52,11 @@ struct NomadTripAttributes: ActivityAttributes {
     /// Static for the activity's lifetime. Nil for a standalone SOS
     /// triggered with no route being recorded (e.g. from the plain Compass).
     var routeName: String?
+    /// A target distance, when one is actually known — real today only for
+    /// a route recording started against a planned length; freeform
+    /// recording (the only mode this app has right now — see
+    /// `LogRouteStartView`, there's no "follow a planned route" flow yet)
+    /// always passes nil, and every progress indicator below is written to
+    /// simply not render rather than fake a target that doesn't exist.
+    var plannedLengthKM: Double? = nil
 }

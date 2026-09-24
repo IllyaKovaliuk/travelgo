@@ -105,6 +105,7 @@ struct LogRouteFlow: View {
                         draft.highPointM = result.highPointM
                         draft.trackPoints = result.points
                         draft.pois = result.pois
+                        draft.transport = result.transport
                         path.append(.details)
                     })
                 case .details:

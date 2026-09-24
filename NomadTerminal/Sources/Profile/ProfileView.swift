@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import WidgetKit
 
 /// 08 · Profile & badges — a data-terminal reading of "your account", not a
 /// social-media one. The visual hero is real numbers (km/countries/routes/
@@ -160,6 +161,27 @@ struct ProfileView: View {
         followerCount = resolvedFollowers
         myUserId = session?.user.id.uuidString
         isLoading = false
+
+        if profile?.isAnonymous == false {
+            pushWidgetSnapshot()
+        }
+    }
+
+    /// Hands the Home Screen/Lock Screen widgets a fresh snapshot — same
+    /// real numbers this screen itself just computed and is about to
+    /// display, nothing recomputed specially for the widget. Silently
+    /// skipped for an anonymous session (no real stats to show yet).
+    private func pushWidgetSnapshot() {
+        let snapshot = WidgetSnapshot(
+            totalKM: totalKM,
+            countriesVisited: countriesVisited,
+            streakWeeks: currentStreak,
+            heatmapWeeks: heatmapWeeks,
+            displayName: profile?.displayName ?? "",
+            lastUpdated: Date()
+        )
+        WidgetSnapshotStore.save(snapshot)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private var initials: String {

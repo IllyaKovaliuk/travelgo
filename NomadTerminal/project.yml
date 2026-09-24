@@ -51,6 +51,11 @@ targets:
         ENABLE_PREVIEWS: YES
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 8FKZYTQB3B
+        # App Group — lets ProfileView hand a small stats snapshot
+        # (km/countries/streak/heatmap) to the widget extension process,
+        # which has no DB/network access of its own. See Sources/Shared/
+        # WidgetSnapshot.swift.
+        CODE_SIGN_ENTITLEMENTS: NomadTerminal.entitlements
     info:
       path: Generated/Info.plist
       properties:
@@ -87,6 +92,7 @@ targets:
     sources:
       - path: WidgetExtension
       - path: Sources/LiveActivity
+      - path: Sources/Shared
       - path: Sources/DesignSystem/NTColor.swift
     settings:
       base:
@@ -97,6 +103,7 @@ targets:
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 8FKZYTQB3B
         SKIP_INSTALL: YES
+        CODE_SIGN_ENTITLEMENTS: WidgetExtension.entitlements
     info:
       path: Generated/WidgetExtension-Info.plist
       properties:

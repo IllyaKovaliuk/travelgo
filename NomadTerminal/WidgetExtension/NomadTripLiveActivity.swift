@@ -12,7 +12,7 @@ import SwiftUI
 struct NomadTripLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: NomadTripAttributes.self) { context in
-            LockScreenTripView(mode: context.state.mode, routeName: context.attributes.routeName)
+            LockScreenTripView(mode: context.state.mode, routeName: context.attributes.routeName, plannedLengthKM: context.attributes.plannedLengthKM)
                 .activityBackgroundTint(backgroundTint(for: context.state.mode))
                 .activitySystemActionForegroundColor(NTColor.milk)
         } dynamicIsland: { context in
@@ -32,14 +32,14 @@ struct NomadTripLiveActivity: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    ExpandedBottom(mode: context.state.mode)
+                    ExpandedBottom(mode: context.state.mode, plannedLengthKM: context.attributes.plannedLengthKM)
                 }
             } compactLeading: {
-                CompactLeading(mode: context.state.mode)
+                CompactLeading(mode: context.state.mode, plannedLengthKM: context.attributes.plannedLengthKM)
             } compactTrailing: {
                 CompactTrailing(mode: context.state.mode)
             } minimal: {
-                CompactLeading(mode: context.state.mode)
+                CompactLeading(mode: context.state.mode, plannedLengthKM: context.attributes.plannedLengthKM)
             }
             .keylineTint(tint(for: context.state.mode))
         }
@@ -64,6 +64,23 @@ private func backgroundTint(for mode: NomadTripAttributes.ContentState.Mode) -> 
     }
 }
 
+/// The one visual language addition here: a thin capsule progress track,
+/// styled to match the rest of this island (NTColor tokens, no default
+/// iOS `ProgressView` chrome) — only ever appears when
+/// `NomadTripAttributes.plannedLengthKM` is real.
+private struct LinearProgressBar: View {
+    let progress: Double
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(NTColor.milk(0.14))
+                Capsule().fill(NTColor.accent).frame(width: geo.size.width * max(0, min(progress, 1)))
+            }
+        }
+        .frame(height: 4)
+    }
+}
+
 private func elapsedString(_ seconds: Int) -> String {
     let h = seconds / 3600, m = (seconds % 3600) / 60, s = seconds % 60
     return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%02d:%02d", m, s)
@@ -71,13 +88,28 @@ private func elapsedString(_ seconds: Int) -> String {
 
 // MARK: - Compact / minimal
 
+/// A generic route-line glyph, not the transport icon — that lives in the
+/// expanded view instead (see `ExpandedLeading`), matching how little room
+/// compact actually has. Gains a thin circular progress ring around it
+/// when `plannedLengthKM` is real (never true for today's freeform-only
+/// recording, but the whole point is this doesn't lie when it is).
 private struct CompactLeading: View {
     let mode: NomadTripAttributes.ContentState.Mode
+    let plannedLengthKM: Double?
+
     var body: some View {
         switch mode {
         case .recording(let s):
-            Image(systemName: s.isPaused ? "pause.fill" : "figure.hiking")
-                .foregroundStyle(NTColor.accent)
+            if let planned = plannedLengthKM, planned > 0 {
+                Gauge(value: min(s.distanceKM / planned, 1)) {
+                    Image(systemName: "point.topleft.down.curvedto.point.bottomright.up")
+                }
+                .gaugeStyle(.accessoryCircularCapacity)
+                .tint(NTColor.accent)
+            } else {
+                Image(systemName: s.isPaused ? "pause.fill" : "point.topleft.down.curvedto.point.bottomright.up")
+                    .foregroundStyle(NTColor.accent)
+            }
         case .sos:
             Image(systemName: "sos").foregroundStyle(NTColor.hardBright)
         }
@@ -108,13 +140,21 @@ private struct ExpandedLeading: View {
     var body: some View {
         switch mode {
         case .recording(let s):
-            VStack(alignment: .leading, spacing: 3) {
-                Text(s.isPaused ? "PAUSED" : "RECORDING")
-                    .font(.system(size: 9, weight: .semibold)).tracking(1)
-                    .foregroundStyle(s.isPaused ? NTColor.hardBright : NTColor.milk(0.55))
-                Text(elapsedString(s.elapsedSeconds))
-                    .font(.system(size: 24, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(NTColor.milk)
+            HStack(spacing: 8) {
+                Image(systemName: s.transportIcon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(hex: s.transportColorHex))
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill(Color(hex: s.transportColorHex).opacity(0.16)))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(s.isPaused ? "PAUSED" : "RECORDING")
+                        .font(.system(size: 9, weight: .semibold)).tracking(1)
+                        .foregroundStyle(s.isPaused ? NTColor.hardBright : NTColor.milk(0.55))
+                    Text(elapsedString(s.elapsedSeconds))
+                        .font(.system(size: 22, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(NTColor.milk)
+                }
             }
         case .sos:
             VStack(alignment: .leading, spacing: 3) {
@@ -164,29 +204,35 @@ private struct ExpandedTrailing: View {
 /// works the same way through `CancelSOSIntent`.
 private struct ExpandedBottom: View {
     let mode: NomadTripAttributes.ContentState.Mode
+    let plannedLengthKM: Double?
     var body: some View {
         switch mode {
         case .recording(let s):
-            HStack(spacing: 10) {
-                Button(intent: ToggleRecordingPauseIntent()) {
-                    Label(s.isPaused ? "Resume" : "Pause", systemImage: s.isPaused ? "play.fill" : "pause.fill")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(NTColor.milk)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 34)
-                        .background(NTColor.milk(0.14), in: Capsule())
+            VStack(spacing: 8) {
+                if let planned = plannedLengthKM, planned > 0 {
+                    LinearProgressBar(progress: s.distanceKM / planned)
                 }
-                .buttonStyle(.plain)
+                HStack(spacing: 10) {
+                    Button(intent: ToggleRecordingPauseIntent()) {
+                        Label(s.isPaused ? "Resume" : "Pause", systemImage: s.isPaused ? "play.fill" : "pause.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NTColor.milk)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 34)
+                            .background(NTColor.milk(0.14), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
 
-                Button(intent: FinishRecordingIntent()) {
-                    Label("Finish", systemImage: "checkmark")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(NTColor.pine)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 34)
-                        .background(NTColor.milk, in: Capsule())
+                    Button(intent: FinishRecordingIntent()) {
+                        Label("Finish", systemImage: "checkmark")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(NTColor.pine)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 34)
+                            .background(NTColor.milk, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         case .sos:
             Button(intent: CancelSOSIntent()) {
@@ -207,6 +253,7 @@ private struct ExpandedBottom: View {
 private struct LockScreenTripView: View {
     let mode: NomadTripAttributes.ContentState.Mode
     let routeName: String?
+    let plannedLengthKM: Double?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -244,6 +291,10 @@ private struct LockScreenTripView: View {
                             .foregroundStyle(NTColor.milk(0.55))
                     }
                 }
+            }
+
+            if case .recording(let s) = mode, let planned = plannedLengthKM, planned > 0 {
+                LinearProgressBar(progress: s.distanceKM / planned)
             }
 
             HStack(spacing: 10) {
@@ -284,10 +335,13 @@ private struct LockScreenTripView: View {
     }
 
     private var icon: String {
-        switch mode { case .recording(let s): return s.isPaused ? "pause.fill" : "figure.hiking"; case .sos: return "sos" }
+        switch mode { case .recording(let s): return s.isPaused ? "pause.fill" : s.transportIcon; case .sos: return "sos" }
     }
     private var iconColor: Color {
-        switch mode { case .recording: return NTColor.accent; case .sos: return NTColor.hardBright }
+        switch mode {
+        case .recording(let s): return s.isPaused ? NTColor.milk(0.55) : Color(hex: s.transportColorHex)
+        case .sos: return NTColor.hardBright
+        }
     }
     private var caption: String {
         switch mode {

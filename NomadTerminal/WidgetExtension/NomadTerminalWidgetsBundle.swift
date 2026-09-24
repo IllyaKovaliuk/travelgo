@@ -5,5 +5,6 @@ import SwiftUI
 struct NomadTerminalWidgetsBundle: WidgetBundle {
     var body: some Widget {
         NomadTripLiveActivity()
+        NomadStatsWidget()
     }
 }

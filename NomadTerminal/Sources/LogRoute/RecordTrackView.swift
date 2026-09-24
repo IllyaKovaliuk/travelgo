@@ -6,6 +6,10 @@ struct RecordResult {
     let highPointM: Double
     let points: [TrackPoint]
     let pois: [DraftPOI]
+    /// The transport actually selected during recording (see
+    /// `RecordTrackView.transport`) — real now, rather than always landing
+    /// on `NewRouteDraft`'s silent `.overland` default.
+    let transport: Transport
 }
 
 /// 14 · Recording — live. Real CoreLocation recording via `RouteTracker`:
@@ -18,6 +22,13 @@ struct RecordTrackView: View {
     @State private var tracker = RouteTracker()
     @State private var elapsed: TimeInterval = 0
     @State private var isPaused = false
+    /// Wasn't chosen anywhere before this — the details step afterward
+    /// (`RouteUploadDetailsView`) picked it up from `NewRouteDraft`'s
+    /// silent `.overland` default. Choosing it here for real, before/while
+    /// recording, is what makes the Live Activity's transport icon a real
+    /// reflection of what's happening instead of a hardcoded hiking glyph.
+    /// `LogRouteFlow.onFinish` now seeds `draft.transport` from this too.
+    @State private var transport: Transport = .foot
     @State private var droppedPOIs: [DraftPOI] = []
     @State private var pendingPin: TrackPoint?
     @State private var showSOS = false
@@ -33,6 +44,7 @@ struct RecordTrackView: View {
                 if tracker.authorizationDenied {
                     locationDeniedCard
                 } else {
+                    transportPicker.padding(.horizontal, 22).padding(.bottom, 12)
                     statsCard
                     if !droppedPOIs.isEmpty {
                         droppedPinsRow.padding(.horizontal, 22).padding(.top, 12)
@@ -46,7 +58,9 @@ struct RecordTrackView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             tracker.start()
-            LiveActivityManager.shared.startRecording(routeName: nil)
+            LiveActivityManager.shared.startRecording(
+                routeName: nil, transportIcon: transport.icon, transportColorHex: transport.colorHexValue
+            )
         }
         .onDisappear {
             tracker.stop()
@@ -172,6 +186,32 @@ struct RecordTrackView: View {
         .padding(.top, 14)
     }
 
+    /// Real tap-to-pick, not a decoration — changes what icon/color the
+    /// Live Activity and Dynamic Island show (see `pushIslandUpdate()`),
+    /// and seeds `NewRouteDraft.transport` when the recording finishes.
+    /// Free to change mid-recording (someone parks the 4×4 and hikes the
+    /// last stretch) — the island just reflects whatever's picked right now.
+    private var transportPicker: some View {
+        HStack(spacing: 8) {
+            ForEach(Transport.allCases, id: \.self) { t in
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    transport = t
+                    pushIslandUpdate()
+                } label: {
+                    Image(systemName: t.icon)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(transport == t ? Color(hex: 0x231007) : t.color)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(transport == t ? t.color : t.color.opacity(0.14)))
+                        .overlay(Circle().stroke(t.color.opacity(transport == t ? 0 : 0.4), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
     private var statsCard: some View {
         VStack(spacing: 16) {
             Text(formattedTime)
@@ -272,7 +312,7 @@ struct RecordTrackView: View {
         LiveActivityManager.shared.endRecording()
         onFinish(RecordResult(
             distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
-            points: tracker.storedPoints, pois: droppedPOIs
+            points: tracker.storedPoints, pois: droppedPOIs, transport: transport
         ))
     }
 
@@ -280,7 +320,15 @@ struct RecordTrackView: View {
         let avgSpeed = tracker.distanceKM > 0 ? tracker.distanceKM / (elapsed / 3600 + 0.001) : 0
         LiveActivityManager.shared.updateRecording(.init(
             distanceKM: tracker.distanceKM, elapsedSeconds: Int(elapsed), ascentM: tracker.ascentM,
-            avgSpeedKMH: avgSpeed, isPaused: isPaused
+            avgSpeedKMH: avgSpeed, isPaused: isPaused,
+            transportIcon: transport.icon, transportColorHex: transport.colorHexValue
         ))
     }
+}
+
+private extension Transport {
+    /// `dbHex` ("#RRGGBB") converted once to the `UInt32` `NTColor.init(hex:)`
+    /// already takes — avoids a second hex-string parser existing in the
+    /// widget extension target just for this.
+    var colorHexValue: UInt32 { UInt32(dbHex.dropFirst(), radix: 16) ?? 0x5FA777 }
 }
