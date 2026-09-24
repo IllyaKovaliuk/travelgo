@@ -91,15 +91,21 @@ struct RouteDTO: Codable {
     let routeSegments: [SegmentDTO]
     let routeRequirements: [RequirementDTO]
     let routePointsOfInterest: [POIDTO]
-    /// Real aggregate counts via the `likes:route_likes(count)` embed —
-    /// PostgREST returns a one-element array wrapper, not a bare int.
+    /// Real aggregate counts via the `likes:route_likes(count)`/`saves:
+    /// route_saves(count)` embeds — PostgREST returns a one-element array
+    /// wrapper, not a bare int.
     let likes: [CountWrap]
     let comments: [CountWrap]
+    let saves: [CountWrap]
+    /// Real `routes.created_at` — not selected by every query yet (older
+    /// call sites didn't need it), so this stays optional rather than
+    /// requiring every caller to embed it.
+    let createdAt: String?
 
     struct CountWrap: Codable { let count: Int }
 
     enum CodingKeys: String, CodingKey {
-        case id, title, place, difficulty, transport, coordinates, season, duration, quote, profiles, likes, comments
+        case id, title, place, difficulty, transport, coordinates, season, duration, quote, profiles, likes, comments, saves
         case coverImageUrl = "cover_image_url"
         case transportLabel = "transport_label"
         case secondaryBadgeIcon = "secondary_badge_icon"
@@ -114,6 +120,7 @@ struct RouteDTO: Codable {
         case routeSegments = "route_segments"
         case routeRequirements = "route_requirements"
         case routePointsOfInterest = "route_points_of_interest"
+        case createdAt = "created_at"
     }
 }
 
@@ -174,8 +181,16 @@ extension RouteDTO {
             secondaryBadge: secondaryBadgeIcon.map { (icon: $0, label: secondaryBadgeLabel ?? "") },
             detail: detail,
             likeCount: likes.first?.count ?? 0,
-            commentCount: comments.first?.count ?? 0
+            commentCount: comments.first?.count ?? 0,
+            saveCount: saves.first?.count ?? 0,
+            createdAt: createdAt.flatMap(RouteDTO.parseISODate)
         )
+    }
+
+    static func parseISODate(_ iso: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
     }
 
     private func initials(from name: String) -> String {

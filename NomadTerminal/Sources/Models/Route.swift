@@ -19,10 +19,17 @@ struct Route: Identifiable {
     let distanceKM: Double
     let secondaryBadge: (icon: String, label: String)?
     let detail: RouteDetailInfo
-    /// Real aggregate counts (route_likes/route_comments), not per-card
-    /// local state — every route-fetching query embeds these now.
+    /// Real aggregate counts (route_likes/route_comments/route_saves), not
+    /// per-card local state — every route-fetching query embeds these now.
     var likeCount: Int = 0
     var commentCount: Int = 0
+    var saveCount: Int = 0
+    /// Real `routes.created_at`, when this came from a live fetch — `nil`
+    /// for the 3 mock routes (predate real publish timestamps). Backs any
+    /// time-windowed computation (an activity streak, a weekly/monthly
+    /// leaderboard, a contribution heatmap) — never fabricated when the
+    /// real row doesn't have one.
+    var createdAt: Date? = nil
 
     enum Difficulty: String, CaseIterable {
         case easy = "EASY", moderate = "MODERATE", hard = "HARD"

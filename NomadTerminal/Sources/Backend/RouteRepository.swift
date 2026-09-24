@@ -26,7 +26,7 @@ actor RouteRepository {
     func fetchRoutes() async throws -> [Route] {
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .order("created_at")
@@ -86,7 +86,7 @@ actor RouteRepository {
     func fetchUserRoutes(authorId: String) async throws -> [Route] {
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("author_id", value: authorId)
             .eq("status", value: "published")
             .eq("visibility", value: "public")
@@ -112,7 +112,7 @@ actor RouteRepository {
         let ids = follows.map { $0.followee_id.uuidString }
         let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .in("author_id", values: ids)
@@ -184,7 +184,7 @@ actor RouteRepository {
     func fetchRouteDTO(id: String) async throws -> RouteDTO {
         try await supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("id", value: id)
             .single()
             .execute()
@@ -201,7 +201,7 @@ actor RouteRepository {
     ) async throws -> [Route] {
         var builder = supabase
             .from("routes")
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
             .eq("visibility", value: "public")
             .in("transport", values: transports)
@@ -357,7 +357,7 @@ actor RouteRepository {
 
         let rows: [SaveRow] = try await supabase
             .from("route_saves")
-            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count))")
+            .select("downloaded_offline, routes!route_saves_route_id_fkey(*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count))")
             .eq("user_id", value: userId.uuidString)
             .order("created_at")
             .execute()
@@ -515,7 +515,7 @@ actor RouteRepository {
         let inserted: RouteDTO = try await supabase
             .from("routes")
             .insert(payload)
-            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .single()
             .execute()
             .value
@@ -790,36 +790,23 @@ actor RouteRepository {
         }
     }
 
-    struct MyRoute: Identifiable {
-        let id: String
-        let title: String
-        let meta: String
-        let likes: Int
-        let saves: Int
-    }
-
-    /// The current user's own published routes, for Profile's "My routes"
-    /// tab — was 2 hardcoded rows before.
-    func fetchMyRoutes() async throws -> [MyRoute] {
+    /// The current session's own routes — *every* status (draft/hidden
+    /// included), unlike `fetchUserRoutes` (which only shows what's
+    /// actually public, right for viewing someone *else's* profile). Full
+    /// `Route` shape rather than the old lightweight `MyRoute` — Profile's
+    /// stats header (km/countries/streak/verified) needs the real
+    /// `trackPoints`/`createdAt`/`place` on every one of your own routes,
+    /// not just a title and two counts.
+    func fetchMyRoutesFull() async throws -> [Route] {
         let userId = try await ensureSession()
-        struct CountWrap: Decodable { let count: Int }
-        struct Row: Decodable {
-            let id: UUID, title: String, place: String, distance_km: Double
-            let transport_label: String, status: String
-            let likes: [CountWrap], saves: [CountWrap]
-        }
-        let rows: [Row] = try await supabase
+        let rows: [RouteDTO] = try await supabase
             .from("routes")
-            .select("id, title, place, distance_km, transport_label, status, likes:route_likes(count), saves:route_saves(count)")
+            .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("author_id", value: userId.uuidString)
             .order("created_at", ascending: false)
             .execute()
             .value
-        return rows.map {
-            let meta = "\(String(format: "%.1f", $0.distance_km)) KM · \($0.transport_label) · \($0.status.uppercased())"
-            return MyRoute(id: $0.id.uuidString, title: $0.title.replacingOccurrences(of: "\n", with: " "),
-                            meta: meta, likes: $0.likes.first?.count ?? 0, saves: $0.saves.first?.count ?? 0)
-        }
+        return rows.map { $0.toRoute() }
     }
 
     // MARK: - NomadPoints (loyalty ledger — see backend/supabase/migrations/20260908000001_points.sql)
