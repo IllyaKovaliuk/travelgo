@@ -218,8 +218,13 @@ struct SettingsView: View {
                 // Fixed literal colors here on purpose, not NTColor.pine/
                 // .milk — those are theme-reactive now, so the swatches
                 // must NOT follow the live theme or "Pine" would stop
-                // looking like Pine once Milk is active.
-                themeTile("Pine", selected: themeManager.current == .pine, bg: Color(hex: 0x00311F), fg: Color(hex: 0xFAF6EC)) {
+                // looking like Pine once Milk is active. Values below are
+                // `NTColor.pine`/`.milk`'s own current dark-mode values
+                // (0x0A0A0A/0xF5F5F5) — this used to preview a dark-green
+                // 0x00311F, a stale leftover from before Pine moved to the
+                // current near-black "terminal" look, so the swatch was
+                // lying about what picking it actually looked like.
+                themeTile("Pine", selected: themeManager.current == .pine, bg: Color(hex: 0x0A0A0A), fg: Color(hex: 0xF5F5F5)) {
                     themeManager.current = .pine
                 }
                 themeTile("Milk", selected: themeManager.current == .milk, bg: NTColor.milkSurface, fg: NTColor.ink) {

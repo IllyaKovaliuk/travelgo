@@ -18,6 +18,13 @@ struct AuthView: View {
     enum Mode { case signIn, signUp }
     @State private var mode: Mode = .signIn
     @State private var name = ""
+    /// Optional, Telegram-style — free to skip entirely (an auto-generated
+    /// `nomad_<id>` username is always there as a fallback either way; see
+    /// `handle_new_user()`). If typed, it has to be globally unique — the
+    /// same `profiles.username` column and `UNIQUE` constraint an existing
+    /// account can already change later in Edit Profile, just offered here
+    /// too so someone doesn't have to hunt for it after signing up.
+    @State private var tag = ""
     @State private var email = ""
     @State private var password = ""
     @State private var isBusy = false
@@ -102,6 +109,7 @@ struct AuthView: View {
                 VStack(spacing: 10) {
                     if mode == .signUp {
                         textField(icon: "person", placeholder: "Your name", text: $name, isSecure: false)
+                        tagField
                     }
                     textField(icon: "envelope", placeholder: "you@nomadterminal.io", text: $email, isSecure: false)
                     textField(icon: "lock", placeholder: "Password", text: $password, isSecure: true)
@@ -172,6 +180,37 @@ struct AuthView: View {
         .buttonStyle(.plain)
     }
 
+    /// Telegram-style: an "@" prefix that's always visible (not typed),
+    /// free-form otherwise but optional — no error shown for an empty
+    /// field, only for one that's non-empty and badly formed.
+    private var tagField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                Text("@").font(NTFont.body(14.5, .medium)).foregroundStyle(NTColor.milk(0.5))
+                TextField("", text: $tag, prompt: Text("tag (optional)").foregroundStyle(NTColor.milk(0.35)))
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .font(NTFont.body(14.5, .medium))
+                    .foregroundStyle(NTColor.milk)
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 54)
+            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.16), lineWidth: 1))
+
+            if !tag.isEmpty && !isTagValid {
+                Text("Letters, numbers and underscores only — 3 to 20 characters.")
+                    .font(NTFont.body(11.5, .medium))
+                    .foregroundStyle(Color(hex: 0xE58272))
+                    .padding(.horizontal, 4)
+            }
+        }
+    }
+
+    private var isTagValid: Bool {
+        tag.range(of: "^[a-zA-Z0-9_]{3,20}$", options: .regularExpression) != nil
+    }
+
     private func textField(icon: String, placeholder: String, text: Binding<String>, isSecure: Bool) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(NTColor.milk(0.5))
@@ -195,7 +234,10 @@ struct AuthView: View {
 
     private var canSubmit: Bool {
         guard !email.isEmpty, password.count >= 6 else { return false }
-        if mode == .signUp, name.trimmingCharacters(in: .whitespaces).isEmpty { return false }
+        if mode == .signUp {
+            if name.trimmingCharacters(in: .whitespaces).isEmpty { return false }
+            if !tag.isEmpty && !isTagValid { return false }
+        }
         return true
     }
 
@@ -211,9 +253,12 @@ struct AuthView: View {
                     onDone()
                 } else {
                     let trimmedName = name.trimmingCharacters(in: .whitespaces)
+                    var metadata: [String: AnyJSON] = ["display_name": .string(trimmedName)]
+                    let trimmedTag = tag.trimmingCharacters(in: .whitespaces)
+                    if !trimmedTag.isEmpty { metadata["username"] = .string(trimmedTag.lowercased()) }
                     let response = try await supabase.auth.signUp(
                         email: email, password: password,
-                        data: ["display_name": .string(trimmedName)]
+                        data: metadata
                     )
                     if response.session != nil {
                         // Autoconfirm is on for this project — signing up
@@ -244,6 +289,7 @@ struct AuthView: View {
             return "Confirm your email first — check the link we sent you, then sign in."
         }
         if text.contains("Invalid login") { return "Wrong email or password." }
+        if text.contains("profiles_username_key") { return "That tag's already taken — try a different one (or leave it blank)." }
         if text.contains("already registered") || text.contains("already exists") { return "That email already has an account — try signing in." }
         if text.contains("rate_limit") { return "Too many attempts — wait a minute and try again." }
         if text.contains("email_address_invalid") { return "That email address looks invalid." }

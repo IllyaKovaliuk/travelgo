@@ -97,7 +97,10 @@ struct EditProfileView: View {
                 onSaved()
                 dismiss()
             } catch {
-                errorMessage = error.localizedDescription
+                let text = "\(error)"
+                errorMessage = text.contains("profiles_username_key")
+                    ? "That username's already taken — try a different one."
+                    : error.localizedDescription
             }
             isSaving = false
         }

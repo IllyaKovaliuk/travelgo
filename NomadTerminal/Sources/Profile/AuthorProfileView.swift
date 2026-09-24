@@ -62,7 +62,7 @@ struct AuthorProfileView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .fullScreenCover(item: $openRoute) { route in
+        .fullScreenCover(item: $openRoute, onDismiss: { Task { await load() } }) { route in
             RouteDetailFlow(route: route)
         }
         .task { await load() }
@@ -149,7 +149,15 @@ struct AuthorProfileView: View {
     private var followButton: some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            withAnimation(NTMotion.spring) { isFollowing.toggle() }
+            withAnimation(NTMotion.spring) {
+                isFollowing.toggle()
+                // Real, immediate local update — was previously stuck at
+                // whatever `load()` last fetched until this whole screen
+                // was torn down and re-created (leave, come back), same
+                // bug `RouteDetailView`'s own like counter had until it
+                // got this exact fix.
+                followerCount += isFollowing ? 1 : -1
+            }
             let newValue = isFollowing
             Task { try? await RouteRepository.shared.setFollowing(authorId: userId, following: newValue) }
         } label: {
