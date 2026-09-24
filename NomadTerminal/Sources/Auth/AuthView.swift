@@ -3,7 +3,11 @@ import Supabase
 import AuthenticationServices
 import CryptoKit
 
-/// 12 · Auth — sign in. Email/password, Apple, and Google are all real.
+/// 12 · Auth — sign in. Email/password and Google are real and live; Apple
+/// is real code (`appleButton`/`handleAppleSignIn`) but currently hidden
+/// behind `appleSignInEnabled` — confirmed via a real Xcode signing error
+/// that a free "Personal Team" Apple ID can't use the Sign In with Apple
+/// capability at all, not something worth guessing around.
 ///
 /// No "skip for now" here anymore — registration is mandatory for every
 /// user, so this screen is a wall, not a suggestion. `onDone` is only ever
@@ -22,13 +26,13 @@ import CryptoKit
 ///
 /// Two things this code can't finish alone — real external accounts, not
 /// something fixable from inside the repo:
-///   1. Apple: the App ID (io.nomadterminal.app) needs "Sign In with
-///      Apple" enabled on the Apple Developer portal (automatic signing
-///      usually registers this itself once it sees the entitlement, but
-///      isn't guaranteed to on every team type), and Supabase's Apple
-///      provider needs the bundle ID added as a valid Client ID (Auth →
-///      Providers → Apple) — no private key needed for this native,
-///      ID-token-only flow.
+///   1. Apple: needs a real, paid Apple Developer Program membership —
+///      confirmed (not assumed) that the free Personal Team tier can't
+///      use Sign In with Apple at all. Once paid, re-add
+///      `com.apple.developer.applesignin` to `NomadTerminal.entitlements`,
+///      flip `appleSignInEnabled` to `true`, and add the bundle ID as a
+///      valid Client ID in Supabase's Apple provider (Auth → Providers →
+///      Apple) — no private key needed for this native, ID-token-only flow.
 ///   2. Google: needs a real OAuth 2.0 Client ID + Secret from Google
 ///      Cloud Console (Web application type — Supabase's own backend
 ///      exchanges the code, not this app directly), pasted into Supabase's
@@ -37,6 +41,16 @@ import CryptoKit
 ///      Configuration → Redirect URLs.
 struct AuthView: View {
     var onDone: () -> Void
+
+    /// Off for now — this project is signed with a free "Personal Team"
+    /// Apple ID, and Apple flat-out doesn't allow the Sign In with Apple
+    /// capability for those (confirmed via a real Xcode signing error,
+    /// not a guess). The real implementation below (`appleButton`,
+    /// `handleAppleSignIn`, the whole nonce flow) is untouched and ready —
+    /// flip this back to `true` and re-add `com.apple.developer.
+    /// applesignin` to `NomadTerminal.entitlements` the moment the $99/yr
+    /// Apple Developer Program is paid for. Nothing else needs to change.
+    private static let appleSignInEnabled = false
 
     enum Mode { case signIn, signUp }
     @State private var mode: Mode = .signIn
@@ -134,7 +148,9 @@ struct AuthView: View {
                     .padding(.top, 10)
 
                 VStack(spacing: 12) {
-                    appleButton
+                    if Self.appleSignInEnabled {
+                        appleButton
+                    }
                     socialButton(icon: "globe", title: "Continue with Google", filled: false) {
                         Task { await signInWithGoogle() }
                     }
