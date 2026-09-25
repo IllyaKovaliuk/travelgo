@@ -413,7 +413,7 @@ struct SearchView: View {
         }
     }
 
-    private func rangeRow(label: String, value: String, low: Binding<Double>, high: Binding<Double>, bounds: ClosedRange<Double>, tint: Color) -> some View {
+    private func rangeRow(label: LocalizedStringKey, value: String, low: Binding<Double>, high: Binding<Double>, bounds: ClosedRange<Double>, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text(label).font(NTFont.mono(11, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
@@ -480,7 +480,7 @@ struct SearchView: View {
     /// bar's free-text match against title/place for region filtering in
     /// the meantime; a real requirements-based filter needs a join query
     /// this screen doesn't build yet.
-    private func comingSoonRow(title: String) -> some View {
+    private func comingSoonRow(title: LocalizedStringKey) -> some View {
         HStack(spacing: 12) {
             Text(title).font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk(0.5))
             Spacer()

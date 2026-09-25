@@ -356,7 +356,7 @@ struct ProfileView: View {
         .padding(.top, 22)
     }
 
-    private func heroStat(_ value: String, _ label: String) -> some View {
+    private func heroStat(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(value).font(NTFont.mono(30, .semibold))
             Text(label).font(NTFont.mono(9.5, .medium)).tracking(1.1).foregroundStyle(NTColor.milk(0.5))
@@ -377,7 +377,7 @@ struct ProfileView: View {
         .padding(.top, 14)
     }
 
-    private func secondaryCounter(_ value: String, _ label: String) -> some View {
+    private func secondaryCounter(_ value: String, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Text(value).font(NTFont.mono(13, .semibold)).foregroundStyle(NTColor.milk(0.85))
             Text(label).font(NTFont.mono(9, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.45))

@@ -289,7 +289,7 @@ struct SettingsView: View {
         .padding(.vertical, 15)
     }
 
-    private func valueRow(title: String, value: String?) -> some View {
+    private func valueRow(title: LocalizedStringKey, value: String?) -> some View {
         HStack(spacing: 14) {
             Text(title).font(NTFont.body(15, .medium))
             Spacer()

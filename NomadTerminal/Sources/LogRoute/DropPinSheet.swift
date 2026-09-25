@@ -72,7 +72,7 @@ struct DropPinSheet: View {
         .onAppear { titleFocused = true }
     }
 
-    private func categoryGrid(title: String, cases: [POICategory]) -> some View {
+    private func categoryGrid(title: LocalizedStringKey, cases: [POICategory]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {

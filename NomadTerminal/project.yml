@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
+  developmentLanguage: en
 configs:
   Debug: debug
   Release: release
@@ -31,6 +32,7 @@ targets:
       # them here instead of under `resources:`.
       - path: Resources/Fonts
       - path: Resources/Assets.xcassets
+      - path: Resources/Localizable.xcstrings
     dependencies:
       - package: Supabase
         product: Supabase
@@ -60,6 +62,15 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: NomadTerminal
+        # English (development/base), Ukrainian, Spanish — real
+        # translations in Resources/Localizable.xcstrings, not just this
+        # declaration. Lets the App Store and iOS's own per-app language
+        # picker (Settings > NomadTerminal > Language) know what's
+        # actually supported.
+        CFBundleLocalizations:
+          - en
+          - uk
+          - es
         UILaunchScreen: {}
         # No UIUserInterfaceStyle / UIStatusBarStyle lock, and
         # UIViewControllerBasedStatusBarAppearance defaults to true — both
@@ -104,6 +115,7 @@ targets:
       - path: Sources/LiveActivity
       - path: Sources/Shared
       - path: Sources/DesignSystem/NTColor.swift
+      - path: Resources/Localizable.xcstrings
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app.widgets
@@ -118,6 +130,10 @@ targets:
       path: Generated/WidgetExtension-Info.plist
       properties:
         CFBundleDisplayName: NomadTerminal
+        CFBundleLocalizations:
+          - en
+          - uk
+          - es
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
 schemes:

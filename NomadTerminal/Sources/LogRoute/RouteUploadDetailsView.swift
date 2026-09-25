@@ -229,7 +229,7 @@ struct RouteUploadDetailsView: View {
         isUploadingCover = false
     }
 
-    private func stepHeader(title: String, step: Int) -> some View {
+    private func stepHeader(title: LocalizedStringKey, step: Int) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text(title).font(NTFont.body(15, .semibold))
@@ -367,7 +367,7 @@ struct RouteUploadDetailsView: View {
         .buttonStyle(.plain)
     }
 
-    private func field<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func field<Content: View>(label: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
             content()

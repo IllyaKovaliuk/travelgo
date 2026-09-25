@@ -106,7 +106,7 @@ struct EditProfileView: View {
         }
     }
 
-    private func field<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func field<Content: View>(label: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
             content()

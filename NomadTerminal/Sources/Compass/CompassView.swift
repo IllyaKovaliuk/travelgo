@@ -263,7 +263,7 @@ struct CompassView: View {
         return points[max(0, min(7, index))]
     }
 
-    private func readoutStat(_ value: String, _ label: String) -> some View {
+    private func readoutStat(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(spacing: 5) {
             Text(value).font(NTFont.mono(14, .semibold))
             Text(label).font(NTFont.mono(8.5, .medium)).tracking(1.1).foregroundStyle(NTColor.milk(0.45))

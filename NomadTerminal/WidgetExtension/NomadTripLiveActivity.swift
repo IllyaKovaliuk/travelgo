@@ -343,7 +343,7 @@ private struct LockScreenTripView: View {
         case .sos: return NTColor.hardBright
         }
     }
-    private var caption: String {
+    private var caption: LocalizedStringKey {
         switch mode {
         case .recording(let s): return s.isPaused ? "PAUSED" : "RECORDING"
         case .sos: return "SOS ACTIVE"

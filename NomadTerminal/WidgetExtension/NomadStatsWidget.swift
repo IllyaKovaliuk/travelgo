@@ -99,7 +99,7 @@ private struct EmptySnapshotState: View {
     }
 }
 
-private func heroStat(_ value: String, _ label: String, size: CGFloat = 22) -> some View {
+private func heroStat(_ value: String, _ label: LocalizedStringKey, size: CGFloat = 22) -> some View {
     VStack(alignment: .leading, spacing: 4) {
         Text(value).font(.system(size: size, weight: .semibold, design: .monospaced)).foregroundStyle(NTColor.milk)
         Text(label).font(.system(size: 8, weight: .semibold)).tracking(1).foregroundStyle(NTColor.milk(0.5))

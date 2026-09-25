@@ -178,7 +178,7 @@ struct RouteDetailView: View {
             .overlay(Capsule().stroke(NTColor.milk(0.28), lineWidth: filled == nil ? 1 : 0))
     }
 
-    private func statBlock(_ value: String, _ label: String) -> some View {
+    private func statBlock(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(value).font(NTFont.mono(20, .semibold))
             Text(label).font(NTFont.mono(9, .medium)).tracking(1.1).foregroundStyle(NTColor.milk(0.5))

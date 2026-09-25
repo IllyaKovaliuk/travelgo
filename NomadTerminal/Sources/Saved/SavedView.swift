@@ -132,7 +132,7 @@ struct SavedView: View {
         .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
     }
 
-    private func emptyState(title: String, body: String, buttonTitle: String?) -> some View {
+    private func emptyState(title: LocalizedStringKey, body: LocalizedStringKey, buttonTitle: LocalizedStringKey?) -> some View {
         VStack(spacing: 22) {
             ZStack {
                 Circle()

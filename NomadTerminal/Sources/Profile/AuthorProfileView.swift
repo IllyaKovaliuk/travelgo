@@ -138,7 +138,7 @@ struct AuthorProfileView: View {
         n >= 1000 ? String(format: "%.1fK", Double(n) / 1000) : "\(n)"
     }
 
-    private func statBlock(_ value: String, _ label: String) -> some View {
+    private func statBlock(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(value).font(NTFont.mono(22, .semibold))
             Text(label).font(NTFont.mono(9.5, .medium)).tracking(1).foregroundStyle(NTColor.milk(0.5))

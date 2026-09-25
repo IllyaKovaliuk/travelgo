@@ -58,7 +58,7 @@ extension ButtonStyle where Self == NTCardPressStyle {
 /// Solid Milk pill — the primary action on dark Pine screens
 /// ("Start exploring", "Continue", …).
 struct NTPrimaryButton: View {
-    let title: String
+    let title: LocalizedStringKey
     var icon: String? = nil
     var action: () -> Void
 
@@ -86,7 +86,7 @@ struct NTPrimaryButton: View {
 /// Solid terracotta pill — used sparingly for the "hero" action
 /// (record, publish, sign-in).
 struct NTAccentButton: View {
-    let title: String
+    let title: LocalizedStringKey
     var icon: String? = nil
     var action: () -> Void
 
@@ -113,7 +113,7 @@ struct NTAccentButton: View {
 
 /// Text-only ghost button — "I already have an account", "Skip for now".
 struct NTGhostButton: View {
-    let title: String
+    let title: LocalizedStringKey
     var color: Color = NTColor.milk(0.62)
     var action: () -> Void
 

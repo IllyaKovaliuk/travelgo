@@ -149,7 +149,7 @@ struct DrawRouteView: View {
         .padding(.bottom, 18)
     }
 
-    private func stat(_ value: String, _ unit: String, _ label: String) -> some View {
+    private func stat(_ value: String, _ unit: String, _ label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             (Text(value).font(NTFont.mono(20, .semibold)) + Text(unit.isEmpty ? "" : " " + unit).font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.55)))
             Text(label).font(NTFont.mono(9, .medium)).tracking(1).foregroundStyle(NTColor.milk(0.5))
