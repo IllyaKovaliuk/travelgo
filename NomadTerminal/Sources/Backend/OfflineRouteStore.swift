@@ -47,7 +47,7 @@ actor OfflineRouteStore {
 
         let route = dto.toRoute()
         if route.detail.trackPoints.count > 1 {
-            if let image = try? await snapshot(for: route.detail.trackPoints), let png = image.pngData() {
+            if let image = try? await snapshot(for: route.detail.trackPoints, segments: route.detail.segments), let png = image.pngData() {
                 try? png.write(to: imageURL(routeId), options: .atomic)
             }
         }
@@ -112,7 +112,19 @@ actor OfflineRouteStore {
         }
     }
 
-    private func snapshot(for points: [TrackPoint]) async throws -> UIImage {
+    /// This is the *other* real map renderer in this app, and the one
+    /// easy to forget about: `RouteMapHeader` shows this cached PNG
+    /// instead of its own live Mapbox map whenever one exists (offline
+    /// viewing needs *something* to show with zero connectivity, and a
+    /// live `Map` still needs network for tiles even with the coordinates
+    /// already on hand) — so a route that's ever been "Saved offline"
+    /// keeps showing whatever this function drew at that moment, frozen,
+    /// until the next re-download. It used to draw one plain raw-point
+    /// line with no relation to `MapSegmentStretch`'s styling at all
+    /// (predating that work); now it runs the exact same simplify-then-
+    /// smooth-then-case pipeline, so "saved offline" doesn't quietly look
+    /// like an old build.
+    private func snapshot(for points: [TrackPoint], segments: [RouteDetailInfo.Segment]) async throws -> UIImage {
         let lats = points.map(\.lat), lngs = points.map(\.lng)
         let minLat = lats.min() ?? 0, maxLat = lats.max() ?? 0
         let minLng = lngs.min() ?? 0, maxLng = lngs.max() ?? 0
@@ -129,24 +141,47 @@ actor OfflineRouteStore {
         options.showsBuildings = true
 
         let snapshot = try await MKMapSnapshotter(options: options).start()
-        return await MainActor.run { drawTrack(points.map(\.coordinate), on: snapshot) }
+        let stretches = MapSegmentStretch.compute(trackPoints: points, segments: segments)
+        return await MainActor.run { drawTrack(points.map(\.coordinate), stretches: stretches, on: snapshot) }
     }
 
     @MainActor
-    private func drawTrack(_ coordinates: [CLLocationCoordinate2D], on snapshot: MKMapSnapshotter.Snapshot) -> UIImage {
+    private func drawTrack(_ rawCoordinates: [CLLocationCoordinate2D], stretches: [MapSegmentStretch], on snapshot: MKMapSnapshotter.Snapshot) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: snapshot.image.size)
         return renderer.image { context in
             snapshot.image.draw(at: .zero)
-            let path = UIBezierPath()
-            for (i, coordinate) in coordinates.enumerated() {
-                let point = snapshot.point(for: coordinate)
-                if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
+
+            func stroke(_ coordinates: [CLLocationCoordinate2D], color: UIColor, width: CGFloat) {
+                guard coordinates.count > 1 else { return }
+                let path = UIBezierPath()
+                for (i, coordinate) in coordinates.enumerated() {
+                    let point = snapshot.point(for: coordinate)
+                    if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
+                }
+                path.lineWidth = width
+                path.lineCapStyle = .round
+                path.lineJoinStyle = .round
+                color.setStroke()
+                path.stroke()
             }
-            path.lineWidth = 5
-            path.lineCapStyle = .round
-            path.lineJoinStyle = .round
-            UIColor.white.withAlphaComponent(0.95).setStroke()
-            path.stroke()
+
+            let casing = UIColor.black.withAlphaComponent(0.35)
+            if stretches.isEmpty {
+                // No segments to color per-transport — same real
+                // simplify-then-smooth pass the live map applies, still
+                // cased for the same depth, just one color.
+                let smoothed = MapSegmentStretch.smoothed(MapSegmentStretch.simplified(rawCoordinates))
+                stroke(smoothed, color: casing, width: 9)
+                stroke(smoothed, color: UIColor(NTColor.accent), width: 6)
+            } else {
+                // Casing pass first (under every segment), then each
+                // segment's real transport-tinted line on top — the same
+                // two-pass technique `lineBorderColor`/`lineBorderWidth`
+                // gives the live Mapbox line for free on a single layer;
+                // a static image has to actually draw it as two passes.
+                for stretch in stretches { stroke(stretch.coordinates, color: casing, width: 9) }
+                for stretch in stretches { stroke(stretch.coordinates, color: UIColor(stretch.tint), width: 6) }
+            }
         }
     }
 }
