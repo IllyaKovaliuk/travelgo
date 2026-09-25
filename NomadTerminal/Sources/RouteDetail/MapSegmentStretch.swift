@@ -75,6 +75,28 @@ struct MapSegmentStretch: Identifiable {
         return stretches
     }
 
+    /// Up to `maxCount` real coordinates along the track, always including
+    /// the actual start and end — for handing off to Apple/Google Maps'
+    /// own "directions with stops" deep links (`RouteFullMapView`'s "Open
+    /// in Maps"). Neither platform's public URL/API can render an
+    /// arbitrary custom polyline, only route through a sequence of real
+    /// points, so this is the honest maximum approximation of "show the
+    /// actual route" those integrations can achieve — real recorded
+    /// coordinates, not a routing engine's guess, just fewer of them than
+    /// the full track (both platforms cap how many stops a deep link
+    /// accepts).
+    static func representativeWaypoints(trackPoints: [TrackPoint], maxCount: Int = 8) -> [CLLocationCoordinate2D] {
+        let coords = trackPoints.map(\.coordinate)
+        guard coords.count > maxCount else { return coords }
+        // A looser tolerance than the display pipeline's 3m — this only
+        // needs to capture the real shape of the route in a handful of
+        // stops, not remove GPS jitter for a smooth curve.
+        let candidates = simplified(coords, toleranceMeters: 15)
+        guard candidates.count > maxCount else { return candidates }
+        let stride = Double(candidates.count - 1) / Double(maxCount - 1)
+        return (0..<maxCount).map { candidates[Int((Double($0) * stride).rounded())] }
+    }
+
     /// Douglas-Peucker line simplification. 3m default tolerance is well
     /// inside typical consumer-GPS jitter (5-10m horizontal accuracy is
     /// normal) but small enough to leave a real trail switchback alone —

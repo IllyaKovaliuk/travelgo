@@ -7,13 +7,17 @@ import CoreLocation
 /// The real map — pannable, zoomable, tappable pins. What the small header
 /// in Route Detail is a preview *of*. Segment-colored polyline, every
 /// point-of-interest pin the author dropped, and a real "Open in Maps"
-/// hand-off to Apple Maps for turn-by-turn to the trailhead (Apple Maps
-/// can't render a third-party app's custom multi-point route, so that's
-/// the honest limit of what deep-linking out can do — the rest of this
-/// screen is where the real route lives). Rendering itself is Mapbox
-/// (Standard Satellite — real 3D terrain + satellite, real photo pins);
-/// `MapKit` is still imported here purely for the "Open in Maps" deep link
-/// (`MKMapItem`), not for drawing anything.
+/// hand-off to Apple Maps *or* Google Maps showing the route's own real
+/// start through its own real end (via a handful of real waypoints along
+/// the way — `MapSegmentStretch.representativeWaypoints`), not directions
+/// from wherever the user currently is to just the trailhead. Neither
+/// platform's public deep link can render an arbitrary custom polyline —
+/// they still calculate their own road routing *between* each stop — so
+/// this is the honest limit of what deep-linking out can do; the rest of
+/// this screen is where the exact real route lives. Rendering itself is
+/// Mapbox (Standard Satellite — real 3D terrain + satellite, real photo
+/// pins); `MapKit` is still imported here purely for the Apple Maps hand-
+/// off (`MKMapItem`), not for drawing anything.
 struct RouteFullMapView: View {
     let route: Route
     var onClose: () -> Void
@@ -51,6 +55,16 @@ struct RouteFullMapView: View {
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }
     private var pois: [RouteDetailInfo.POI] { route.detail.pois }
+    /// Real recorded coordinates along the actual track (start through
+    /// end), not "from wherever I'm standing to the trailhead" — Apple/
+    /// Google Maps' own directions-with-stops still calculate their own
+    /// road routing *between* each of these, so this can't render the
+    /// exact off-road polyline shape (neither platform's public deep link
+    /// can, at all), but it's the real route's own real shape, not a
+    /// detour through the user's current location.
+    private var routeWaypoints: [CLLocationCoordinate2D] {
+        MapSegmentStretch.representativeWaypoints(trackPoints: trackPoints)
+    }
 
     private var fullRouteTarget: Viewport {
         .fitting(trackPoints.map(\.coordinate) + pois.map(\.coordinate), padding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40))
@@ -160,9 +174,18 @@ struct RouteFullMapView: View {
 
             Spacer()
 
-            if let start = trackPoints.first {
-                Button {
-                    openInAppleMaps(coordinate: start.coordinate, name: route.title.replacingOccurrences(of: "\n", with: " "))
+            if !trackPoints.isEmpty {
+                Menu {
+                    Button {
+                        openInAppleMaps(waypoints: routeWaypoints, name: route.title.replacingOccurrences(of: "\n", with: " "))
+                    } label: {
+                        Label("Apple Maps", systemImage: "map")
+                    }
+                    Button {
+                        openInGoogleMaps(waypoints: routeWaypoints)
+                    } label: {
+                        Label("Google Maps", systemImage: "map")
+                    }
                 } label: {
                     HStack(spacing: 7) {
                         Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
@@ -175,7 +198,6 @@ struct RouteFullMapView: View {
                     .background(Capsule().fill(.white))
                     .shadow(color: .black.opacity(0.2), radius: 6, y: 2)
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 16)
@@ -221,9 +243,46 @@ struct RouteFullMapView: View {
         .shadow(color: .black.opacity(0.3), radius: 16, y: 8)
     }
 
-    private func openInAppleMaps(coordinate: CLLocationCoordinate2D, name: String) {
-        let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
-        item.name = name
-        item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+    /// `MKMapItem.openMaps(with:)` with more than one item opens Apple Maps
+    /// showing directions through all of them in order — the first item
+    /// becomes the route's origin instead of defaulting to the user's
+    /// current location the way the single-item `openInMaps(launchOptions:)`
+    /// does, which is the actual fix: this shows the real route (its own
+    /// start through its own end), not "how do I get to the trailhead
+    /// from here."
+    private func openInAppleMaps(waypoints: [CLLocationCoordinate2D], name: String) {
+        guard !waypoints.isEmpty else { return }
+        let items = waypoints.enumerated().map { i, coordinate -> MKMapItem in
+            let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+            item.name = i == 0 ? name : (i == waypoints.count - 1 ? "\(name) — end" : nil)
+            return item
+        }
+        MKMapItem.openMaps(with: items, launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+    }
+
+    /// Google's own documented "Maps URLs" scheme
+    /// (developers.google.com/maps/documentation/urls/get-started) — a
+    /// plain `https://` universal link, so this opens the real Google Maps
+    /// app directly if it's installed (no custom `comgooglemaps://` scheme
+    /// or `LSApplicationQueriesSchemes` entry needed) and falls back to
+    /// Google Maps in Safari if it isn't. `waypoints` takes a `|`-separated
+    /// list of real coordinates between `origin` and `destination` — the
+    /// same real-route-shape approach as the Apple Maps hand-off above.
+    private func openInGoogleMaps(waypoints: [CLLocationCoordinate2D]) {
+        guard let first = waypoints.first, let last = waypoints.last else { return }
+        var items = [
+            URLQueryItem(name: "api", value: "1"),
+            URLQueryItem(name: "origin", value: "\(first.latitude),\(first.longitude)"),
+            URLQueryItem(name: "destination", value: "\(last.latitude),\(last.longitude)"),
+            URLQueryItem(name: "travelmode", value: "driving")
+        ]
+        let middle = waypoints.dropFirst().dropLast()
+        if !middle.isEmpty {
+            items.append(URLQueryItem(name: "waypoints", value: middle.map { "\($0.latitude),\($0.longitude)" }.joined(separator: "|")))
+        }
+        var components = URLComponents(string: "https://www.google.com/maps/dir/")!
+        components.queryItems = items
+        guard let url = components.url else { return }
+        UIApplication.shared.open(url)
     }
 }
