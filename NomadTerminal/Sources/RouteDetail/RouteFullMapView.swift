@@ -27,12 +27,19 @@ struct RouteFullMapView: View {
     @State private var viewport: Viewport
     @State private var hasFlownIn = false
     @State private var flowStep = 0
+    /// Computed once (init), not a plain computed property — this file
+    /// reads `segmentStretches` from three different spots in one body
+    /// pass (the map content, the water-flow `.task` guard, `focusTarget`),
+    /// and a computed property would silently redo the full Douglas-Peucker
+    /// + Catmull-Rom pipeline every single one of those, on every render.
+    @State private var segmentStretches: [MapSegmentStretch]
 
     init(route: Route, onClose: @escaping () -> Void, focusStretchID: MapSegmentStretch.ID? = nil) {
         self.route = route
         self.onClose = onClose
         self.focusStretchID = focusStretchID
         _viewport = State(initialValue: .styleDefault)
+        _segmentStretches = State(initialValue: MapSegmentStretch.compute(trackPoints: route.detail.trackPoints, segments: route.detail.segments))
     }
 
     // `MapKit` and `MapboxMaps` both declare a `MapStyle` type — imported
@@ -44,9 +51,6 @@ struct RouteFullMapView: View {
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }
     private var pois: [RouteDetailInfo.POI] { route.detail.pois }
-    private var segmentStretches: [MapSegmentStretch] {
-        MapSegmentStretch.compute(trackPoints: trackPoints, segments: route.detail.segments)
-    }
 
     private var fullRouteTarget: Viewport {
         .fitting(trackPoints.map(\.coordinate) + pois.map(\.coordinate), padding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40))
@@ -62,11 +66,11 @@ struct RouteFullMapView: View {
                     GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
                     LineLayer(id: "\(sourceId)-line", source: sourceId)
                         .lineColor(UIColor(NTColor.accent))
-                        .lineWidth(7.5)
+                        .lineWidth(9)
                         .lineCap(.round)
                         .lineJoin(.round)
                         .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
-                        .lineBorderWidth(1.6)
+                        .lineBorderWidth(2)
                 }
 
                 if trackPoints.count > 1 {

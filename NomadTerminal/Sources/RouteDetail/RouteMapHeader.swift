@@ -115,6 +115,16 @@ struct RouteMapHeader: View {
         .onTapGesture { onOpenFullMap?() }
     }
 
+    /// Deliberately a computed property, not something cached in `@State`
+    /// at init — `segments`/`trackPoints` are plain `var`/`let` props fed
+    /// from `RouteDetailView`'s own `route`, which really does mutate after
+    /// a real edit (`EditRouteExtrasView`'s `route = updated`); this view's
+    /// identity persists across that (SwiftUI updates the props in place,
+    /// it doesn't reconstruct the view), so anything cached only at init
+    /// would silently go stale the moment segments actually change. The
+    /// Douglas-Peucker + Catmull-Rom pass itself is cheap at this app's
+    /// real point counts — correctness here matters more than the redundant
+    /// recompute across the couple of places this gets read per render.
     private var segmentStretches: [MapSegmentStretch] {
         MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
     }
@@ -132,11 +142,11 @@ struct RouteMapHeader: View {
                 GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
                 LineLayer(id: "\(sourceId)-line", source: sourceId)
                     .lineColor(UIColor(NTColor.accent))
-                    .lineWidth(7.5)
+                    .lineWidth(9)
                     .lineCap(.round)
                     .lineJoin(.round)
                     .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
-                    .lineBorderWidth(1.6)
+                    .lineBorderWidth(2)
             }
 
             if trackPoints.count > 1 {

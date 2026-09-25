@@ -10,14 +10,32 @@ import CoreLocation
 /// transport"). Shared by the Route Detail header preview and the
 /// full-screen interactive map so both agree on the same split.
 ///
-/// Coordinates are smoothed (Catmull-Rom interpolation through the real
-/// recorded points, not a simplification pass — the raw tracks in this app
-/// are sparse, a handful of points per segment, so what they need is
-/// interpolated smoothness, not point-reduction) before storage here, once,
-/// at compute time — the underlying `TrackPoint` data on disk/in Postgres
-/// is never touched, only what gets drawn.
+/// Coordinates go through two real passes before storage here, once, at
+/// compute time — the underlying `TrackPoint` data on disk/in Postgres is
+/// never touched, only what gets drawn:
+///   1. Douglas-Peucker simplification, dropping points that sit within
+///      `simplificationToleranceM` of the straight line between their
+///      neighbors — this is what actually removes GPS jitter (a live
+///      recording can be a couple hundred points over a short stretch,
+///      with real device drift between them), while keeping any point that
+///      represents a genuine turn or switchback.
+///   2. Catmull-Rom spline interpolation through what's left — every
+///      surviving point stays exactly on the curve (unlike Bézier
+///      smoothing, which can pull the line away from real GPS fixes), with
+///      interpolated points filled in between so the result reads as a
+///      real curved track instead of straight point-to-point segments.
+/// In that order deliberately — simplify first, then curve the survivors;
+/// curving before simplifying would just produce a smooth-looking curve
+/// that still wiggles through every last bit of raw jitter.
 struct MapSegmentStretch: Identifiable {
-    let id = UUID()
+    /// Deterministic (segment index in the route, not a fresh random UUID
+    /// per computation) — `compute` runs independently in a few different
+    /// views for the same route (the header preview, the full map, Route
+    /// Detail itself), and anything that captures a `MapSegmentStretch.ID`
+    /// from one of those (`RouteFullMapView.focusStretchID`) needs it to
+    /// still match a stretch computed by a *different* call site, not just
+    /// a different call to the same one.
+    let id: String
     let coordinates: [CLLocationCoordinate2D]
     let tint: Color
     let icon: String
@@ -46,9 +64,10 @@ struct MapSegmentStretch: Identifiable {
             let clampedEnd = min(endIdx, lastIndex)
             guard clampedEnd > startIdx else { continue }
             let rawSlice = Array(coords[startIdx...clampedEnd])
-            let smoothed = MapSegmentStretch.smoothed(rawSlice)
+            let simplified = MapSegmentStretch.simplified(rawSlice)
+            let smoothed = MapSegmentStretch.smoothed(simplified)
             stretches.append(MapSegmentStretch(
-                coordinates: smoothed, tint: seg.tint, icon: seg.icon, label: seg.name,
+                id: "\(i)", coordinates: smoothed, tint: seg.tint, icon: seg.icon, label: seg.name,
                 midpoint: smoothed[smoothed.count / 2], transport: seg.transport, distanceKM: seg.distanceKM
             ))
             startIdx = clampedEnd
@@ -56,11 +75,65 @@ struct MapSegmentStretch: Identifiable {
         return stretches
     }
 
-    /// Catmull-Rom spline through the real recorded points — every original
-    /// point stays exactly on the curve (unlike Bézier smoothing, which can
-    /// pull the line away from real GPS fixes), with interpolated points
-    /// filled in between so a sparse, jagged 5-point recording reads as a
-    /// real curved track instead of straight point-to-point segments.
+    /// Douglas-Peucker line simplification. 3m default tolerance is well
+    /// inside typical consumer-GPS jitter (5-10m horizontal accuracy is
+    /// normal) but small enough to leave a real trail switchback alone —
+    /// a genuine direction change moves the point further than that from
+    /// the straight line its neighbors would draw.
+    static func simplified(_ points: [CLLocationCoordinate2D], toleranceMeters: Double = 3) -> [CLLocationCoordinate2D] {
+        guard points.count > 2 else { return points }
+        var keep = [Bool](repeating: false, count: points.count)
+        keep[0] = true
+        keep[points.count - 1] = true
+        douglasPeucker(points, 0, points.count - 1, toleranceMeters, &keep)
+        return points.indices.compactMap { keep[$0] ? points[$0] : nil }
+    }
+
+    private static func douglasPeucker(
+        _ points: [CLLocationCoordinate2D], _ start: Int, _ end: Int, _ toleranceMeters: Double, _ keep: inout [Bool]
+    ) {
+        guard end > start + 1 else { return }
+        var maxDistance: Double = 0
+        var maxIndex = start
+        for i in (start + 1)..<end {
+            let d = perpendicularDistanceMeters(points[i], points[start], points[end])
+            if d > maxDistance {
+                maxDistance = d
+                maxIndex = i
+            }
+        }
+        if maxDistance > toleranceMeters {
+            keep[maxIndex] = true
+            douglasPeucker(points, start, maxIndex, toleranceMeters, &keep)
+            douglasPeucker(points, maxIndex, end, toleranceMeters, &keep)
+        }
+    }
+
+    /// Perpendicular distance in meters from `point` to the infinite line
+    /// through `a`→`b` — a flat-earth (equirectangular) projection local to
+    /// the two points, accurate at the scale a couple of recorded GPS fixes
+    /// actually span.
+    private static func perpendicularDistanceMeters(
+        _ point: CLLocationCoordinate2D, _ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D
+    ) -> Double {
+        let latRad = a.latitude * .pi / 180
+        let metersPerDegreeLat = 111_320.0
+        let metersPerDegreeLon = 111_320.0 * cos(latRad)
+
+        let bx = (b.longitude - a.longitude) * metersPerDegreeLon
+        let by = (b.latitude - a.latitude) * metersPerDegreeLat
+        let px = (point.longitude - a.longitude) * metersPerDegreeLon
+        let py = (point.latitude - a.latitude) * metersPerDegreeLat
+
+        let lineLength = (bx * bx + by * by).squareRoot()
+        guard lineLength > 1e-6 else { return (px * px + py * py).squareRoot() }
+        return abs(by * px - bx * py) / lineLength
+    }
+
+    /// Catmull-Rom spline through the (already-simplified) points — every
+    /// surviving point stays exactly on the curve, with interpolated points
+    /// filled in between so a sparse recording reads as a real curved track
+    /// instead of straight point-to-point segments.
     static func smoothed(_ points: [CLLocationCoordinate2D], samplesPerSegment: Int = 8) -> [CLLocationCoordinate2D] {
         guard points.count > 2 else { return points }
         var result: [CLLocationCoordinate2D] = [points[0]]
@@ -224,11 +297,11 @@ struct RouteSegmentMapContent: MapContent {
             LineLayer(id: "\(sourceId)-line", source: sourceId)
                 .lineColor(UIColor(stretch.tint))
                 .lineOpacity(1)
-                .lineWidth(7.5)
+                .lineWidth(9)
                 .lineCap(.round)
                 .lineJoin(.round)
                 .lineBorderColor(UIColor.black.withAlphaComponent(0.35))
-                .lineBorderWidth(1.6)
+                .lineBorderWidth(2)
                 .applyingDashArray(SegmentLineStyle.dashArray(for: stretch.transport))
 
             if SegmentLineStyle.hasFlowOverlay(stretch.transport) {

@@ -38,6 +38,12 @@ struct RouteDetailView: View {
     @State private var showAuthorProfile = false
 
     private var detail: RouteDetailInfo { route.detail }
+    /// A computed property, not something cached once — `route` is
+    /// `@State` here and really does get reassigned after a real edit
+    /// (`EditRouteExtrasView`'s `route = updated` below), so this has to
+    /// stay reactive to that or the map would keep showing pre-edit
+    /// segments. The smoothing pass itself is cheap at this app's real
+    /// point counts.
     private var segmentStretches: [MapSegmentStretch] {
         MapSegmentStretch.compute(trackPoints: detail.trackPoints, segments: detail.segments)
     }
@@ -372,9 +378,9 @@ struct RouteDetailView: View {
     /// route's one known point rather than the panel just being empty.
     private var fallbackStretches: [MapSegmentStretch] {
         guard let anchor = detail.trackPoints.first?.coordinate else { return [] }
-        return detail.segments.map { seg in
+        return detail.segments.enumerated().map { i, seg in
             MapSegmentStretch(
-                coordinates: [anchor], tint: seg.tint, icon: seg.icon, label: seg.name,
+                id: "fallback-\(i)", coordinates: [anchor], tint: seg.tint, icon: seg.icon, label: seg.name,
                 midpoint: anchor, transport: seg.transport, distanceKM: seg.distanceKM
             )
         }
