@@ -61,11 +61,11 @@ targets:
     info:
       path: Generated/Info.plist
       properties:
-        CFBundleDisplayName: NomadTerminal
+        CFBundleDisplayName: NomadCompass
         # English (development/base), Ukrainian, Spanish — real
         # translations in Resources/Localizable.xcstrings, not just this
         # declaration. Lets the App Store and iOS's own per-app language
-        # picker (Settings > NomadTerminal > Language) know what's
+        # picker (Settings > NomadCompass > Language) know what's
         # actually supported.
         CFBundleLocalizations:
           - en
@@ -129,7 +129,7 @@ targets:
     info:
       path: Generated/WidgetExtension-Info.plist
       properties:
-        CFBundleDisplayName: NomadTerminal
+        CFBundleDisplayName: NomadCompass
         CFBundleLocalizations:
           - en
           - uk

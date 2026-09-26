@@ -483,7 +483,7 @@ struct ProfileView: View {
             Text("You both unlock early access to the next region we open up.")
                 .font(NTFont.body(12.5, .light))
                 .foregroundStyle(NTColor.milk(0.6))
-            ShareLink(item: "Come log real routes with me on NomadTerminal.") {
+            ShareLink(item: "Come log real routes with me on NomadCompass.") {
                 Text("Send invite")
                     .font(NTFont.body(13, .semibold))
                     .foregroundStyle(Color(hex: 0x231007))

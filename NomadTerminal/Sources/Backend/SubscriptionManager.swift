@@ -2,7 +2,7 @@ import Foundation
 import StoreKit
 import Observation
 
-/// Real StoreKit 2 subscription handling for NomadTerminal Pro. Product
+/// Real StoreKit 2 subscription handling for NomadCompass Pro. Product
 /// IDs match `Configuration.storekit` (local testing) and must be created
 /// to match exactly in App Store Connect before shipping.
 @MainActor

@@ -16,7 +16,7 @@ struct WelcomeView: View {
                     CompassMark(size: 96)
                         .revealOnAppear(delay: 0.05)
 
-                    Text("NOMADTERMINAL")
+                    Text("NOMADCOMPASS")
                         .font(NTFont.mono(11, .medium))
                         .tracking(3.7)
                         .foregroundStyle(NTColor.milk(0.6))

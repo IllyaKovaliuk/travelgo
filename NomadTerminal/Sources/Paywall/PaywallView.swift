@@ -1,7 +1,7 @@
 import SwiftUI
 import StoreKit
 
-/// 20 · NomadTerminal Pro — paywall. Real StoreKit 2 purchase flow, backed
+/// 20 · NomadCompass Pro — paywall. Real StoreKit 2 purchase flow, backed
 /// by `SubscriptionManager` and the two products in `Configuration.storekit`
 /// (must be mirrored exactly in App Store Connect before shipping).
 struct PaywallView: View {
@@ -47,7 +47,7 @@ struct PaywallView: View {
                         .foregroundStyle(NTColor.milk)
                         .padding(.top, 18)
 
-                    Text("NomadTerminal Pro — everything you need where there's no signal at all.")
+                    Text("NomadCompass Pro — everything you need where there's no signal at all.")
                         .font(NTFont.body(14.5, .light))
                         .foregroundStyle(NTColor.milk(0.62))
                         .padding(.top, 8)

@@ -50,7 +50,7 @@ struct SettingsView: View {
                         divider
                         valueRow(title: "Emergency contacts", value: nil)
                         divider
-                        valueRow(title: "About NomadTerminal", value: "v2.4.0")
+                        valueRow(title: "About NomadCompass", value: "v2.4.0")
                     }
 
                     // No real admin-role system exists — reachable by
@@ -163,7 +163,7 @@ struct SettingsView: View {
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(subscription.isPro ? "NomadTerminal Pro" : "Get NomadTerminal Pro").font(NTFont.body(14.5, .semibold))
+                    Text(subscription.isPro ? "NomadCompass Pro" : "Get NomadCompass Pro").font(NTFont.body(14.5, .semibold))
                     Text(subscription.isPro ? "Active — manage your plan" : "Offline maps, SOS beacon, weather alerts")
                         .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
                 }

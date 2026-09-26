@@ -248,7 +248,7 @@ struct RouteDetailView: View {
     }
 
     private var shareText: String {
-        "Check out \"\(route.title.replacingOccurrences(of: "\n", with: " "))\" on NomadTerminal — \(String(format: "%.1f", route.distanceKM))km in \(route.place)."
+        "Check out \"\(route.title.replacingOccurrences(of: "\n", with: " "))\" on NomadCompass — \(String(format: "%.1f", route.distanceKM))km in \(route.place)."
     }
 
     private func formatCount(_ n: Int) -> String {

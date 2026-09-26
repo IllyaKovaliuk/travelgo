@@ -108,7 +108,7 @@ struct RewardsView: View {
                 earnLine("Someone else likes or saves your route")
                 earnLine("Someone new follows you")
             }
-            Text("Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadTerminal ever does a real token, this history is the honest snapshot of who was actually here early.")
+            Text("Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadCompass ever does a real token, this history is the honest snapshot of who was actually here early.")
                 .font(NTFont.body(11.5, .light))
                 .foregroundStyle(NTColor.milk(0.5))
                 .padding(.top, 4)

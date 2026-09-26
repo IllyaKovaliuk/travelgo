@@ -91,7 +91,7 @@ private struct EmptySnapshotState: View {
             Image(systemName: "location.north.line.fill")
                 .font(.system(size: 14))
                 .foregroundStyle(NTColor.accent)
-            Text("Open NomadTerminal\nto sync your stats")
+            Text("Open NomadCompass\nto sync your stats")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(NTColor.milk(0.55))
                 .fixedSize(horizontal: false, vertical: true)
@@ -145,7 +145,7 @@ private struct SmallStatsView: View {
                 Image(systemName: "location.north.line.fill")
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(NTColor.accent)
-                Text("NOMADTERMINAL")
+                Text("NOMADCOMPASS")
                     .font(.system(size: 7.5, weight: .semibold)).tracking(0.8)
                     .foregroundStyle(NTColor.milk(0.4))
             }
@@ -218,7 +218,7 @@ private struct RectangularStatsView: View {
                 }
             }
         } else {
-            Text("Open NomadTerminal").font(.system(size: 11, weight: .medium))
+            Text("Open NomadCompass").font(.system(size: 11, weight: .medium))
         }
     }
 }

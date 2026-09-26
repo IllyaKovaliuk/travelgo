@@ -1427,25 +1427,25 @@
         }
       }
     },
-    "Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadTerminal ever does a real token, this history is the honest snapshot of who was actually here early.": {
+    "Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadCompass ever does a real token, this history is the honest snapshot of who was actually here early.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadTerminal ever does a real token, this history is the honest snapshot of who was actually here early."
+            "value": "Every point is awarded server-side from real activity — there's no way to fake it from the app. If NomadCompass ever does a real token, this history is the honest snapshot of who was actually here early."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cada punto se otorga desde el servidor por actividad real — no hay forma de falsificarlo desde la app. Si NomadTerminal alguna vez lanza un token real, este historial será el registro honesto de quién estuvo aquí desde el principio."
+            "value": "Cada punto se otorga desde el servidor por actividad real — no hay forma de falsificarlo desde la app. Si NomadCompass alguna vez lanza un token real, este historial será el registro honesto de quién estuvo aquí desde el principio."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Кожен бал нараховується на сервері за реальну активність — підробити це з додатку неможливо. Якщо NomadTerminal колись випустить справжній токен, ця історія стане чесним знімком того, хто реально був тут раніше."
+            "value": "Кожен бал нараховується на сервері за реальну активність — підробити це з додатку неможливо. Якщо NomadCompass колись випустить справжній токен, ця історія стане чесним знімком того, хто реально був тут раніше."
           }
         }
       }
@@ -2232,25 +2232,25 @@
         }
       }
     },
-    "NOMADTERMINAL": {
+    "NOMADCOMPASS": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "NOMADTERMINAL"
+            "value": "NOMADCOMPASS"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "NOMADTERMINAL"
+            "value": "NOMADCOMPASS"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "NOMADTERMINAL"
+            "value": "NOMADCOMPASS"
           }
         }
       }
@@ -2462,25 +2462,25 @@
         }
       }
     },
-    "NomadTerminal Pro — everything you need where there's no signal at all.": {
+    "NomadCompass Pro — everything you need where there's no signal at all.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadTerminal Pro — everything you need where there's no signal at all."
+            "value": "NomadCompass Pro — everything you need where there's no signal at all."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadTerminal Pro — todo lo que necesitas donde no hay señal en absoluto."
+            "value": "NomadCompass Pro — todo lo que necesitas donde no hay señal en absoluto."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadTerminal Pro — усе потрібне там, де немає зв’язку взагалі."
+            "value": "NomadCompass Pro — усе потрібне там, де немає зв’язку взагалі."
           }
         }
       }
@@ -2646,48 +2646,48 @@
         }
       }
     },
-    "Open NomadTerminal": {
+    "Open NomadCompass": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open NomadTerminal"
+            "value": "Open NomadCompass"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre NomadTerminal"
+            "value": "Abre NomadCompass"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Відкрий NomadTerminal"
+            "value": "Відкрий NomadCompass"
           }
         }
       }
     },
-    "Open NomadTerminal\nto sync your stats": {
+    "Open NomadCompass\nto sync your stats": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open NomadTerminal\nto sync your stats"
+            "value": "Open NomadCompass\nto sync your stats"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Abre NomadTerminal\npara sincronizar tus estadísticas"
+            "value": "Abre NomadCompass\npara sincronizar tus estadísticas"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Відкрий NomadTerminal,\nщоб синхронізувати статистику"
+            "value": "Відкрий NomadCompass,\nщоб синхронізувати статистику"
           }
         }
       }
@@ -4923,25 +4923,25 @@
         }
       }
     },
-    "About NomadTerminal": {
+    "About NomadCompass": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "About NomadTerminal"
+            "value": "About NomadCompass"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Про NomadTerminal"
+            "value": "Про NomadCompass"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Acerca de NomadTerminal"
+            "value": "Acerca de NomadCompass"
           }
         }
       }
@@ -5333,6 +5333,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pausar"
+          }
+        }
+      }
+    },
+    "NomadCompass Pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadCompass Pro"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadCompass Pro"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadCompass Pro"
+          }
+        }
+      }
+    },
+    "Get NomadCompass Pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get NomadCompass Pro"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отримати NomadCompass Pro"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtener NomadCompass Pro"
           }
         }
       }
