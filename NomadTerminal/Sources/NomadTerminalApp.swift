@@ -1,7 +1,20 @@
 import SwiftUI
 
+/// Exists solely to give `VisitsMonitor` a launch hook that fires before
+/// any SwiftUI view does — including a headless background relaunch iOS
+/// triggers purely to deliver a pending `CLVisit`, which has no view
+/// hierarchy at all. See `VisitsMonitor.applicationDidLaunch()`.
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        Task { @MainActor in VisitsMonitor.shared.applicationDidLaunch() }
+        return true
+    }
+}
+
 @main
 struct NomadTerminalApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WindowGroup {
             RootView()

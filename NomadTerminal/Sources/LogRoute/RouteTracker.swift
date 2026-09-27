@@ -41,6 +41,11 @@ final class RouteTracker: NSObject {
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.activityType = .fitness
         manager.pausesLocationUpdatesAutomatically = false
+        // Apple's own UI for "this app is still reading your location in the
+        // background" — the thin colored bar/pill up top. Required honesty
+        // for an app that legitimately keeps recording once backgrounded,
+        // not something to suppress.
+        manager.showsBackgroundLocationIndicator = true
     }
 
     func start() {
@@ -99,6 +104,19 @@ extension RouteTracker: CLLocationManagerDelegate {
             case .authorizedWhenInUse:
                 self.authorizationDenied = false
                 manager.allowsBackgroundLocationUpdates = false
+                // The actual bug this fixes: on someone's very first-ever
+                // recording, authorizationStatus starts at .notDetermined,
+                // so `start()`'s own .authorizedWhenInUse branch (which asks
+                // for the Always upgrade) never runs — that branch only
+                // fires on a *second* recording, once WhenInUse was already
+                // granted from a prior session. Asking for the upgrade right
+                // here too, the moment a fresh WhenInUse grant comes back
+                // through this delegate callback, closes that gap: the
+                // Always prompt now appears within the same first session,
+                // so background recording actually works the first time
+                // someone backgrounds the app mid-track instead of silently
+                // stopping until they record a second time.
+                manager.requestAlwaysAuthorization()
                 manager.startUpdatingLocation()
             case .denied, .restricted:
                 self.authorizationDenied = true

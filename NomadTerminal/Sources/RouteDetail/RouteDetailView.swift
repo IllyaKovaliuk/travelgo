@@ -27,6 +27,7 @@ struct RouteDetailView: View {
     /// author id) — the Edit entry point below only shows for the actual
     /// author, not decided by anything client-fakeable.
     @State private var isOwner = false
+    @State private var currentUserId: String?
     // Route Detail had zero way to like or open comments — only the Home
     // feed card did. Same real actions, same real counts, just reachable
     // from the screen people actually read the route on.
@@ -102,6 +103,9 @@ struct RouteDetailView: View {
                         quoteCard.padding(.top, 26)
 
                         itineraryPanel.padding(.top, 26)
+
+                        RoutePhotosSection(routeId: route.id, currentUserId: currentUserId)
+                            .padding(.top, 26)
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 26)
@@ -159,6 +163,7 @@ struct RouteDetailView: View {
             likeCount = route.likeCount
             commentCount = route.commentCount
             if let session = try? await supabase.auth.session {
+                currentUserId = session.user.id.uuidString
                 isOwner = session.user.id.uuidString == route.author.id
             }
         }

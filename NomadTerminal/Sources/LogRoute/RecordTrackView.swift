@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct RecordResult {
     let distanceKM: Double
@@ -6,10 +7,24 @@ struct RecordResult {
     let highPointM: Double
     let points: [TrackPoint]
     let pois: [DraftPOI]
+    /// Defaults empty so `ImportRouteView`/`DrawRouteView` (the other two
+    /// producers of `RecordResult`, neither of which offers a photo step)
+    /// don't need to change at all.
+    let photos: [DraftPhoto]
     /// The transport actually selected during recording (see
     /// `RecordTrackView.transport`) — real now, rather than always landing
     /// on `NewRouteDraft`'s silent `.overland` default.
     let transport: Transport
+
+    init(distanceKM: Double, ascentM: Double, highPointM: Double, points: [TrackPoint], pois: [DraftPOI], photos: [DraftPhoto] = [], transport: Transport) {
+        self.distanceKM = distanceKM
+        self.ascentM = ascentM
+        self.highPointM = highPointM
+        self.points = points
+        self.pois = pois
+        self.photos = photos
+        self.transport = transport
+    }
 }
 
 /// 14 · Recording — live. Real CoreLocation recording via `RouteTracker`:
@@ -20,7 +35,18 @@ struct RecordTrackView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var tracker = RouteTracker()
-    @State private var elapsed: TimeInterval = 0
+    /// Real wall-clock bookkeeping instead of a per-second incremented
+    /// counter — `Timer.publish` does not fire while the app is suspended
+    /// in the background, so an incremented counter would silently
+    /// under-count by however long the phone sat backgrounded (and the
+    /// Live Activity, fed from the same value, would show the same stale
+    /// time). Deriving `elapsed` from `Date()` self-heals the instant the
+    /// timer resumes ticking in the foreground, no matter how long the gap
+    /// was — this is the same pattern the SOS Live Activity state already
+    /// uses (`Date.now.timeIntervalSince(triggeredAt)`).
+    @State private var recordingStartedAt = Date()
+    @State private var pausedAccumulated: TimeInterval = 0
+    @State private var pauseStartedAt: Date?
     @State private var isPaused = false
     /// Wasn't chosen anywhere before this — the details step afterward
     /// (`RouteUploadDetailsView`) picked it up from `NewRouteDraft`'s
@@ -32,6 +58,17 @@ struct RecordTrackView: View {
     @State private var droppedPOIs: [DraftPOI] = []
     @State private var pendingPin: TrackPoint?
     @State private var showSOS = false
+    // Part 2a — photos geotagged live, mid-recording. `photoPickerItem` is
+    // PhotosUI's own selection handle, not the photo itself; the real
+    // upload happens in `.onChange` below once its `Data` loads.
+    @State private var droppedPhotos: [DraftPhoto] = []
+    @State private var photoPickerItem: PhotosPickerItem?
+    @State private var isUploadingPhoto = false
+    /// `uploadRoutePhotoFile` wants a route id to group storage paths under
+    /// — there isn't a real one yet mid-recording (the route doesn't exist
+    /// until publish), so this is just an opaque per-session grouping key,
+    /// same role `DraftPOI`/`DraftPhoto` already play for the DB row.
+    private let recordingSessionId = UUID().uuidString
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -47,7 +84,7 @@ struct RecordTrackView: View {
                     TransportPicker(selection: $transport, onChange: { _ in pushIslandUpdate() })
                         .padding(.horizontal, 22).padding(.bottom, 12)
                     statsCard
-                    if !droppedPOIs.isEmpty {
+                    if !droppedPOIs.isEmpty || !droppedPhotos.isEmpty {
                         droppedPinsRow.padding(.horizontal, 22).padding(.top, 12)
                     }
                 }
@@ -58,6 +95,7 @@ struct RecordTrackView: View {
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
+            recordingStartedAt = Date()
             tracker.start()
             LiveActivityManager.shared.startRecording(
                 routeName: nil, transportIcon: transport.icon, transportColorHex: transport.colorHexValue
@@ -70,8 +108,11 @@ struct RecordTrackView: View {
             LiveActivityManager.shared.endRecording()
         }
         .onReceive(timer) { _ in
+            // Just a redraw tick now — `elapsed` is computed from real
+            // timestamps (see its declaration above), so this doesn't need
+            // to do the incrementing itself, only wake the view up once a
+            // second so the on-screen clock visibly moves.
             guard !isPaused else { return }
-            elapsed += 1
             // Throttled — the island's own elapsed timer ticks visually on
             // its own, this just needs to keep distance/ascent/speed fresh.
             if Int(elapsed) % 5 == 0 {
@@ -103,10 +144,21 @@ struct RecordTrackView: View {
     }
 
     private var droppedPinsRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "mappin.circle.fill").font(.system(size: 14)).foregroundStyle(NTColor.sage)
-            Text("\(droppedPOIs.count) PIN\(droppedPOIs.count == 1 ? "" : "S") DROPPED")
-                .font(NTFont.mono(10.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
+        HStack(spacing: 14) {
+            if !droppedPOIs.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "mappin.circle.fill").font(.system(size: 14)).foregroundStyle(NTColor.sage)
+                    Text("\(droppedPOIs.count) PIN\(droppedPOIs.count == 1 ? "" : "S") DROPPED")
+                        .font(NTFont.mono(10.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
+                }
+            }
+            if !droppedPhotos.isEmpty {
+                HStack(spacing: 8) {
+                    Image(systemName: "photo.fill").font(.system(size: 13)).foregroundStyle(NTColor.water)
+                    Text("\(droppedPhotos.count) PHOTO\(droppedPhotos.count == 1 ? "" : "S")")
+                        .font(NTFont.mono(10.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.6))
+                }
+            }
             Spacer()
         }
     }
@@ -249,17 +301,63 @@ struct RecordTrackView: View {
                 pendingPin = here
             } label: {
                 Image(systemName: "mappin.and.ellipse")
-                    .font(.system(size: 19))
-                    .frame(width: 64, height: 64)
+                    .font(.system(size: 17))
+                    .frame(width: 56, height: 56)
                     .background(Circle().fill(NTColor.milk(0.1)))
                     .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1.4))
             }
             .buttonStyle(.plain)
             .disabled(tracker.points.isEmpty)
             .opacity(tracker.points.isEmpty ? 0.4 : 1)
+
+            // Part 2a — same geotagged-to-here idea as the pin button
+            // above, just carrying a real photo instead of a note. Disabled
+            // while uploading (not while `tracker.points.isEmpty`, unlike
+            // the pin — the very first fix hasn't landed yet in that
+            // window, but a photo taken in the first second or two of a
+            // recording is still real and still worth keeping, just
+            // without a geotag).
+            PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                if isUploadingPhoto {
+                    ProgressView().tint(NTColor.milk)
+                        .frame(width: 56, height: 56)
+                        .background(Circle().fill(NTColor.milk(0.1)))
+                        .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1.4))
+                } else {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 17))
+                        .frame(width: 56, height: 56)
+                        .background(Circle().fill(NTColor.milk(0.1)))
+                        .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1.4))
+                }
+            }
+            .disabled(isUploadingPhoto)
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 14)
+        .onChange(of: photoPickerItem) { _, newItem in
+            guard let newItem else { return }
+            let here = tracker.points.last
+            Task {
+                isUploadingPhoto = true
+                defer { isUploadingPhoto = false; photoPickerItem = nil }
+                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
+                guard let url = try? await RouteRepository.shared.uploadRoutePhotoFile(data, routeId: recordingSessionId) else { return }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                droppedPhotos.append(DraftPhoto(imageUrl: url, lat: here?.lat, lng: here?.lng))
+            }
+        }
+    }
+
+    /// Wall-clock elapsed time since `recordingStartedAt`, minus however
+    /// long has been spent paused — accurate even across a stretch where
+    /// the app was backgrounded and `timer` above never fired.
+    private var elapsed: TimeInterval {
+        var total = Date().timeIntervalSince(recordingStartedAt) - pausedAccumulated
+        if let pauseStartedAt {
+            total -= Date().timeIntervalSince(pauseStartedAt)
+        }
+        return max(0, total)
     }
 
     private var formattedTime: String {
@@ -274,7 +372,16 @@ struct RecordTrackView: View {
     /// both paths stay identical.
     private func togglePause() {
         withAnimation { isPaused.toggle() }
-        if isPaused { tracker.pause() } else { tracker.resume() }
+        if isPaused {
+            pauseStartedAt = Date()
+            tracker.pause()
+        } else {
+            if let pauseStartedAt {
+                pausedAccumulated += Date().timeIntervalSince(pauseStartedAt)
+            }
+            pauseStartedAt = nil
+            tracker.resume()
+        }
         // Not on the periodic throttle — the island's PAUSED state and
         // button label shouldn't lag behind a toggle that just happened.
         pushIslandUpdate()
@@ -287,7 +394,7 @@ struct RecordTrackView: View {
         LiveActivityManager.shared.endRecording()
         onFinish(RecordResult(
             distanceKM: tracker.distanceKM, ascentM: tracker.ascentM, highPointM: tracker.highPointM,
-            points: tracker.storedPoints, pois: droppedPOIs, transport: transport
+            points: tracker.storedPoints, pois: droppedPOIs, photos: droppedPhotos, transport: transport
         ))
     }
 

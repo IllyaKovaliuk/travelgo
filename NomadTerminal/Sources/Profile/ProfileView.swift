@@ -18,7 +18,7 @@ import WidgetKit
 /// read `NTColor.sage` directly for exactly that reason: reusing today's
 /// real ramp, not reintroducing a muted one.
 struct ProfileView: View {
-    enum Tab: String, CaseIterable { case routes = "Routes", leaderboard = "Leaderboard", activity = "Activity", badges = "Badges" }
+    enum Tab: String, CaseIterable { case routes = "Routes", journal = "Journal", leaderboard = "Leaderboard", activity = "Activity", badges = "Badges" }
     @State private var tab: Tab = .routes
     @State private var showSettings = false
     @State private var showAuth = false
@@ -36,6 +36,9 @@ struct ProfileView: View {
     /// exist at this place"). Not scoped to "my" anything.
     @State private var allRoutes: [Route] = []
     @State private var activity: [RouteRepository.PointsLedgerEntry] = []
+    /// `place_name` of this session's own `kept` visits only — see
+    /// `countriesVisited`.
+    @State private var keptVisitPlaces: [String] = []
     @State private var followerCount = 0
     @State private var isLoading = true
     /// This session's own real user id — needed to highlight "my" row on
@@ -99,6 +102,7 @@ struct ProfileView: View {
                         Group {
                             switch tab {
                             case .routes: routesList
+                            case .journal: JournalView()
                             case .leaderboard: leaderboard
                             case .activity: activitySection
                             case .badges: badgeGrid
@@ -143,11 +147,15 @@ struct ProfileView: View {
         async let routesResult = (try? RouteRepository.shared.fetchMyRoutesFull()) ?? []
         async let allRoutesResult = (try? RouteRepository.shared.fetchRoutes()) ?? []
         async let activityResult = (try? RouteRepository.shared.fetchPointsLedger(limit: 20)) ?? []
+        // Only `kept` visits — see `countriesVisited`'s doc comment on why
+        // a pending/unconfirmed passive detection must never inflate this.
+        async let keptVisitPlacesResult = (try? RouteRepository.shared.fetchKeptVisitPlaces()) ?? []
         let resolvedProfile = await profileResult
         let resolvedBadges = await badgesResult
         let resolvedRoutes = await routesResult
         let resolvedAllRoutes = await allRoutesResult
         let resolvedActivity = await activityResult
+        let resolvedKeptVisitPlaces = await keptVisitPlacesResult
         // Needs the real user id, which only exists once `profile` itself
         // resolved — can't run alongside the `async let`s above.
         let session = try? await supabase.auth.session
@@ -158,6 +166,7 @@ struct ProfileView: View {
         myRoutes = resolvedRoutes
         allRoutes = resolvedAllRoutes
         activity = resolvedActivity
+        keptVisitPlaces = resolvedKeptVisitPlaces
         followerCount = resolvedFollowers
         myUserId = session?.user.id.uuidString
         isLoading = false
@@ -386,8 +395,15 @@ struct ProfileView: View {
 
     private var totalKM: Double { myRoutes.reduce(0) { $0 + $1.distanceKM } }
 
+    /// Real recorded routes, unioned with `kept` Visits (Part 3) —
+    /// `keptVisitPlaces` only ever contains entries the user explicitly
+    /// confirmed in the Journal, never a raw pending detection, so this
+    /// stays honest: carrying the phone around and never opening the
+    /// Journal adds nothing here on its own.
     private var countriesVisited: Int {
-        Set(myRoutes.map { Self.countryTag(from: $0.place) }).count
+        let fromRoutes = myRoutes.map { Self.countryTag(from: $0.place) }
+        let fromVisits = keptVisitPlaces.map { Self.countryTag(from: $0) }
+        return Set(fromRoutes + fromVisits).count
     }
 
     /// Consecutive weeks, walking back from the current week, with at least

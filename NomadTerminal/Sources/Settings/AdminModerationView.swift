@@ -11,6 +11,7 @@ struct AdminModerationView: View {
 
     @State private var hiddenRoutes: [RouteRepository.HiddenRoute] = []
     @State private var hiddenComments: [RouteRepository.HiddenComment] = []
+    @State private var hiddenPhotos: [RouteRepository.HiddenPhoto] = []
     @State private var isLoading = true
     @State private var reinstatingId: String?
     @State private var toast: String?
@@ -23,7 +24,7 @@ struct AdminModerationView: View {
 
                     if isLoading {
                         ProgressView().tint(NTColor.milk).frame(maxWidth: .infinity).padding(.top, 40)
-                    } else if hiddenRoutes.isEmpty && hiddenComments.isEmpty {
+                    } else if hiddenRoutes.isEmpty && hiddenComments.isEmpty && hiddenPhotos.isEmpty {
                         emptyState
                     } else {
                         if !hiddenRoutes.isEmpty {
@@ -33,6 +34,10 @@ struct AdminModerationView: View {
                         if !hiddenComments.isEmpty {
                             sectionLabel("HIDDEN COMMENTS (\(hiddenComments.count))")
                             VStack(spacing: 12) { ForEach(hiddenComments) { commentCard($0) } }
+                        }
+                        if !hiddenPhotos.isEmpty {
+                            sectionLabel("HIDDEN PHOTOS (\(hiddenPhotos.count))")
+                            VStack(spacing: 12) { ForEach(hiddenPhotos) { photoCard($0) } }
                         }
                     }
                 }
@@ -69,8 +74,10 @@ struct AdminModerationView: View {
     private func load() async {
         async let routes = (try? RouteRepository.shared.fetchHiddenRoutes()) ?? []
         async let comments = (try? RouteRepository.shared.fetchHiddenComments()) ?? []
+        async let photos = (try? RouteRepository.shared.fetchHiddenPhotos()) ?? []
         hiddenRoutes = await routes
         hiddenComments = await comments
+        hiddenPhotos = await photos
         isLoading = false
     }
 
@@ -132,6 +139,35 @@ struct AdminModerationView: View {
             reinstateButton(id: comment.id.uuidString) {
                 try await RouteRepository.shared.reinstateComment(id: comment.id.uuidString)
                 hiddenComments.removeAll { $0.id == comment.id }
+            }
+        }
+        .padding(16)
+        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+    }
+
+    private func photoCard(_ photo: RouteRepository.HiddenPhoto) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            AsyncImage(url: URL(string: photo.imageUrl)) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Rectangle().fill(NTColor.milk(0.08))
+                }
+            }
+            .frame(height: 140)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("by \(photo.uploaderName) on \(photo.routeTitle.replacingOccurrences(of: "\n", with: " "))")
+                    .font(NTFont.body(12, .light)).foregroundStyle(NTColor.milk(0.55))
+                Text(reasonsLine(photo.reasons, count: photo.reportCount))
+                    .font(NTFont.mono(10.5, .medium)).foregroundStyle(Color(hex: 0xE58272))
+            }
+            reinstateButton(id: photo.id.uuidString) {
+                try await RouteRepository.shared.reinstatePhoto(id: photo.id.uuidString)
+                hiddenPhotos.removeAll { $0.id == photo.id }
             }
         }
         .padding(16)

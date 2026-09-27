@@ -16,6 +16,7 @@ struct SettingsView: View {
     /// an app can't silently grant itself Always location, so this reflects
     /// truth and routes any tap to Settings rather than pretending to flip.
     @State private var backgroundLocationGranted = false
+    @State private var visitsMonitoringEnabled = AppPreferences.visitsMonitoringEnabled
     @State private var showPaywall = false
     @State private var showAuth = false
     @State private var showRewards = false
@@ -39,6 +40,8 @@ struct SettingsView: View {
                         ))
                         divider
                         backgroundLocationRow
+                        divider
+                        visitsMonitoringRow
                         divider
                         weatherAlertsRow
                         divider
@@ -137,6 +140,32 @@ struct SettingsView: View {
         .padding(.vertical, 15)
         .contentShape(Rectangle())
         .onTapGesture { if !backgroundLocationGranted { openSystemSettings() } }
+    }
+
+    /// Deliberately its own toggle, separate from `backgroundLocationRow`
+    /// above — that one is about an active LogRoute recording continuing
+    /// in the background; this is always-on passive detection for the
+    /// Journal, a materially different privacy trade-off that shouldn't
+    /// get silently bundled into approving the other.
+    private var visitsMonitoringRow: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "location.magnifyingglass").font(.system(size: 17)).foregroundStyle(NTColor.water).frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Passive visit detection").font(NTFont.body(15, .medium))
+                Text("Low-power arrival/stay detection for your Journal").font(NTFont.mono(9.5, .medium)).foregroundStyle(NTColor.milk(0.45))
+            }
+            Spacer()
+            Toggle("", isOn: Binding(
+                get: { visitsMonitoringEnabled },
+                set: { newValue in
+                    visitsMonitoringEnabled = newValue
+                    AppPreferences.visitsMonitoringEnabled = newValue
+                    if newValue { VisitsMonitor.shared.start() } else { VisitsMonitor.shared.stop() }
+                }
+            ))
+            .labelsHidden().tint(NTColor.sage)
+        }
+        .padding(.vertical, 15)
     }
 
     /// Honest placeholder, same pattern Search's Region/Requirements rows

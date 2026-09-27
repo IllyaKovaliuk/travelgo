@@ -443,6 +443,7 @@ actor RouteRepository {
         var segments: [NewSegment] = []
         var requirements: [NewRequirement] = []
         var pois: [NewPOI] = []
+        var photos: [NewPhoto] = []
         var coverImageUrl: String? = nil
         var visibility: String = "public"
     }
@@ -467,6 +468,16 @@ actor RouteRepository {
         var title: String
         var subtitle: String
         var tint: String
+    }
+
+    /// A photo taken mid-recording and geotagged (see `RecordTrackView`) —
+    /// already uploaded to storage by the time it reaches here (`imageUrl`
+    /// is real, not raw `Data`), so publishing only has to insert the
+    /// `route_photos` row once the route itself finally has a real id.
+    struct NewPhoto {
+        var imageUrl: String
+        var lat: Double?
+        var lng: Double?
     }
 
     /// Inserts a real row in `routes` under the current session as author,
@@ -550,8 +561,21 @@ actor RouteRepository {
             try await supabase.from("route_points_of_interest").insert(rows).execute()
         }
 
+        if !input.photos.isEmpty {
+            struct PhotoInsert: Encodable {
+                let route_id: String, uploader_id: String, image_url: String, lat: Double?, lng: Double?
+            }
+            let rows = input.photos.map {
+                PhotoInsert(route_id: inserted.id.uuidString, uploader_id: userId.uuidString, image_url: $0.imageUrl, lat: $0.lat, lng: $0.lng)
+            }
+            try await supabase.from("route_photos").insert(rows).execute()
+        }
+
         // Re-fetch so the returned Route carries the segments/requirements/
-        // POIs just inserted (the first response predates them).
+        // POIs just inserted (the first response predates them). Photos
+        // aren't part of the `Route`/`RouteDetailInfo` model at all (same
+        // as comments — see `RoutePhotosSection`'s own fetch), so they
+        // don't factor into whether a re-fetch is needed here.
         if !input.segments.isEmpty || !input.requirements.isEmpty || !input.pois.isEmpty {
             return try await fetchRouteDTO(id: inserted.id.uuidString).toRoute()
         }
@@ -646,9 +670,240 @@ actor RouteRepository {
             .execute()
     }
 
+    // MARK: - Photos on routes
+
+    /// Same data pattern as `Comment` above (user + route + timestamp +
+    /// content), not a separate system — see `route_photos`'s table
+    /// comment. `lat`/`lng` are only real when this was taken mid-recording
+    /// and geotagged to where in the track the person was; nil for an
+    /// after-the-fact library upload.
+    struct RoutePhoto: Identifiable {
+        let id: String
+        let imageUrl: String
+        let caption: String?
+        let lat: Double?
+        let lng: Double?
+        let uploaderId: String
+        let uploaderName: String
+        let uploaderInitials: String
+        let createdAgo: String
+    }
+
+    private struct RoutePhotoDTO: Decodable {
+        let id: UUID
+        let imageUrl: String
+        let caption: String?
+        let lat: Double?
+        let lng: Double?
+        let createdAt: String
+        let profiles: ProfileDTO
+        enum CodingKeys: String, CodingKey {
+            case id, caption, lat, lng, profiles
+            case imageUrl = "image_url"
+            case createdAt = "created_at"
+        }
+    }
+
+    func fetchPhotos(routeId: String) async throws -> [RoutePhoto] {
+        guard let routeUUID = UUID(uuidString: routeId) else { return [] }
+        let rows: [RoutePhotoDTO] = try await supabase
+            .from("route_photos")
+            .select("id, image_url, caption, lat, lng, created_at, profiles!route_photos_uploader_id_fkey(*)")
+            .eq("route_id", value: routeUUID.uuidString)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return rows.map {
+            RoutePhoto(
+                id: $0.id.uuidString, imageUrl: $0.imageUrl, caption: $0.caption, lat: $0.lat, lng: $0.lng,
+                uploaderId: $0.profiles.id.uuidString, uploaderName: $0.profiles.displayName,
+                uploaderInitials: initials(from: $0.profiles.displayName), createdAgo: relativeTime(from: $0.createdAt)
+            )
+        }
+    }
+
+    /// Uploads a picked photo to the `route-photos` bucket and returns its
+    /// public URL. Used both for an after-the-fact library add on Route
+    /// Detail and, via `NewRouteDraft.photos`, for a photo added live
+    /// mid-recording (uploaded immediately so the draft only ever carries a
+    /// URL, same as `coverImageUrl` already does — never raw image `Data`
+    /// sitting in memory for the rest of the flow).
+    func uploadRoutePhotoFile(_ data: Data, routeId: String) async throws -> String {
+        let userId = try await ensureSession()
+        let path = "\(userId.uuidString)/\(routeId)/\(UUID().uuidString).jpg"
+        try await supabase.storage.from("route-photos").upload(
+            path, data: data, options: FileOptions(contentType: "image/jpeg")
+        )
+        return try supabase.storage.from("route-photos").getPublicURL(path: path).absoluteString
+    }
+
+    /// Inserts the `route_photos` row itself — split from the upload above
+    /// so a mid-recording photo can upload right away (real route id not
+    /// known yet) while the DB row only gets created once the route
+    /// actually exists (see `publishRoute`'s `photos` batch insert, same
+    /// deferred pattern POIs already use).
+    func addPhoto(routeId: String, imageUrl: String, lat: Double?, lng: Double?, caption: String?) async throws {
+        let userId = try await ensureSession()
+        guard let routeUUID = UUID(uuidString: routeId) else { return }
+        struct Insert: Encodable {
+            let route_id: String
+            let uploader_id: String
+            let image_url: String
+            let lat: Double?
+            let lng: Double?
+            let caption: String?
+        }
+        try await supabase.from("route_photos")
+            .insert(Insert(route_id: routeUUID.uuidString, uploader_id: userId.uuidString, image_url: imageUrl, lat: lat, lng: lng, caption: caption))
+            .execute()
+    }
+
+    func deletePhoto(id: String) async throws {
+        try await ensureSession()
+        try await supabase.from("route_photos").delete().eq("id", value: id).execute()
+    }
+
+    // MARK: - Visits journal (passive detection, separate from LogRoute)
+
+    /// Entirely private — unlike routes/comments/photos, nobody but the
+    /// owner ever reads these (see `visits`' single RLS policy). `status`
+    /// is the honesty gate from the spec: `pending` visits are real
+    /// detections nobody has looked at yet and never feed any stat;
+    /// `kept` is the only status `ProfileView.countriesVisited` counts;
+    /// `dismissed` just means "reviewed and discarded," kept around rather
+    /// than deleted so `VisitsMonitor` doesn't re-surface the same spot
+    /// right after someone dismissed it.
+    struct Visit: Identifiable, Decodable {
+        let id: UUID
+        let lat: Double
+        let lng: Double
+        let placeName: String?
+        let arrivalAt: String
+        let departureAt: String?
+        let status: String
+        let linkedRouteId: UUID?
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, lat, lng, status
+            case placeName = "place_name"
+            case arrivalAt = "arrival_at"
+            case departureAt = "departure_at"
+            case linkedRouteId = "linked_route_id"
+            case createdAt = "created_at"
+        }
+    }
+
+    func fetchVisits() async throws -> [Visit] {
+        let userId = try await ensureSession()
+        return try await supabase
+            .from("visits")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .order("arrival_at", ascending: false)
+            .execute()
+            .value
+    }
+
+    /// Only kept visits — what `ProfileView.countriesVisited` unions with
+    /// `myRoutes` to compute the real stat. A dedicated, narrow query
+    /// rather than reusing `fetchVisits()` and filtering client-side, so
+    /// the profile stats header doesn't pull every pending/dismissed row
+    /// (which can genuinely add up — Visits monitoring runs constantly in
+    /// the background) just to throw most of it away.
+    func fetchKeptVisitPlaces() async throws -> [String] {
+        let userId = try await ensureSession()
+        struct Row: Decodable { let placeName: String?; enum CodingKeys: String, CodingKey { case placeName = "place_name" } }
+        let rows: [Row] = try await supabase
+            .from("visits")
+            .select("place_name")
+            .eq("user_id", value: userId.uuidString)
+            .eq("status", value: "kept")
+            .execute()
+            .value
+        return rows.compactMap(\.placeName)
+    }
+
+    /// `VisitsMonitor` calls this for a departure-only `CLVisit` callback,
+    /// to find the still-open row from the matching arrival to update in
+    /// place instead of inserting a duplicate. A plain bounding-box match
+    /// (no PostGIS in this schema) — generous enough for CLVisit's own
+    /// coordinate jitter between its arrival and departure reports for
+    /// what is, physically, the same stay.
+    func findOpenVisit(nearLat lat: Double, lng: Double, degreeTolerance: Double = 0.01) async throws -> Visit? {
+        let userId = try await ensureSession()
+        let rows: [Visit] = try await supabase
+            .from("visits")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .eq("status", value: "pending")
+            .is("departure_at", value: nil)
+            .gte("lat", value: lat - degreeTolerance)
+            .lte("lat", value: lat + degreeTolerance)
+            .gte("lng", value: lng - degreeTolerance)
+            .lte("lng", value: lng + degreeTolerance)
+            .order("arrival_at", ascending: false)
+            .limit(1)
+            .execute()
+            .value
+        return rows.first
+    }
+
+    @discardableResult
+    func insertPendingVisit(lat: Double, lng: Double, placeName: String?, arrivalAt: Date, departureAt: Date?) async throws -> Visit {
+        let userId = try await ensureSession()
+        struct Insert: Encodable {
+            let user_id: String
+            let lat: Double
+            let lng: Double
+            let place_name: String?
+            let arrival_at: String
+            let departure_at: String?
+        }
+        let iso = ISO8601DateFormatter()
+        return try await supabase.from("visits")
+            .insert(Insert(
+                user_id: userId.uuidString, lat: lat, lng: lng, place_name: placeName,
+                arrival_at: iso.string(from: arrivalAt), departure_at: departureAt.map(iso.string(from:))
+            ))
+            .select()
+            .single()
+            .execute()
+            .value
+    }
+
+    func updateVisitDeparture(id: String, departureAt: Date) async throws {
+        try await ensureSession()
+        struct Update: Encodable { let departure_at: String }
+        try await supabase.from("visits")
+            .update(Update(departure_at: ISO8601DateFormatter().string(from: departureAt)))
+            .eq("id", value: id)
+            .execute()
+    }
+
+    /// `status` is `"kept"` or `"dismissed"` — the only user-driven
+    /// transition out of `"pending"`. Nothing else in this app writes
+    /// `status` back to `"pending"`.
+    func setVisitStatus(id: String, status: String) async throws {
+        try await ensureSession()
+        struct Update: Encodable { let status: String }
+        try await supabase.from("visits").update(Update(status: status)).eq("id", value: id).execute()
+    }
+
+    func attachRouteToVisit(id: String, routeId: String) async throws {
+        try await ensureSession()
+        struct Update: Encodable { let linked_route_id: String }
+        try await supabase.from("visits").update(Update(linked_route_id: routeId)).eq("id", value: id).execute()
+    }
+
+    func deleteVisit(id: String) async throws {
+        try await ensureSession()
+        try await supabase.from("visits").delete().eq("id", value: id).execute()
+    }
+
     // MARK: - Moderation
 
-    enum ReportTarget: String { case route, comment }
+    enum ReportTarget: String { case route, comment, photo }
 
     /// Files a report — the DB auto-hides content once it collects reports
     /// from 3 distinct people (see the `content_reports` trigger). Silently
@@ -1166,5 +1421,40 @@ actor RouteRepository {
         try await ensureSession()
         struct Params: Encodable { let target_id: String }
         try await supabase.rpc("admin_reinstate_comment", params: Params(target_id: id)).execute()
+    }
+
+    struct HiddenPhoto: Identifiable, Decodable {
+        let id: UUID
+        let imageUrl: String
+        let caption: String?
+        let routeId: UUID
+        let routeTitle: String
+        let uploaderId: UUID
+        let uploaderName: String
+        let reportCount: Int
+        let reasons: [String]?
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, caption, reasons
+            case imageUrl = "image_url"
+            case routeId = "route_id"
+            case routeTitle = "route_title"
+            case uploaderId = "uploader_id"
+            case uploaderName = "uploader_name"
+            case reportCount = "report_count"
+            case createdAt = "created_at"
+        }
+    }
+
+    func fetchHiddenPhotos() async throws -> [HiddenPhoto] {
+        try await ensureSession()
+        return try await supabase.rpc("admin_list_hidden_photos").execute().value
+    }
+
+    func reinstatePhoto(id: String) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let target_id: String }
+        try await supabase.rpc("admin_reinstate_photo", params: Params(target_id: id)).execute()
     }
 }

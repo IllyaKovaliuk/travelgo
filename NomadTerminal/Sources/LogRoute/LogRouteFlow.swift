@@ -9,6 +9,17 @@ struct DraftPOI: Identifiable {
     var note: String = ""
 }
 
+/// A photo added mid-recording (`RecordTrackView`) — already uploaded to
+/// the `route-photos` bucket by the time it lands here (`imageUrl` is
+/// real), same deferred-insert pattern `DraftPOI` already uses since the
+/// route itself has no id until publish.
+struct DraftPhoto: Identifiable {
+    let id = UUID()
+    var imageUrl: String
+    var lat: Double?
+    var lng: Double?
+}
+
 struct DraftSegment: Identifiable {
     let id = UUID()
     var transport: Transport = .foot
@@ -78,6 +89,7 @@ struct NewRouteDraft {
     var segments: [DraftSegment] = []
     var requirements: [DraftRequirement] = []
     var pois: [DraftPOI] = []
+    var photos: [DraftPhoto] = []
     var coverImageUrl: String? = nil
 }
 
@@ -126,6 +138,7 @@ struct LogRouteFlow: View {
         draft.highPointM = result.highPointM
         draft.trackPoints = result.points
         draft.pois = result.pois
+        draft.photos = result.photos
         draft.transport = result.transport
         path.append(.details)
     }

@@ -175,6 +175,7 @@ struct RouteReviewPublishView: View {
                     pois: draft.pois.map {
                         .init(lat: $0.lat, lng: $0.lng, category: $0.category.rawValue, title: $0.title, note: $0.note.isEmpty ? nil : $0.note)
                     },
+                    photos: draft.photos.map { .init(imageUrl: $0.imageUrl, lat: $0.lat, lng: $0.lng) },
                     coverImageUrl: draft.coverImageUrl
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)

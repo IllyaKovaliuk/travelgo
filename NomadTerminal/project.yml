@@ -79,7 +79,7 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSLocationWhenInUseUsageDescription: "Turn-by-turn on unnamed tracks, and an SOS ping that still works with no signal."
-        NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and SOS beacon accurate while the app is in your pocket."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and SOS beacon accurate while the app is in your pocket, and — only if you turn on Passive visit detection in Settings — quietly notices new places you've stopped for your Journal."
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - location
