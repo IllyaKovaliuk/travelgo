@@ -43,6 +43,7 @@ struct RootView: View {
 
     @State private var isCheckingSession = true
     @State private var finishedOnboarding = false
+    @State private var languageManager = LanguageManager.shared
 
     var body: some View {
         Group {
@@ -54,6 +55,13 @@ struct RootView: View {
                 OnboardingContainer(onFinished: { finishedOnboarding = true })
             }
         }
+        // Applied once, at the single root every screen in the app
+        // descends from (onboarding and the whole signed-in tab flow
+        // alike) — same reasoning `.preferredColorScheme` already gets
+        // applied per-flow-root for Pine/Milk. Live, no relaunch needed:
+        // changing `languageManager.current` in Settings re-renders this
+        // and everything below it in the new language immediately.
+        .environment(\.locale, languageManager.locale)
         .task {
             if let session = try? await supabase.auth.session, session.user.isAnonymous == false {
                 let startedAt = UserDefaults.standard.object(forKey: "authSessionStartedAt") as? Date

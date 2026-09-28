@@ -92,7 +92,7 @@ struct JournalView: View {
         .padding(.top, 50)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
+    private func sectionLabel(_ text: LocalizedStringKey) -> some View {
         Text(text).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
     }
 

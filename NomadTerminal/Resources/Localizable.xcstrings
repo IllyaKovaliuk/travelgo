@@ -24,6 +24,52 @@
         }
       }
     },
+    "%1$@ / %2$@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ / %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ / %2$@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%1$@ PHOTO%2$@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ PHOTO%2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FOTOS: %1$@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ФОТО: %1$@"
+          }
+        }
+      }
+    },
     "%@": {
       "extractionState": "manual",
       "localizations": {
@@ -43,6 +89,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ / %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ / %2$@"
           }
         }
       }
@@ -135,6 +191,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ З 3"
+          }
+        }
+      }
+    },
+    "%@ PHOTO%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ PHOTO%2$@"
           }
         }
       }
@@ -668,6 +734,29 @@
         }
       }
     },
+    "ALT M": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ALT M"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ALT M"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВИС. М"
+          }
+        }
+      }
+    },
     "APPEARANCE": {
       "extractionState": "manual",
       "localizations": {
@@ -687,6 +776,75 @@
           "stringUnit": {
             "state": "translated",
             "value": "ВИГЛЯД"
+          }
+        }
+      }
+    },
+    "ASCENT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ASCENT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ASCENSO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НАБІР ВИСОТИ"
+          }
+        }
+      }
+    },
+    "AVG SPEED": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AVG SPEED"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VEL. MEDIA"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "СЕР. ШВИДКІСТЬ"
+          }
+        }
+      }
+    },
+    "About NomadCompass": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About NomadCompass"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acerca de NomadCompass"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Про NomadCompass"
           }
         }
       }
@@ -829,6 +987,29 @@
         }
       }
     },
+    "Attach a route": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attach a route"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular una ruta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прикріпити маршрут"
+          }
+        }
+      }
+    },
     "Back to sign in": {
       "extractionState": "manual",
       "localizations": {
@@ -898,6 +1079,29 @@
         }
       }
     },
+    "Browse saved routes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browse saved routes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver rutas guardadas"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переглянути збережені маршрути"
+          }
+        }
+      }
+    },
     "CFBundleDisplayName": {
       "extractionState": "manual",
       "localizations": {
@@ -963,6 +1167,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "СКОРО"
+          }
+        }
+      }
+    },
+    "COUNTRIES": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COUNTRIES"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PAÍSES"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "КРАЇНИ"
           }
         }
       }
@@ -1128,6 +1355,29 @@
         }
       }
     },
+    "Close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрити"
+          }
+        }
+      }
+    },
     "Continue": {
       "extractionState": "manual",
       "localizations": {
@@ -1197,6 +1447,121 @@
         }
       }
     },
+    "DISTANCE": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISTANCE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISTANCIA"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВІДСТАНЬ"
+          }
+        }
+      }
+    },
+    "DISTANCE (KM)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISTANCE (KM)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISTANCIA (KM)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВІДСТАНЬ (КМ)"
+          }
+        }
+      }
+    },
+    "DURATION": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DURATION"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DURACIÓN"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ТРИВАЛІСТЬ"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити"
+          }
+        }
+      }
+    },
+    "Delete photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete photo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar foto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити фото"
+          }
+        }
+      }
+    },
     "Detail (optional)": {
       "extractionState": "manual",
       "localizations": {
@@ -1216,6 +1581,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Деталі (необов’язково)"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відхилити"
           }
         }
       }
@@ -1312,6 +1700,29 @@
         }
       }
     },
+    "ETA": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ETA"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LLEGADA EST."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЧАС ПРИБУТТЯ"
+          }
+        }
+      }
+    },
     "Earn from real activity, redeem for Pro & badges": {
       "extractionState": "manual",
       "localizations": {
@@ -1381,6 +1792,29 @@
         }
       }
     },
+    "Emergency contacts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Emergency contacts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contactos de emergencia"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Контакти для екстрених випадків"
+          }
+        }
+      }
+    },
     "Enable it in Settings to log real distance, ascent and your path.": {
       "extractionState": "manual",
       "localizations": {
@@ -1423,6 +1857,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Увімкни в Налаштуваннях, щоб шукати місця поруч — пошук за назвою працює і без цього."
+          }
+        }
+      }
+    },
+    "English": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        }
+      }
+    },
+    "Español": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Español"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Español"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Español"
           }
         }
       }
@@ -1492,6 +1972,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ПОЛЬОВИЙ ДОВІДНИК"
+          }
+        }
+      }
+    },
+    "FOLLOWERS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FOLLOWERS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SEGUIDORES"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПІДПИСНИКИ"
           }
         }
       }
@@ -1703,6 +2206,29 @@
         }
       }
     },
+    "Get NomadCompass Pro": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get NomadCompass Pro"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtener NomadCompass Pro"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отримати NomadCompass Pro"
+          }
+        }
+      }
+    },
     "Giorgi K. and 1 more will be notified": {
       "extractionState": "manual",
       "localizations": {
@@ -1749,6 +2275,52 @@
         }
       }
     },
+    "HIGH POINT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HIGH POINT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PUNTO MÁS ALTO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НАЙВИЩА ТОЧКА"
+          }
+        }
+      }
+    },
+    "HOME LOCATION (OPTIONAL)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HOME LOCATION (OPTIONAL)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UBICACIÓN (OPCIONAL)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ДОМАШНЄ МІСЦЕ (НЕОБОВ'ЯЗКОВО)"
+          }
+        }
+      }
+    },
     "Home": {
       "extractionState": "manual",
       "localizations": {
@@ -1791,6 +2363,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Як ти\nпроклав маршрут?"
+          }
+        }
+      }
+    },
+    "I already have an account": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I already have an account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tengo una cuenta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У мене вже є акаунт"
+          }
+        }
+      }
+    },
+    "IN TOWN": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN TOWN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EN LA CIUDAD"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "У МІСТІ"
           }
         }
       }
@@ -1910,6 +2528,29 @@
         }
       }
     },
+    "KEPT (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KEPT (%@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GUARDADAS (%@)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЗБЕРЕЖЕНО (%@)"
+          }
+        }
+      }
+    },
     "KM": {
       "extractionState": "manual",
       "localizations": {
@@ -1956,6 +2597,99 @@
         }
       }
     },
+    "KM TOTAL": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM TOTAL"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM TOTAL"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "КМ ВСЬОГО"
+          }
+        }
+      }
+    },
+    "KM/H": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM/H"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM/H"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "КМ/ГОД"
+          }
+        }
+      }
+    },
+    "Keep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conservar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зберегти"
+          }
+        }
+      }
+    },
+    "LIKES": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LIKES"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ME GUSTA"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ВПОДОБАННЯ"
+          }
+        }
+      }
+    },
+    "Language": {},
     "Leave before four — the pass holds cloud until sunrise.": {
       "extractionState": "manual",
       "localizations": {
@@ -2094,6 +2828,98 @@
         }
       }
     },
+    "Low-power arrival/stay detection for your Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low-power arrival/stay detection for your Journal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detección de bajo consumo de llegadas/estancias para tu Diario"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Малопотужне визначення прибуття/перебування для Журналу"
+          }
+        }
+      }
+    },
+    "M": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "М"
+          }
+        }
+      }
+    },
+    "M ASCENT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M ASCENT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M ASCENSO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "М НАБОРУ"
+          }
+        }
+      }
+    },
+    "M HIGH PT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M HIGH PT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M PUNTO ALTO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "М НАЙВИЩА Т."
+          }
+        }
+      }
+    },
     "ME": {
       "extractionState": "manual",
       "localizations": {
@@ -2113,6 +2939,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Я"
+          }
+        }
+      }
+    },
+    "Moderation (review hidden content)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moderation (review hidden content)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moderación (contenido oculto)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Модерація (переглянути приховане)"
           }
         }
       }
@@ -2186,6 +3035,29 @@
         }
       }
     },
+    "NEEDS REVIEW (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NEEDS REVIEW (%@)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REQUIERE REVISIÓN (%@)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПОТРЕБУЄ ПЕРЕВІРКИ (%@)"
+          }
+        }
+      }
+    },
     "NO CELLULAR · GPS ONLY": {
       "extractionState": "manual",
       "localizations": {
@@ -2209,29 +3081,6 @@
         }
       }
     },
-    "NOMADPOINTS": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NOMADPOINTS"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NOMADPOINTS"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NOMADPOINTS"
-          }
-        }
-      }
-    },
     "NOMADCOMPASS": {
       "extractionState": "manual",
       "localizations": {
@@ -2251,6 +3100,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "NOMADCOMPASS"
+          }
+        }
+      }
+    },
+    "NOMADPOINTS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOMADPOINTS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOMADPOINTS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOMADPOINTS"
           }
         }
       }
@@ -2370,6 +3242,52 @@
         }
       }
     },
+    "No photos yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No photos yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay fotos"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки немає фото"
+          }
+        }
+      }
+    },
+    "No photos yet — add one from the trip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No photos yet — add one from the trip"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay fotos — añade una del viaje"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки немає фото — додайте одне з поїздки"
+          }
+        }
+      }
+    },
     "No routes match \"%@\" yet.": {
       "extractionState": "manual",
       "localizations": {
@@ -2439,25 +3357,25 @@
         }
       }
     },
-    "NomadPoints": {
+    "NomadCompass Pro": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadPoints"
+            "value": "NomadCompass Pro"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadPoints"
+            "value": "NomadCompass Pro"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "NomadPoints"
+            "value": "NomadCompass Pro"
           }
         }
       }
@@ -2481,6 +3399,75 @@
           "stringUnit": {
             "state": "translated",
             "value": "NomadCompass Pro — усе потрібне там, де немає зв’язку взагалі."
+          }
+        }
+      }
+    },
+    "NomadPoints": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadPoints"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadPoints"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NomadPoints"
+          }
+        }
+      }
+    },
+    "Nothing detected yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing detected yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada detectado todavía"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки нічого не виявлено"
+          }
+        }
+      }
+    },
+    "Nothing downloaded yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing downloaded yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada descargado todavía"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки нічого не завантажено"
           }
         }
       }
@@ -2527,6 +3514,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Поки нічого не опубліковано"
+          }
+        }
+      }
+    },
+    "Nothing saved yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing saved yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada guardado todavía"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки нічого не збережено"
           }
         }
       }
@@ -2600,6 +3610,29 @@
         }
       }
     },
+    "OUTDOOR": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OUTDOOR"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AIRE LIBRE"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НА ПРИРОДІ"
+          }
+        }
+      }
+    },
     "Offline maps, SOS beacon and weather alerts are all unlocked.": {
       "extractionState": "manual",
       "localizations": {
@@ -2619,6 +3652,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Офлайн-мапи, SOS-маяк і погодні попередження — все відкрито."
+          }
+        }
+      }
+    },
+    "Offline storage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline storage"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Almacenamiento sin conexión"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Офлайн-сховище"
           }
         }
       }
@@ -2738,6 +3794,29 @@
         }
       }
     },
+    "PAUSED": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PAUSED"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PAUSADO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПАУЗА"
+          }
+        }
+      }
+    },
     "PINS DROPPED (%@)": {
       "extractionState": "manual",
       "localizations": {
@@ -2757,6 +3836,144 @@
           "stringUnit": {
             "state": "translated",
             "value": "ПОЗНАЧОК ПОСТАВЛЕНО (%@)"
+          }
+        }
+      }
+    },
+    "POINTS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "POINTS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PUNTOS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ТОЧОК"
+          }
+        }
+      }
+    },
+    "Passive detection is off": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passive detection is off"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detección pasiva desactivada"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пасивне визначення вимкнено"
+          }
+        }
+      }
+    },
+    "Passive stops CoreLocation noticed — kept ones count toward your countries, nothing else on your profile.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passive stops CoreLocation noticed — kept ones count toward your countries, nothing else on your profile."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paradas pasivas que CoreLocation detectó — las conservadas solo cuentan para tus países, en ningún otro sitio del perfil."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пасивні зупинки, які помітив CoreLocation — збережені враховуються лише в кількості країн, більше ніде в профілі."
+          }
+        }
+      }
+    },
+    "Passive visit detection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passive visit detection"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detección pasiva de visitas"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пасивне визначення відвідувань"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пауза"
+          }
+        }
+      }
+    },
+    "Photos": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фото"
           }
         }
       }
@@ -2876,6 +4093,75 @@
         }
       }
     },
+    "Pull a route down before you leave signal. Tiles, elevation and gear lists come with it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pull a route down before you leave signal. Tiles, elevation and gear lists come with it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descarga una ruta antes de perder cobertura. Los mapas, la elevación y la lista de equipo vienen incluidos."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завантажте маршрут, поки є зв'язок. Разом з ним завантажаться карти, висота та список спорядження."
+          }
+        }
+      }
+    },
+    "RECORDING": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RECORDING"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GRABANDO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЗАПИС"
+          }
+        }
+      }
+    },
+    "REGION": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REGION"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REGIÓN"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "РЕГІОН"
+          }
+        }
+      }
+    },
     "REQUIREMENTS & GEAR": {
       "extractionState": "manual",
       "localizations": {
@@ -2922,6 +4208,52 @@
         }
       }
     },
+    "ROUTES CREATED": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROUTES CREATED"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUTAS CREADAS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "СТВОРЕНО МАРШРУТІВ"
+          }
+        }
+      }
+    },
+    "ROUTES LOGGED": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROUTES LOGGED"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUTAS REGISTRADAS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЗАПИСАНО МАРШРУТІВ"
+          }
+        }
+      }
+    },
     "ROUTES MATCH": {
       "extractionState": "manual",
       "localizations": {
@@ -2941,6 +4273,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ЗБІГИ МАРШРУТІВ"
+          }
+        }
+      }
+    },
+    "Record now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grabar ahora"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записати зараз"
           }
         }
       }
@@ -2991,6 +4346,29 @@
         }
       }
     },
+    "Report photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report photo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denunciar foto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поскаржитися на фото"
+          }
+        }
+      }
+    },
     "Requirement": {
       "extractionState": "manual",
       "localizations": {
@@ -3010,6 +4388,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вимога"
+          }
+        }
+      }
+    },
+    "Requirements": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requirements"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requisitos"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вимоги"
           }
         }
       }
@@ -3083,6 +4484,29 @@
         }
       }
     },
+    "Resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reanudar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продовжити"
+          }
+        }
+      }
+    },
     "Review & publish": {
       "extractionState": "manual",
       "localizations": {
@@ -3102,6 +4526,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Перевірка та публікація"
+          }
+        }
+      }
+    },
+    "Route details": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route details"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalles de la ruta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Деталі маршруту"
           }
         }
       }
@@ -3171,6 +4618,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ЗЕКОНОМ 38%"
+          }
+        }
+      }
+    },
+    "SEASON": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SEASON"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TEMPORADA"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "СЕЗОН"
           }
         }
       }
@@ -3313,6 +4783,29 @@
         }
       }
     },
+    "Save a route from the feed or a route page — it lands here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save a route from the feed or a route page — it lands here."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guarda una ruta desde el feed o su página — aparecerá aquí."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Збережіть маршрут зі стрічки або сторінки маршруту — він з'явиться тут."
+          }
+        }
+      }
+    },
     "Searching…": {
       "extractionState": "manual",
       "localizations": {
@@ -3378,6 +4871,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Надіслати запрошення"
+          }
+        }
+      }
+    },
+    "Share visits.json": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share visits.json"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartir visits.json"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поділитися visits.json"
           }
         }
       }
@@ -3474,6 +4990,52 @@
         }
       }
     },
+    "Skip for now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip for now"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir por ahora"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустити"
+          }
+        }
+      }
+    },
+    "Start exploring": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start exploring"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empezar a explorar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Почати подорож"
+          }
+        }
+      }
+    },
     "Subscription options unavailable right now.": {
       "extractionState": "manual",
       "localizations": {
@@ -3516,6 +5078,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сванеті, Грузія"
+          }
+        }
+      }
+    },
+    "System": {},
+    "TITLE": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TITLE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TÍTULO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НАЗВА"
           }
         }
       }
@@ -3658,6 +5244,29 @@
         }
       }
     },
+    "Turn it on in Settings to start filling this in on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it on in Settings to start filling this in on its own."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actívalo en Ajustes para que esto se vaya llenando solo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Увімкніть у Налаштуваннях, щоб він заповнювався сам."
+          }
+        }
+      }
+    },
     "Two things we\nneed out there.": {
       "extractionState": "manual",
       "localizations": {
@@ -3681,6 +5290,75 @@
         }
       }
     },
+    "USERNAME": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "USERNAME"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOMBRE DE USUARIO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ІМ'Я КОРИСТУВАЧА"
+          }
+        }
+      }
+    },
+    "Units": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Units"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unidades"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одиниці виміру"
+          }
+        }
+      }
+    },
+    "Unknown place": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown place"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lugar desconocido"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Невідоме місце"
+          }
+        }
+      }
+    },
     "Unlock the full leg-by-leg breakdown with Pro": {
       "extractionState": "manual",
       "localizations": {
@@ -3700,6 +5378,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Відкрий повний розклад за етапами з Pro"
+          }
+        }
+      }
+    },
+    "Uploading photo…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploading photo…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subiendo foto…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завантаження фото…"
           }
         }
       }
@@ -4279,1106 +5980,25 @@
         }
       }
     },
-    "Uploading photo…": {
+    "Українська": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Uploading photo…"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Завантаження фото…"
+            "value": "Українська"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Subiendo foto…"
-          }
-        }
-      }
-    },
-    "Start exploring": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Start exploring"
+            "value": "Українська"
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Почати подорож"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Empezar a explorar"
-          }
-        }
-      }
-    },
-    "I already have an account": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "I already have an account"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "У мене вже є акаунт"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ya tengo una cuenta"
-          }
-        }
-      }
-    },
-    "Skip for now": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skip for now"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Пропустити"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Omitir por ahora"
-          }
-        }
-      }
-    },
-    "DISTANCE": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISTANCE"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ВІДСТАНЬ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISTANCIA"
-          }
-        }
-      }
-    },
-    "POINTS": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "POINTS"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ТОЧОК"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PUNTOS"
-          }
-        }
-      }
-    },
-    "ASCENT": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ASCENT"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "НАБІР ВИСОТИ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ASCENSO"
-          }
-        }
-      }
-    },
-    "AVG SPEED": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AVG SPEED"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "СЕР. ШВИДКІСТЬ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VEL. MEDIA"
-          }
-        }
-      }
-    },
-    "HIGH POINT": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "HIGH POINT"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "НАЙВИЩА ТОЧКА"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PUNTO MÁS ALTO"
-          }
-        }
-      }
-    },
-    "ROUTES CREATED": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ROUTES CREATED"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "СТВОРЕНО МАРШРУТІВ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RUTAS CREADAS"
-          }
-        }
-      }
-    },
-    "FOLLOWERS": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "FOLLOWERS"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ПІДПИСНИКИ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SEGUIDORES"
-          }
-        }
-      }
-    },
-    "LIKES": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LIKES"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ВПОДОБАННЯ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ME GUSTA"
-          }
-        }
-      }
-    },
-    "KM TOTAL": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KM TOTAL"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "КМ ВСЬОГО"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KM TOTAL"
-          }
-        }
-      }
-    },
-    "M ASCENT": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M ASCENT"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "М НАБОРУ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M ASCENSO"
-          }
-        }
-      }
-    },
-    "M HIGH PT": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M HIGH PT"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "М НАЙВИЩА Т."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M PUNTO ALTO"
-          }
-        }
-      }
-    },
-    "ALT M": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALT M"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ВИС. М"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALT M"
-          }
-        }
-      }
-    },
-    "KM/H": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KM/H"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "КМ/ГОД"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "KM/H"
-          }
-        }
-      }
-    },
-    "ETA": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ETA"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ЧАС ПРИБУТТЯ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "LLEGADA EST."
-          }
-        }
-      }
-    },
-    "COUNTRIES": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "COUNTRIES"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "КРАЇНИ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PAÍSES"
-          }
-        }
-      }
-    },
-    "ROUTES LOGGED": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ROUTES LOGGED"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ЗАПИСАНО МАРШРУТІВ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RUTAS REGISTRADAS"
-          }
-        }
-      }
-    },
-    "Nothing saved yet": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nothing saved yet"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поки нічого не збережено"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nada guardado todavía"
-          }
-        }
-      }
-    },
-    "Save a route from the feed or a route page — it lands here.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save a route from the feed or a route page — it lands here."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Збережіть маршрут зі стрічки або сторінки маршруту — він з'явиться тут."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guarda una ruta desde el feed o su página — aparecerá aquí."
-          }
-        }
-      }
-    },
-    "Nothing downloaded yet": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nothing downloaded yet"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Поки нічого не завантажено"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nada descargado todavía"
-          }
-        }
-      }
-    },
-    "Pull a route down before you leave signal. Tiles, elevation and gear lists come with it.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pull a route down before you leave signal. Tiles, elevation and gear lists come with it."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Завантажте маршрут, поки є зв'язок. Разом з ним завантажаться карти, висота та список спорядження."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Descarga una ruta antes de perder cobertura. Los mapas, la elevación y la lista de equipo vienen incluidos."
-          }
-        }
-      }
-    },
-    "Browse saved routes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Browse saved routes"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Переглянути збережені маршрути"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ver rutas guardadas"
-          }
-        }
-      }
-    },
-    "Units": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Units"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Одиниці виміру"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unidades"
-          }
-        }
-      }
-    },
-    "Offline storage": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Offline storage"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Офлайн-сховище"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Almacenamiento sin conexión"
-          }
-        }
-      }
-    },
-    "Emergency contacts": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Emergency contacts"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Контакти для екстрених випадків"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Contactos de emergencia"
-          }
-        }
-      }
-    },
-    "About NomadCompass": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "About NomadCompass"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Про NomadCompass"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acerca de NomadCompass"
-          }
-        }
-      }
-    },
-    "Moderation (review hidden content)": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Moderation (review hidden content)"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Модерація (переглянути приховане)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Moderación (contenido oculto)"
-          }
-        }
-      }
-    },
-    "Route details": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Route details"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Деталі маршруту"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detalles de la ruta"
-          }
-        }
-      }
-    },
-    "TITLE": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TITLE"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "НАЗВА"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TÍTULO"
-          }
-        }
-      }
-    },
-    "REGION": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "REGION"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "РЕГІОН"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "REGIÓN"
-          }
-        }
-      }
-    },
-    "DISTANCE (KM)": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISTANCE (KM)"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ВІДСТАНЬ (КМ)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DISTANCIA (KM)"
-          }
-        }
-      }
-    },
-    "SEASON": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SEASON"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "СЕЗОН"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "TEMPORADA"
-          }
-        }
-      }
-    },
-    "DURATION": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DURATION"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ТРИВАЛІСТЬ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DURACIÓN"
-          }
-        }
-      }
-    },
-    "USERNAME": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "USERNAME"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ІМ'Я КОРИСТУВАЧА"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NOMBRE DE USUARIO"
-          }
-        }
-      }
-    },
-    "HOME LOCATION (OPTIONAL)": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "HOME LOCATION (OPTIONAL)"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ДОМАШНЄ МІСЦЕ (НЕОБОВ'ЯЗКОВО)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "UBICACIÓN (OPCIONAL)"
-          }
-        }
-      }
-    },
-    "OUTDOOR": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OUTDOOR"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "НА ПРИРОДІ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AIRE LIBRE"
-          }
-        }
-      }
-    },
-    "IN TOWN": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "IN TOWN"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "У МІСТІ"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EN LA CIUDAD"
-          }
-        }
-      }
-    },
-    "Requirements": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Requirements"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вимоги"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Requisitos"
-          }
-        }
-      }
-    },
-    "M": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "М"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "M"
-          }
-        }
-      }
-    },
-    "PAUSED": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PAUSED"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ПАУЗА"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "PAUSADO"
-          }
-        }
-      }
-    },
-    "RECORDING": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RECORDING"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ЗАПИС"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GRABANDO"
-          }
-        }
-      }
-    },
-    "Resume": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resume"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Продовжити"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reanudar"
-          }
-        }
-      }
-    },
-    "Pause": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pause"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Пауза"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pausar"
-          }
-        }
-      }
-    },
-    "NomadCompass Pro": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NomadCompass Pro"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NomadCompass Pro"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NomadCompass Pro"
-          }
-        }
-      }
-    },
-    "Get NomadCompass Pro": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Get NomadCompass Pro"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Отримати NomadCompass Pro"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Obtener NomadCompass Pro"
+            "value": "Українська"
           }
         }
       }

@@ -11,6 +11,7 @@ import CoreLocation
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var themeManager = ThemeManager.shared
+    @State private var languageManager = LanguageManager.shared
     @State private var wifiOnly = AppPreferences.wifiOnlyDownloads
     /// Real `CLLocationManager.authorizationStatus`, not a local toggle —
     /// an app can't silently grant itself Always location, so this reflects
@@ -34,6 +35,8 @@ struct SettingsView: View {
                     appearanceCard
 
                     cardGroup {
+                        languageRow
+                        divider
                         toggleRow(icon: "arrow.down.circle.fill", tint: NTColor.sage, title: "Download over Wi-Fi only", isOn: Binding(
                             get: { wifiOnly },
                             set: { wifiOnly = $0; AppPreferences.wifiOnlyDownloads = $0 }
@@ -119,6 +122,46 @@ struct SettingsView: View {
     private func openSystemSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    /// Real, live app-language override — `LanguageManager.current`, not
+    /// just reading whatever iOS itself is set to. "System" (nil) is the
+    /// original, only behavior before this row existed.
+    private var languageRow: some View {
+        Menu {
+            Button { setLanguage(nil) } label: {
+                if languageManager.current == nil { Label("System", systemImage: "checkmark") } else { Text("System") }
+            }
+            ForEach(LanguageManager.supportedCodes, id: \.self) { code in
+                Button { setLanguage(code) } label: {
+                    if languageManager.current == code { Label(languageName(code), systemImage: "checkmark") } else { Text(languageName(code)) }
+                }
+            }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "globe").font(.system(size: 17)).foregroundStyle(NTColor.water).frame(width: 20)
+                Text("Language").font(NTFont.body(15, .medium)).foregroundStyle(NTColor.milk)
+                Spacer()
+                Text(languageManager.current.map(languageName) ?? "System")
+                    .font(NTFont.mono(12, .semibold)).foregroundStyle(NTColor.milk(0.6))
+                Image(systemName: "chevron.up.chevron.down").font(.system(size: 11, weight: .semibold)).foregroundStyle(NTColor.milk(0.4))
+            }
+            .padding(.vertical, 15)
+        }
+    }
+
+    private func languageName(_ code: String) -> String {
+        switch code {
+        case "en": return "English"
+        case "uk": return "Українська"
+        case "es": return "Español"
+        default: return code
+        }
+    }
+
+    private func setLanguage(_ code: String?) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        withAnimation { languageManager.current = code }
     }
 
     private var backgroundLocationRow: some View {

@@ -11,11 +11,14 @@ import PhotosUI
 /// colors or typography introduced anywhere in this file.
 struct RoutePhotosSection: View {
     let routeId: String
-    /// So "who can delete this" and "should the add-photo button show at
-    /// all if the route isn't the viewer's own" can both be real —
-    /// anyone signed in can add a photo (matches comments), but only the
-    /// uploader can delete their own.
     let currentUserId: String?
+    /// Unlike comments, adding a photo is NOT open to anyone signed in —
+    /// only the route's own author can (enforced for real by
+    /// `route_photos`' INSERT policy; this just keeps the "+" button from
+    /// showing to someone whose tap would fail anyway). Anyone can still
+    /// view, and the uploader — always the owner now — can delete their
+    /// own.
+    let isOwner: Bool
 
     @State private var photos: [RouteRepository.RoutePhoto] = []
     @State private var isLoading = true
@@ -32,14 +35,16 @@ struct RoutePhotosSection: View {
                     Text("\(photos.count)").font(NTFont.mono(10, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.5))
                 }
                 Spacer()
-                PhotosPicker(selection: $pickerItem, matching: .images) {
-                    if isUploading {
-                        ProgressView().tint(NTColor.milk)
-                    } else {
-                        Image(systemName: "plus.circle.fill").font(.system(size: 20)).foregroundStyle(NTColor.milk(0.7))
+                if isOwner {
+                    PhotosPicker(selection: $pickerItem, matching: .images) {
+                        if isUploading {
+                            ProgressView().tint(NTColor.milk)
+                        } else {
+                            Image(systemName: "plus.circle.fill").font(.system(size: 20)).foregroundStyle(NTColor.milk(0.7))
+                        }
                     }
+                    .disabled(isUploading)
                 }
-                .disabled(isUploading)
             }
 
             if isLoading {
@@ -91,7 +96,8 @@ struct RoutePhotosSection: View {
     private var emptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "photo.on.rectangle").font(.system(size: 24)).foregroundStyle(NTColor.milk(0.3))
-            Text("No photos yet — be the first to add one").font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.milk(0.5))
+            Text(isOwner ? "No photos yet — add one from the trip" : "No photos yet")
+                .font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.milk(0.5))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 18)

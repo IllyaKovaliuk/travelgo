@@ -80,6 +80,12 @@ struct ProfileView: View {
                         secondaryCounters
                         referralCard
 
+                        // Was a fixed 4-way even split — adding the
+                        // Journal tab (5 now) squeezed "Leaderboard" past
+                        // where it could still fit at a fixed font size,
+                        // clipping its last letter. minimumScaleFactor lets
+                        // long labels shrink to actually fit their slot
+                        // instead of overflowing it, whatever the tab count.
                         HStack(spacing: 4) {
                             ForEach(Tab.allCases, id: \.self) { t in
                                 Button {
@@ -87,6 +93,8 @@ struct ProfileView: View {
                                 } label: {
                                     Text(t.rawValue)
                                         .font(NTFont.body(12.5, .semibold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
                                         .foregroundStyle(tab == t ? NTColor.pine : NTColor.milk(0.7))
                                         .frame(maxWidth: .infinity)
                                         .frame(height: 40)

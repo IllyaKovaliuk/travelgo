@@ -104,7 +104,7 @@ struct RouteDetailView: View {
 
                         itineraryPanel.padding(.top, 26)
 
-                        RoutePhotosSection(routeId: route.id, currentUserId: currentUserId)
+                        RoutePhotosSection(routeId: route.id, currentUserId: currentUserId, isOwner: isOwner)
                             .padding(.top, 26)
                     }
                     .padding(.horizontal, 24)
