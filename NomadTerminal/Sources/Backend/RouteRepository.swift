@@ -901,6 +901,50 @@ actor RouteRepository {
         try await supabase.from("visits").delete().eq("id", value: id).execute()
     }
 
+    // MARK: - Emergency contacts
+
+    /// Real, private, owner-only (see `emergency_contacts`'s single RLS
+    /// policy) — was a dead Settings row before this with nothing behind
+    /// it, and `SOSView`'s own "contacts row" showed a hardcoded fake
+    /// "Giorgi K." name. At least one of `phone`/`email` is required (a
+    /// real DB constraint, not just a client-side check) — a contact with
+    /// neither is unreachable, so there'd be no point saving it.
+    struct EmergencyContact: Identifiable, Decodable {
+        let id: UUID
+        let name: String
+        let phone: String?
+        let email: String?
+    }
+
+    func fetchEmergencyContacts() async throws -> [EmergencyContact] {
+        let userId = try await ensureSession()
+        return try await supabase
+            .from("emergency_contacts")
+            .select("id, name, phone, email")
+            .eq("user_id", value: userId.uuidString)
+            .order("created_at")
+            .execute()
+            .value
+    }
+
+    func addEmergencyContact(name: String, phone: String?, email: String?) async throws {
+        let userId = try await ensureSession()
+        struct Insert: Encodable {
+            let user_id: String
+            let name: String
+            let phone: String?
+            let email: String?
+        }
+        try await supabase.from("emergency_contacts")
+            .insert(Insert(user_id: userId.uuidString, name: name, phone: phone, email: email))
+            .execute()
+    }
+
+    func deleteEmergencyContact(id: String) async throws {
+        try await ensureSession()
+        try await supabase.from("emergency_contacts").delete().eq("id", value: id).execute()
+    }
+
     // MARK: - Moderation
 
     enum ReportTarget: String { case route, comment, photo }

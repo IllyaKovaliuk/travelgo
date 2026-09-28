@@ -55,7 +55,6 @@ struct PaywallView: View {
                     VStack(alignment: .leading, spacing: 13) {
                         feature("Unlimited offline map downloads")
                         feature("Satellite SOS beacon, no bars needed")
-                        feature("Live ford & weather condition alerts")
                         feature("Publish unlimited routes")
                     }
                     .padding(.top, 22)
@@ -164,7 +163,7 @@ struct PaywallView: View {
             .padding(.top, 30)
 
             Text("You're Pro.").font(NTFont.heading(28, .extraBold))
-            Text("Offline maps, SOS beacon and weather alerts are all unlocked.")
+            Text("Offline maps and the SOS beacon are all unlocked.")
                 .font(NTFont.body(14, .light))
                 .foregroundStyle(NTColor.milk(0.62))
                 .multilineTextAlignment(.center)

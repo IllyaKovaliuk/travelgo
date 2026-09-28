@@ -15,6 +15,9 @@ struct SOSView: View {
     @State private var holdProgress: CGFloat = 0
     @State private var isSent = false
     @State private var holdTimer: Timer?
+    /// Real, not the hardcoded fake "Giorgi K." this row used to show
+    /// regardless of whether anyone had ever set up a real contact.
+    @State private var contacts: [RouteRepository.EmergencyContact] = []
 
     var body: some View {
         ZStack {
@@ -32,6 +35,9 @@ struct SOSView: View {
             .padding(.bottom, 14)
         }
         .foregroundStyle(NTColor.milk)
+        .task {
+            contacts = (try? await RouteRepository.shared.fetchEmergencyContacts()) ?? []
+        }
     }
 
     private var background: some View {
@@ -125,19 +131,38 @@ struct SOSView: View {
 
     private var contactsRow: some View {
         HStack(spacing: 10) {
-            ZStack {
-                LinearGradient(colors: [NTColor.water, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
-                Text("GK").font(NTFont.mono(11, .semibold)).foregroundStyle(NTColor.milk)
+            if let first = contacts.first {
+                ZStack {
+                    LinearGradient(colors: [NTColor.water, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    Text(initials(first.name)).font(NTFont.mono(11, .semibold)).foregroundStyle(NTColor.milk)
+                }
+                .frame(width: 32, height: 32)
+                .clipShape(Circle())
+                Text(contactsLabel)
+                    .font(NTFont.body(12.5, .medium))
+                    .foregroundStyle(NTColor.milk(0.7))
+            } else {
+                Image(systemName: "person.crop.circle.badge.exclamationmark")
+                    .font(.system(size: 18)).foregroundStyle(NTColor.milk(0.4))
+                Text("No emergency contacts set — add some in Settings")
+                    .font(NTFont.body(12.5, .medium))
+                    .foregroundStyle(NTColor.milk(0.5))
             }
-            .frame(width: 32, height: 32)
-            .clipShape(Circle())
-            Text("Giorgi K. and 1 more will be notified")
-                .font(NTFont.body(12.5, .medium))
-                .foregroundStyle(NTColor.milk(0.7))
             Spacer()
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
+    }
+
+    private var contactsLabel: String {
+        guard let first = contacts.first else { return "" }
+        return contacts.count > 1 ? "\(first.name) and \(contacts.count - 1) more" : first.name
+    }
+
+    private func initials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        let chars = parts.prefix(2).compactMap { $0.first }
+        return chars.isEmpty ? "?" : String(chars).uppercased()
     }
 
     private var cancelButton: some View {

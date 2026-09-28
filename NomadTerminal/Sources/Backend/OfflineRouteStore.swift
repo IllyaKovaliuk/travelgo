@@ -63,6 +63,21 @@ actor OfflineRouteStore {
         FileManager.default.fileExists(atPath: jsonURL(routeId).path)
     }
 
+    /// Real total bytes on disk under `OfflineRoutes` — backs Settings'
+    /// "Offline storage" row, which used to just show a hardcoded fake
+    /// "2.4 / 8 GB" with nothing behind either number. There's no real
+    /// storage quota anywhere in this app, so this reports actual usage
+    /// only, not a fake cap.
+    func diskUsageBytes() -> Int64 {
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: directory, includingPropertiesForKeys: [.fileSizeKey]
+        ) else { return 0 }
+        return files.reduce(Int64(0)) { total, url in
+            let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+            return total + Int64(size)
+        }
+    }
+
     /// Reconstructs a `Route` from whatever's cached on disk — no network.
     func loadRoute(routeId: String) -> Route? {
         guard let data = try? Data(contentsOf: jsonURL(routeId)) else { return nil }

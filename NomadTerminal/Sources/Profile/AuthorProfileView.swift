@@ -8,13 +8,18 @@ import SwiftUI
 ///
 /// Shows their real published routes ("routes he created" — a real,
 /// queryable list), a real Follow button, real follower count, and the
-/// real total likes across everything they've published. Does **not**
-/// show "routes he completed" at all, as a list or even as a number —
-/// `profiles.routes_completed` is a real column, but nothing anywhere in
-/// this app increments it (there's no "mark this route done" action
-/// yet), so it's always 0 for every real account today. Showing it would
-/// be exactly the kind of fake-looking stat this project has
-/// consistently refused to display.
+/// real total likes across everything they've published.
+///
+/// `profile.kmLogged` (below) used to be a dead column — real schema,
+/// nothing ever wrote to it, so this stat silently read 0 for every
+/// account. Now server-maintained by a trigger on `routes` (see
+/// `20260929000001_profile_route_stats_trigger.sql`), scoped to this
+/// author's published + public routes, kept in sync on every
+/// insert/update/delete rather than summed client-side on every profile
+/// view. Same trigger also finally populates `routes_completed` — this
+/// screen still counts "routes created" from the real fetched list
+/// (`routes.count`) rather than that column, since the list is fetched
+/// here anyway for display; the two now agree.
 struct AuthorProfileView: View {
     let userId: String
     var onClose: () -> Void

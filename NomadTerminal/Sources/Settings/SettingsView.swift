@@ -5,9 +5,10 @@ import CoreLocation
 /// writes to `ThemeManager.shared`, which every `NTColor.pine`/`.milk`
 /// call site across the app already reads live. "Download over Wi-Fi
 /// only" and "Background location" are real now too (see
-/// `AppPreferences`/`OfflineRouteStore` and the location-status row below);
-/// "Ford & weather alerts" stayed an honest "Coming soon" — there's no
-/// weather-alert feature anywhere in the app to back it.
+/// `AppPreferences`/`OfflineRouteStore` and the location-status row below).
+/// Weather/ford alerts (the row that used to live here as an honest
+/// "Coming soon") was dropped entirely rather than kept as a placeholder —
+/// not a feature this app is building.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var themeManager = ThemeManager.shared
@@ -22,8 +23,14 @@ struct SettingsView: View {
     @State private var showAuth = false
     @State private var showRewards = false
     @State private var showModeration = false
+    @State private var showEmergencyContacts = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
+    /// Real bytes under `OfflineRoutes`, not the hardcoded fake "2.4 / 8
+    /// GB" this row used to show — there's no real storage quota anywhere
+    /// in this app, so this is usage only, no invented cap.
+    @State private var offlineStorageBytes: Int64 = 0
+    @State private var emergencyContactCount = 0
 
     var body: some View {
         NavigationStack {
@@ -46,15 +53,19 @@ struct SettingsView: View {
                         divider
                         visitsMonitoringRow
                         divider
-                        weatherAlertsRow
-                        divider
                         valueRow(title: "Units", value: "METRIC")
                     }
 
                     cardGroup {
-                        valueRow(title: "Offline storage", value: "2.4 / 8 GB")
+                        valueRow(title: "Offline storage", value: formattedOfflineStorage)
                         divider
-                        valueRow(title: "Emergency contacts", value: nil)
+                        Button { showEmergencyContacts = true } label: {
+                            valueRow(
+                                title: "Emergency contacts",
+                                value: emergencyContactCount > 0 ? "\(emergencyContactCount)" : nil
+                            )
+                        }
+                        .buttonStyle(.plain)
                         divider
                         valueRow(title: "About NomadCompass", value: "v2.4.0")
                     }
@@ -100,6 +111,9 @@ struct SettingsView: View {
             .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
             .sheet(isPresented: $showRewards) { RewardsView() }
             .sheet(isPresented: $showModeration) { AdminModerationView() }
+            .sheet(isPresented: $showEmergencyContacts, onDismiss: { Task { await loadEmergencyContactCount() } }) {
+                EmergencyContactsView()
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
@@ -107,7 +121,11 @@ struct SettingsView: View {
             }
         }
         .preferredColorScheme(themeManager.colorScheme)
-        .task { refreshLocationStatus() }
+        .task {
+            refreshLocationStatus()
+            offlineStorageBytes = await OfflineRouteStore.shared.diskUsageBytes()
+            await loadEmergencyContactCount()
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             // Catches coming back from the system Settings deep link below —
             // the only way this status can actually change.
@@ -117,6 +135,16 @@ struct SettingsView: View {
 
     private func refreshLocationStatus() {
         backgroundLocationGranted = CLLocationManager().authorizationStatus == .authorizedAlways
+    }
+
+    private func loadEmergencyContactCount() async {
+        emergencyContactCount = (try? await RouteRepository.shared.fetchEmergencyContacts().count) ?? emergencyContactCount
+    }
+
+    private var formattedOfflineStorage: String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: offlineStorageBytes)
     }
 
     private func openSystemSettings() {
@@ -211,20 +239,6 @@ struct SettingsView: View {
         .padding(.vertical, 15)
     }
 
-    /// Honest placeholder, same pattern Search's Region/Requirements rows
-    /// used before those got real backends — no weather-alert feature
-    /// exists anywhere in this app (no weather API integration at all) to
-    /// back a toggle that looked interactive but did nothing.
-    private var weatherAlertsRow: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "cloud.rain.fill").font(.system(size: 17)).foregroundStyle(NTColor.milk(0.6)).frame(width: 20)
-            Text("Ford & weather alerts").font(NTFont.body(15, .medium))
-            Spacer()
-            Text("COMING SOON").font(NTFont.mono(9.5, .semibold)).tracking(0.5).foregroundStyle(NTColor.milk(0.4))
-        }
-        .padding(.vertical, 15)
-    }
-
     private var proRow: some View {
         Button { showPaywall = true } label: {
             HStack(spacing: 14) {
@@ -236,7 +250,7 @@ struct SettingsView: View {
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(subscription.isPro ? "NomadCompass Pro" : "Get NomadCompass Pro").font(NTFont.body(14.5, .semibold))
-                    Text(subscription.isPro ? "Active — manage your plan" : "Offline maps, SOS beacon, weather alerts")
+                    Text(subscription.isPro ? "Active — manage your plan" : "Offline maps, SOS beacon")
                         .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
                 }
                 Spacer()

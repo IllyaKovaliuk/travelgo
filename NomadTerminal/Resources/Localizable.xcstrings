@@ -1225,6 +1225,29 @@
         }
       }
     },
+    "Add contact": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add contact"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir contacto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додати контакт"
+          }
+        }
+      }
+    },
     "Add cover photo": {
       "extractionState": "manual",
       "localizations": {
@@ -1244,6 +1267,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Додати обкладинку"
+          }
+        }
+      }
+    },
+    "Add someone you'd want to know if you trigger SOS.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add someone you'd want to know if you trigger SOS."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade a alguien que debería saberlo si activas el SOS."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додайте когось, хто мав би знати, якщо ви активуєте SOS."
           }
         }
       }
@@ -1428,6 +1474,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Щось варте уваги"
+          }
+        }
+      }
+    },
+    "At least a phone number or an email.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At least a phone number or an email."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al menos un teléfono o un correo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хоча б номер телефону або пошта."
           }
         }
       }
@@ -2145,6 +2214,29 @@
         }
       }
     },
+    "Couldn't save — check your connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save — check your connection and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo guardar — comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалося зберегти — перевірте зʼєднання і спробуйте ще раз."
+          }
+        }
+      }
+    },
     "Cross now or commit to waiting it out — don't split the difference. If the crossing was fine on the way in and looks worse now, assume it'll keep rising.": {
       "extractionState": "manual",
       "localizations": {
@@ -2601,6 +2693,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ЛЕГКИЙ"
+          }
+        }
+      }
+    },
+    "EMAIL": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EMAIL"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CORREO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПОШТА"
           }
         }
       }
@@ -5021,6 +5136,52 @@
         }
       }
     },
+    "No emergency contacts set — add some in Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No emergency contacts set — add some in Settings"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No hay contactos de emergencia — añade en Ajustes"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Немає екстрених контактів — додайте в Налаштуваннях"
+          }
+        }
+      }
+    },
+    "No emergency contacts yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No emergency contacts yet"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no hay contactos de emergencia"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки немає екстрених контактів"
+          }
+        }
+      }
+    },
     "No photos yet": {
       "extractionState": "manual",
       "localizations": {
@@ -5412,6 +5573,52 @@
         }
       }
     },
+    "Offline maps and the SOS beacon are all unlocked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline maps and the SOS beacon are all unlocked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los mapas sin conexión y la baliza SOS ya están desbloqueados."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Офлайн-карти та SOS-маяк тепер розблоковані."
+          }
+        }
+      }
+    },
+    "Offline maps, SOS beacon": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline maps, SOS beacon"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapas sin conexión, baliza SOS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Офлайн-карти, SOS-маяк"
+          }
+        }
+      }
+    },
     "Offline maps, SOS beacon and weather alerts are all unlocked.": {
       "extractionState": "manual",
       "localizations": {
@@ -5638,6 +5845,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ПАУЗА"
+          }
+        }
+      }
+    },
+    "PHONE": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PHONE"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TELÉFONO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ТЕЛЕФОН"
           }
         }
       }
@@ -6959,6 +7189,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Збережіть маршрут зі стрічки або сторінки маршруту — він з'явиться тут."
+          }
+        }
+      }
+    },
+    "Save contact": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save contact"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar contacto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зберегти контакт"
           }
         }
       }
@@ -8551,6 +8804,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Білий морок або туман на гребені"
+          }
+        }
+      }
+    },
+    "Who should know if you trigger SOS — you reach out to them yourself, nothing is sent automatically yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who should know if you trigger SOS — you reach out to them yourself, nothing is sent automatically yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quién avisar si activas el SOS — tú los contactas tú mismo, por ahora nada se envía automáticamente."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кого варто повідомити, якщо спрацює SOS — ви зв'язуєтесь з ними самі, автоматично поки нічого не надсилається."
           }
         }
       }
