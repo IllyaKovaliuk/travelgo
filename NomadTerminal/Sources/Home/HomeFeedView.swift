@@ -16,7 +16,7 @@ struct HomeFeedView: View {
         /// `fetchNearbyRoutes`, not the actual full catalog — that's
         /// `.wild`) stays exactly what it was; only the chip's own text
         /// changed.
-        var label: String { self == .nearby ? "All" : rawValue }
+        var label: LocalizedStringKey { self == .nearby ? "All" : LocalizedStringKey(rawValue) }
     }
 
     /// `.nearby`, not `.following`, is what a new install lands on — most
