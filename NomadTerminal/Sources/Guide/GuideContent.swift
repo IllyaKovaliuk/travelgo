@@ -8,15 +8,15 @@ import SwiftUI
 struct GuideCategory: Identifiable {
     let id = UUID()
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let tint: Color
     let situations: [GuideSituation]
 }
 
 struct GuideSituation: Identifiable {
     let id = UUID()
-    let title: String
-    let body: String
+    let title: LocalizedStringKey
+    let body: LocalizedStringKey
 }
 
 extension GuideCategory {

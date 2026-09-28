@@ -56,7 +56,7 @@ struct RewardsView: View {
             }
             .overlay(alignment: .bottom) {
                 if let toast {
-                    Text(toast)
+                    Text(LocalizedStringKey(toast))
                         .font(NTFont.body(13, .semibold))
                         .foregroundStyle(NTColor.pine)
                         .padding(.horizontal, 18).padding(.vertical, 12)
@@ -118,14 +118,14 @@ struct RewardsView: View {
         .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
-    private func earnLine(_ text: String) -> some View {
+    private func earnLine(_ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Circle().fill(NTColor.sage).frame(width: 5, height: 5).padding(.top, 6)
             Text(text).font(NTFont.body(13, .light)).foregroundStyle(NTColor.milk(0.75))
         }
     }
 
-    private func sectionLabel(_ text: String) -> some View {
+    private func sectionLabel(_ text: LocalizedStringKey) -> some View {
         Text(text).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
     }
 

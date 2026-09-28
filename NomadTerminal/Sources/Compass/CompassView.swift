@@ -245,7 +245,7 @@ struct CompassView: View {
         .frame(width: 228, height: 228)
     }
 
-    private var gpsStatusText: String {
+    private var gpsStatusText: LocalizedStringKey {
         if tracker.authorizationDenied { return "LOCATION ACCESS DENIED — ENABLE IN SETTINGS" }
         if tracker.horizontalAccuracyM < 0 { return "ACQUIRING GPS FIX…" }
         return "GPS FIX \(Int(tracker.horizontalAccuracyM.rounded())) M"

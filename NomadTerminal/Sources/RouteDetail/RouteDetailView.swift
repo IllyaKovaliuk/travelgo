@@ -126,7 +126,7 @@ struct RouteDetailView: View {
         .toolbar(.hidden, for: .navigationBar)
         .overlay(alignment: .bottom) {
             if let downloadToast {
-                Text(downloadToast)
+                Text(LocalizedStringKey(downloadToast))
                     .font(NTFont.body(13, .semibold))
                     .foregroundStyle(NTColor.pine)
                     .multilineTextAlignment(.center)
@@ -171,8 +171,16 @@ struct RouteDetailView: View {
 
     // MARK: Sections
 
+    // `text` stays `String` — call sites mix fixed vocabulary
+    // (`route.difficulty.rawValue`, a real translation candidate) with
+    // genuine free-text route data (`detail.season`/`.duration`, never
+    // translated). Wrapping in `LocalizedStringKey` here rather than typing
+    // the parameter that way handles both at once: a value that matches a
+    // catalog entry (the difficulty vocabulary) translates, anything else
+    // just falls back to showing itself, which `Text(String)` alone could
+    // never do (that overload never touches the catalog at all).
     private func pill(_ text: String, filled: Color?) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(NTFont.mono(11, .semibold))
             .tracking(0.6)
             .foregroundStyle(filled != nil ? NTColor.milk : NTColor.milk(0.85))

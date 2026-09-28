@@ -552,9 +552,16 @@ struct ProfileView: View {
                             }
                             .frame(width: 84, height: 84)
 
-                            Text(b.title).font(NTFont.body(11, .semibold)).multilineTextAlignment(.center)
+                            // Wrapped, not typed `LocalizedStringKey` at the
+                            // source — `badges` is a real DB table (see
+                            // `fetchMyBadges`), so `b.title`/`.subtitle`
+                            // genuinely are runtime `String`s; this is the
+                            // same "translate if it matches a known catalog
+                            // entry, otherwise show itself" trick `pill`/
+                            // `tag` use for difficulty labels.
+                            Text(LocalizedStringKey(b.title)).font(NTFont.body(11, .semibold)).multilineTextAlignment(.center)
                                 .foregroundStyle(b.earned ? NTColor.milk : NTColor.milk(0.5))
-                            Text(b.subtitle).font(NTFont.mono(8.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
+                            Text(LocalizedStringKey(b.subtitle)).font(NTFont.mono(8.5, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.45))
                         }
                     }
                 }
@@ -589,7 +596,7 @@ struct ProfileView: View {
                 .frame(width: 74, height: 74)
             VStack(alignment: .leading, spacing: 8) {
                 Text(route.title.replacingOccurrences(of: "\n", with: " ")).font(NTFont.heading(16, .bold))
-                Text("\(String(format: "%.1f", route.distanceKM)) KM · \(route.transportLabel)")
+                (Text("\(String(format: "%.1f", route.distanceKM)) KM · ") + Text(LocalizedStringKey(route.transportLabel)))
                     .font(NTFont.mono(10.5, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
                 verifiedBadge(route)
                 HStack(spacing: 14) {
@@ -829,7 +836,7 @@ struct ProfileView: View {
         }
     }
 
-    private func activityLabel(_ reason: String) -> String {
+    private func activityLabel(_ reason: String) -> LocalizedStringKey {
         switch reason {
         case "route_published": return "Published a route"
         case "segment_added": return "Added a segment"
@@ -845,7 +852,13 @@ struct ProfileView: View {
         case "unfollowed": return "Lost a follower"
         default:
             if reason.hasPrefix("redeemed_") { return "Redeemed a reward" }
-            return reason
+            // An unmatched reason string (a future ledger entry kind this
+            // switch doesn't know about yet) — falls back to showing itself
+            // verbatim rather than crashing or going blank, same honesty as
+            // `pill`'s wrap above; just can't be a plain `String` return
+            // here since `Text(activityLabel(...))` needs this to actually
+            // localize the cases above it.
+            return LocalizedStringKey(reason)
         }
     }
 
@@ -860,7 +873,7 @@ struct ProfileView: View {
         return "\(Int(seconds / 86400))D AGO"
     }
 
-    private func emptyState(_ title: String, _ subtitle: String) -> some View {
+    private func emptyState(_ title: LocalizedStringKey, _ subtitle: LocalizedStringKey) -> some View {
         VStack(spacing: 6) {
             Text(title).font(NTFont.body(14.5, .semibold)).foregroundStyle(NTColor.milk(0.7))
             Text(subtitle).font(NTFont.body(12.5, .light)).foregroundStyle(NTColor.milk(0.45))

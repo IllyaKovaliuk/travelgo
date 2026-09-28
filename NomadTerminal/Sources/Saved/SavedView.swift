@@ -122,7 +122,11 @@ struct SavedView: View {
                 Text(item.route.title.replacingOccurrences(of: "\n", with: " "))
                     .font(NTFont.heading(15, .bold))
                     .lineLimit(2)
-                Text("\(String(format: "%.1f", item.route.distanceKM)) KM · \(item.route.difficulty.rawValue)")
+                // Split so the difficulty word alone can translate — a
+                // single interpolated Text(String) can't localize any part
+                // of itself, distance value included, which doesn't need
+                // translating anyway.
+                (Text("\(String(format: "%.1f", item.route.distanceKM)) KM · ") + Text(LocalizedStringKey(item.route.difficulty.rawValue)))
                     .font(NTFont.mono(10, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
             }
             .padding(14)

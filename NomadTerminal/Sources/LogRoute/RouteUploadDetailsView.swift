@@ -255,7 +255,7 @@ struct RouteUploadDetailsView: View {
                 HStack(spacing: 10) {
                     Menu {
                         ForEach(Transport.allCases, id: \.self) { t in
-                            Button { segment.transport = t } label: { Label(t.rawValue, systemImage: t.icon) }
+                            Button { segment.transport = t } label: { Label(LocalizedStringKey(t.rawValue), systemImage: t.icon) }
                         }
                     } label: {
                         Image(systemName: segment.transport.icon)
@@ -293,7 +293,7 @@ struct RouteUploadDetailsView: View {
                     HStack(spacing: 10) {
                         Menu {
                             ForEach(RequirementCategory.allCases, id: \.self) { c in
-                                Button { req.category = c } label: { Label(c.rawValue, systemImage: c.icon) }
+                                Button { req.category = c } label: { Label(LocalizedStringKey(c.rawValue), systemImage: c.icon) }
                             }
                         } label: {
                             Image(systemName: req.category.icon)

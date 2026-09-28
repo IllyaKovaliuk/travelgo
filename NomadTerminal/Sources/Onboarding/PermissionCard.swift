@@ -5,10 +5,10 @@ import SwiftUI
 struct PermissionCard: View {
     let icon: String
     let iconTint: Color
-    let title: String
-    let description: String
-    let buttonLabel: String
-    let doneLabel: String
+    let title: LocalizedStringKey
+    let description: LocalizedStringKey
+    let buttonLabel: LocalizedStringKey
+    let doneLabel: LocalizedStringKey
     let isDone: Bool
     let action: () -> Void
 

@@ -309,7 +309,7 @@ struct SettingsView: View {
         .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
-    private func themeTile(_ label: String, selected: Bool, bg: Color, fg: Color, action: @escaping () -> Void) -> some View {
+    private func themeTile(_ label: LocalizedStringKey, selected: Bool, bg: Color, fg: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack(alignment: .bottomTrailing) {

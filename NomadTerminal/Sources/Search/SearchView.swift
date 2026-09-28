@@ -153,7 +153,7 @@ struct SearchView: View {
         .padding(.top, 16)
     }
 
-    private func modeButton(_ title: String, _ m: Mode) -> some View {
+    private func modeButton(_ title: LocalizedStringKey, _ m: Mode) -> some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
             withAnimation(NTMotion.spring) { mode = m }
@@ -276,7 +276,7 @@ struct SearchView: View {
         }
     }
 
-    private func presetChip(_ text: String, filled: Bool, action: @escaping () -> Void) -> some View {
+    private func presetChip(_ text: LocalizedStringKey, filled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(text)
                 .font(NTFont.mono(11, .semibold)).tracking(0.6)
@@ -289,7 +289,7 @@ struct SearchView: View {
     }
 
     @ViewBuilder
-    private func disclosureSection<Content: View>(_ section: Section, title: String, trailing: String?, @ViewBuilder content: () -> Content) -> some View {
+    private func disclosureSection<Content: View>(_ section: Section, title: LocalizedStringKey, trailing: LocalizedStringKey?, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Button {
                 withAnimation(NTMotion.spring) {

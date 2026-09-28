@@ -31,7 +31,11 @@ enum POICategory: String, CaseIterable, Codable {
         }
     }
 
-    var label: String {
+    /// Single source of truth for both `label` (display, translated) and
+    /// `defaultTitle` (the real stored fallback in `DropPinSheet` when
+    /// someone drops a pin without naming it) — kept as one switch rather
+    /// than two, so the two can't quietly drift apart.
+    private var rawLabel: String {
         switch self {
         case .foot: return "On foot from here"
         case .vehicle: return "By vehicle from here"
@@ -49,6 +53,16 @@ enum POICategory: String, CaseIterable, Codable {
         case .other: return "Point of interest"
         }
     }
+
+    var label: LocalizedStringKey { LocalizedStringKey(rawLabel) }
+
+    /// The real fallback title stored in `route_points_of_interest.title`
+    /// when someone drops a pin without typing a name — needs a plain
+    /// `String` for storage, not a `LocalizedStringKey` (which has no
+    /// public way to resolve back to one). Shows in whichever language the
+    /// person naming the pin is using at that moment, same as any other
+    /// default placeholder text would.
+    var defaultTitle: String { String(localized: String.LocalizationValue(rawLabel)) }
 
     var tint: Color {
         switch self {

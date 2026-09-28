@@ -44,7 +44,7 @@ struct DropPinSheet: View {
 
                     Button {
                         let name = title.trimmingCharacters(in: .whitespaces)
-                        onSave(category, name.isEmpty ? category.label : name, note.trimmingCharacters(in: .whitespaces))
+                        onSave(category, name.isEmpty ? category.defaultTitle : name, note.trimmingCharacters(in: .whitespaces))
                     } label: {
                         Text("Drop pin")
                             .font(NTFont.body(15.5, .semibold))

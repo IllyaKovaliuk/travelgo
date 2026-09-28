@@ -80,7 +80,7 @@ struct SearchResultsView: View {
                     .font(NTFont.heading(14, .bold))
                     .lineLimit(2)
                 HStack(spacing: 6) {
-                    Text(route.difficulty.rawValue)
+                    Text(LocalizedStringKey(route.difficulty.rawValue))
                         .font(NTFont.mono(9, .semibold))
                         .foregroundStyle(route.difficulty == .moderate ? Color(hex: 0x2B1B05) : NTColor.milk)
                         .padding(.horizontal, 8).padding(.vertical, 3)

@@ -8,7 +8,7 @@ enum Interest: String, CaseIterable, Identifiable {
     case overland, water, extreme, hiking, cycling, huts
     var id: String { rawValue }
 
-    var title: String {
+    var title: LocalizedStringKey {
         switch self {
         case .overland: return "4×4 / Overland"
         case .water: return "Water / Kayak"

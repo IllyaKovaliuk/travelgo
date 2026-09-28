@@ -141,7 +141,7 @@ struct PaywallView: View {
         }
     }
 
-    private var trialCopy: String {
+    private var trialCopy: LocalizedStringKey {
         selectedProduct?.subscription?.introductoryOffer != nil ? "Start 7-day free trial" : "Subscribe"
     }
 
@@ -183,7 +183,7 @@ struct PaywallView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func feature(_ text: String) -> some View {
+    private func feature(_ text: LocalizedStringKey) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle().fill(NTColor.sage.opacity(0.2))

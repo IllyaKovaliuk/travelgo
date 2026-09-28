@@ -208,7 +208,7 @@ struct AuthorProfileView: View {
                     .foregroundStyle(NTColor.milk)
                     .lineLimit(1)
                 HStack(spacing: 6) {
-                    Text(route.difficulty.rawValue)
+                    Text(LocalizedStringKey(route.difficulty.rawValue))
                     Text("·")
                     Text(String(format: "%.1f KM", route.distanceKM))
                 }

@@ -57,7 +57,7 @@ struct AdminModerationView: View {
             }
             .overlay(alignment: .bottom) {
                 if let toast {
-                    Text(toast)
+                    Text(LocalizedStringKey(toast))
                         .font(NTFont.body(13, .semibold))
                         .foregroundStyle(NTColor.pine)
                         .padding(.horizontal, 18).padding(.vertical, 12)
@@ -96,7 +96,7 @@ struct AdminModerationView: View {
         .padding(.top, 60)
     }
 
-    private func sectionLabel(_ text: String) -> some View {
+    private func sectionLabel(_ text: LocalizedStringKey) -> some View {
         Text(text).font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
     }
 

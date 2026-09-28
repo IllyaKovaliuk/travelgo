@@ -123,8 +123,12 @@ struct RouteReviewPublishView: View {
         }
     }
 
+    // Same reasoning as `RouteDetailView.pill` — call sites mix fixed
+    // vocabulary (difficulty/transport labels) with a plain formatted
+    // distance string, so the wrap happens inside rather than typing the
+    // parameter itself.
     private func tag(_ text: String, filled: Color?) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(NTFont.mono(11, .semibold)).tracking(0.5)
             .foregroundStyle(filled != nil ? NTColor.milk : NTColor.milk(0.8))
             .padding(.horizontal, 13).padding(.vertical, 7)
@@ -132,7 +136,7 @@ struct RouteReviewPublishView: View {
             .overlay(Capsule().stroke(NTColor.milk(0.26), lineWidth: filled == nil ? 1 : 0))
     }
 
-    private func visButton(_ label: String, _ value: String) -> some View {
+    private func visButton(_ label: LocalizedStringKey, _ value: String) -> some View {
         Button { visibility = value } label: {
             Text(label)
                 .font(NTFont.body(12.5, .semibold))

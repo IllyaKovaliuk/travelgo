@@ -286,7 +286,7 @@ struct HomeFeedView: View {
                         .multilineTextAlignment(.leading)
 
                     HStack(spacing: 8) {
-                        Text(route.difficulty.rawValue)
+                        Text(LocalizedStringKey(route.difficulty.rawValue))
                             .font(NTFont.mono(9.5, .semibold))
                             .tracking(0.6)
                             .foregroundStyle(NTColor.pine)
@@ -294,7 +294,7 @@ struct HomeFeedView: View {
                             .background(Capsule().fill(route.difficulty.color))
                         HStack(spacing: 5) {
                             Image(systemName: route.transport.icon).font(.system(size: 10))
-                            Text(route.transportLabel).font(NTFont.mono(9.5, .semibold)).tracking(0.4)
+                            Text(LocalizedStringKey(route.transportLabel)).font(NTFont.mono(9.5, .semibold)).tracking(0.4)
                         }
                         .foregroundStyle(NTColor.milk(0.75))
                         .padding(.horizontal, 10).padding(.vertical, 5)

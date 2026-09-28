@@ -87,7 +87,7 @@ struct LogRouteStartView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    private func optionCard(icon: String, title: String, subtitle: String, tint: Color, filled: Bool, action: @escaping () -> Void) -> some View {
+    private func optionCard(icon: String, title: LocalizedStringKey, subtitle: LocalizedStringKey, tint: Color, filled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             action()
