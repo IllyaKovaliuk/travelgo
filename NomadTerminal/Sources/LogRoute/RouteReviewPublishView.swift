@@ -183,6 +183,7 @@ struct RouteReviewPublishView: View {
                     coverImageUrl: draft.coverImageUrl
                 ))
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
+                RouteRepository.shared.logEvent("route_published")
                 withAnimation { published = route }
             } catch {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)

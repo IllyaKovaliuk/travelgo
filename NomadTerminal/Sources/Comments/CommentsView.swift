@@ -181,6 +181,7 @@ struct CommentsView: View {
         Task {
             do {
                 try await RouteRepository.shared.postComment(routeId: route.id, body: body)
+                RouteRepository.shared.logEvent("comment_posted")
                 draft = ""
                 comments = try await RouteRepository.shared.fetchComments(routeId: route.id)
             } catch {

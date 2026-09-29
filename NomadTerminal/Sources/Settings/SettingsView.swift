@@ -23,7 +23,9 @@ struct SettingsView: View {
     @State private var showAuth = false
     @State private var showRewards = false
     @State private var showModeration = false
+    @State private var showAnalytics = false
     @State private var showEmergencyContacts = false
+    @State private var isAdmin = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
     /// Real bytes under `OfflineRoutes`, not the hardcoded fake "2.4 / 8
@@ -70,17 +72,24 @@ struct SettingsView: View {
                         valueRow(title: "About NomadCompass", value: "v2.4.0")
                     }
 
-                    // No real admin-role system exists — reachable by
-                    // whoever has the app, same trust model the auto-hide
-                    // moderation migration already accepted. See
-                    // AdminModerationView's header comment.
-                    Button { showModeration = true } label: {
-                        valueRow(title: "Moderation (review hidden content)", value: nil)
+                    // Real now — `profiles.is_admin`, checked here (so the
+                    // row doesn't even show) and again server-side inside
+                    // every admin_* RPC (so hiding the row is real UX, not
+                    // the actual security boundary). Used to be reachable
+                    // by literally any signed-in user.
+                    if isAdmin {
+                        cardGroup {
+                            Button { showModeration = true } label: {
+                                valueRow(title: "Moderation (review hidden content)", value: nil)
+                            }
+                            .buttonStyle(.plain)
+                            divider
+                            Button { showAnalytics = true } label: {
+                                valueRow(title: "Analytics", value: nil)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 18)
-                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
 
                     Button {
                         signOut()
@@ -111,6 +120,7 @@ struct SettingsView: View {
             .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
             .sheet(isPresented: $showRewards) { RewardsView() }
             .sheet(isPresented: $showModeration) { AdminModerationView() }
+            .sheet(isPresented: $showAnalytics) { AdminAnalyticsView() }
             .sheet(isPresented: $showEmergencyContacts, onDismiss: { Task { await loadEmergencyContactCount() } }) {
                 EmergencyContactsView()
             }
@@ -125,6 +135,7 @@ struct SettingsView: View {
             refreshLocationStatus()
             offlineStorageBytes = await OfflineRouteStore.shared.diskUsageBytes()
             await loadEmergencyContactCount()
+            isAdmin = (try? await RouteRepository.shared.fetchMyProfile())?.isAdmin ?? false
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             // Catches coming back from the system Settings deep link below —

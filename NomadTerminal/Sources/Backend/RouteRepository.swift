@@ -945,6 +945,68 @@ actor RouteRepository {
         try await supabase.from("emergency_contacts").delete().eq("id", value: id).execute()
     }
 
+    // MARK: - Analytics
+
+    /// Real, first-party event logging — there was no analytics of any
+    /// kind before this (nothing to make "not mock", there was just
+    /// nothing). Fire-and-forget on purpose: a logging call should never
+    /// be able to fail a real user action, so failures are swallowed
+    /// silently rather than surfaced or retried.
+    /// `nonisolated` on purpose — this is meant to be dropped into any
+    /// call site (view code, `SubscriptionManager`, wherever) without
+    /// needing `await` or wrapping in a `Task`, matching "fire-and-forget,
+    /// should never block or fail a real user action."
+    nonisolated func logEvent(_ name: String, metadata: [String: String] = [:]) {
+        Task {
+            let userId = try? await ensureSession()
+            struct Insert: Encodable {
+                let user_id: String?
+                let event_name: String
+                let metadata: [String: String]
+            }
+            try? await supabase.from("analytics_events")
+                .insert(Insert(user_id: userId?.uuidString, event_name: name, metadata: metadata))
+                .execute()
+        }
+    }
+
+    struct AnalyticsSummary: Decodable {
+        let totalUsers: Int
+        let totalRoutesPublished: Int
+        let signups7d: Int
+        let routesPublished7d: Int
+        let dau: Int
+        let wau: Int
+        let sosTriggers7d: Int
+        let topEvents7d: [TopEvent]
+
+        struct TopEvent: Decodable, Identifiable {
+            let eventName: String
+            let count: Int
+            var id: String { eventName }
+            enum CodingKeys: String, CodingKey { case eventName = "event_name", count }
+        }
+
+        enum CodingKeys: String, CodingKey {
+            case totalUsers = "total_users"
+            case totalRoutesPublished = "total_routes_published"
+            case signups7d = "signups_7d"
+            case routesPublished7d = "routes_published_7d"
+            case dau, wau
+            case sosTriggers7d = "sos_triggers_7d"
+            case topEvents7d = "top_events_7d"
+        }
+    }
+
+    /// Real aggregate numbers, computed server-side by `admin_analytics_
+    /// summary()` — which itself re-checks `is_admin` and throws if the
+    /// caller isn't one, so this is safe to call even if a client-side
+    /// admin check were ever bypassed.
+    func fetchAnalyticsSummary() async throws -> AnalyticsSummary {
+        try await ensureSession()
+        return try await supabase.rpc("admin_analytics_summary").execute().value
+    }
+
     // MARK: - Moderation
 
     enum ReportTarget: String { case route, comment, photo }
@@ -986,6 +1048,16 @@ actor RouteRepository {
         /// shows a "sign in" prompt instead of pretending this is a real
         /// account with a name.
         let isAnonymous: Bool
+        /// Real server-side role check (`profiles.is_admin`), not a
+        /// client-side guess — gates whether Settings even shows the
+        /// Moderation/Analytics rows. The RPCs behind those screens check
+        /// this too on the server, so hiding the row is real UX, not the
+        /// actual security boundary.
+        let isAdmin: Bool
+        /// A real, unique, server-generated code (see
+        /// `20260929000004_referrals.sql`) — every account has had one
+        /// since that migration, existing accounts included (backfilled).
+        let referralCode: String
     }
 
     private struct MyProfileRow: Decodable {
@@ -995,6 +1067,8 @@ actor RouteRepository {
         let km_logged: Double
         let routes_completed: Int
         let avatar_url: String?
+        let is_admin: Bool
+        let referral_code: String
     }
 
     func fetchMyProfile() async throws -> MyProfile {
@@ -1002,7 +1076,7 @@ actor RouteRepository {
         let isAnon = (try? await supabase.auth.session)?.user.isAnonymous ?? true
         let row: MyProfileRow = try await supabase
             .from("profiles")
-            .select("username, display_name, home_location, km_logged, routes_completed, avatar_url")
+            .select("username, display_name, home_location, km_logged, routes_completed, avatar_url, is_admin, referral_code")
             .eq("id", value: userId.uuidString)
             .single()
             .execute()
@@ -1017,8 +1091,55 @@ actor RouteRepository {
         return MyProfile(
             username: row.username, displayName: row.display_name, homeLocation: row.home_location,
             kmLogged: row.km_logged, routesCompleted: row.routes_completed, badgeCount: badgeRows.count,
-            avatarUrl: row.avatar_url, isAnonymous: isAnon
+            avatarUrl: row.avatar_url, isAnonymous: isAnon, isAdmin: row.is_admin, referralCode: row.referral_code
         )
+    }
+
+    /// How many real signups have redeemed this session's own referral
+    /// code — backs the real count on `ProfileView`'s invite card (used to
+    /// be static text with no way to know if it ever worked).
+    func fetchReferralCount() async throws -> Int {
+        let userId = try await ensureSession()
+        struct Row: Decodable { let id: UUID }
+        let rows: [Row] = try await supabase
+            .from("referrals")
+            .select("id")
+            .eq("referrer_id", value: userId.uuidString)
+            .execute()
+            .value
+        return rows.count
+    }
+
+    enum RedeemReferralError: LocalizedError {
+        case invalidCode
+        case alreadyRedeemed
+        case selfReferral
+        case other(String)
+        var errorDescription: String? {
+            switch self {
+            case .invalidCode: return "That code doesn't match anyone — check it and try again."
+            case .alreadyRedeemed: return "You've already used a referral code."
+            case .selfReferral: return "That's your own code."
+            case .other(let message): return message
+            }
+        }
+    }
+
+    /// Called once, right after a fresh sign-up, only if the person
+    /// actually entered a code — never required. See
+    /// `redeem_referral_code` for the real points payout on both sides.
+    func redeemReferralCode(_ code: String) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let p_code: String }
+        do {
+            try await supabase.rpc("redeem_referral_code", params: Params(p_code: code)).execute()
+        } catch {
+            let message = error.localizedDescription
+            if message.contains("invalid code") { throw RedeemReferralError.invalidCode }
+            if message.contains("already redeemed") { throw RedeemReferralError.alreadyRedeemed }
+            if message.contains("cannot refer yourself") { throw RedeemReferralError.selfReferral }
+            throw RedeemReferralError.other(message)
+        }
     }
 
     enum ProfileUpdateError: LocalizedError {

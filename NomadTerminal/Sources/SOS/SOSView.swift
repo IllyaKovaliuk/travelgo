@@ -189,6 +189,7 @@ struct SOSView: View {
             if holdProgress >= 1 {
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
                 withAnimation(NTMotion.spring) { isSent = true }
+                RouteRepository.shared.logEvent("sos_triggered")
                 onTriggered()
                 holdTimer?.invalidate()
                 holdTimer = nil

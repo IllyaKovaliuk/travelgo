@@ -62,6 +62,10 @@ struct AuthView: View {
     /// account can already change later in Edit Profile, just offered here
     /// too so someone doesn't have to hunt for it after signing up.
     @State private var tag = ""
+    /// Optional — a real code (see `RouteRepository.redeemReferralCode`),
+    /// never required to sign up. Left blank for anyone who doesn't have
+    /// one.
+    @State private var referralCode = ""
     @State private var email = ""
     @State private var password = ""
     @State private var isBusy = false
@@ -168,6 +172,8 @@ struct AuthView: View {
                     if mode == .signUp {
                         textField(icon: "person", placeholder: "Your name", text: $name, isSecure: false)
                         tagField
+                        textField(icon: "gift", placeholder: "Referral code (optional)", text: $referralCode, isSecure: false)
+                            .textInputAutocapitalization(.characters)
                     }
                     textField(icon: "envelope", placeholder: "you@nomadterminal.io", text: $email, isSecure: false)
                     textField(icon: "lock", placeholder: "Password", text: $password, isSecure: true)
@@ -296,7 +302,7 @@ struct AuthView: View {
         tag.range(of: "^[a-zA-Z0-9_]{3,20}$", options: .regularExpression) != nil
     }
 
-    private func textField(icon: String, placeholder: String, text: Binding<String>, isSecure: Bool) -> some View {
+    private func textField(icon: String, placeholder: LocalizedStringKey, text: Binding<String>, isSecure: Bool) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(NTColor.milk(0.5))
             Group {
@@ -349,6 +355,14 @@ struct AuthView: View {
                         // Autoconfirm is on for this project — signing up
                         // really did log them in immediately.
                         UserDefaults.standard.set(Date(), forKey: "authSessionStartedAt")
+                        RouteRepository.shared.logEvent("signup_completed")
+                        let trimmedReferral = referralCode.trimmingCharacters(in: .whitespaces)
+                        if !trimmedReferral.isEmpty {
+                            // Best-effort — a wrong/expired code should
+                            // never block someone from actually finishing
+                            // sign-up, so failures here are silent.
+                            try? await RouteRepository.shared.redeemReferralCode(trimmedReferral)
+                        }
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
                         onDone()
                     } else {

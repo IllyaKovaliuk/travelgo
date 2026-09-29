@@ -73,6 +73,7 @@ final class SubscriptionManager {
                 if case .verified(let transaction) = verification {
                     await transaction.finish()
                     await refreshEntitlements()
+                    RouteRepository.shared.logEvent("subscription_purchased", metadata: ["product_id": product.id])
                 } else {
                     purchaseError = "Purchase couldn't be verified — try again."
                 }

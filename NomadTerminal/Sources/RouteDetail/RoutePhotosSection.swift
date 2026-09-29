@@ -146,6 +146,7 @@ struct RoutePhotosSection: View {
             // No lat/lng — this is the after-the-fact upload path (Part 2b),
             // not the mid-recording geotagged one (Part 2a, RecordTrackView).
             try await RouteRepository.shared.addPhoto(routeId: routeId, imageUrl: url, lat: nil, lng: nil, caption: nil)
+            RouteRepository.shared.logEvent("route_photo_added")
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             await load()
         } catch {

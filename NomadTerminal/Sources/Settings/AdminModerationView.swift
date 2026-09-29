@@ -2,10 +2,11 @@ import SwiftUI
 
 /// Review/reinstate auto-hidden content — was a manual SQL job (see
 /// `backend/supabase/migrations/20260901000002_moderation.sql`'s header
-/// comment). No admin-role system exists in this app, so this screen is
-/// just reachable from Settings by any signed-in user; the RPCs backing it
-/// are `security definer` and granted to `authenticated`, the same trust
-/// model the original auto-hide migration already accepted.
+/// comment). Real `is_admin` role now (see
+/// `20260929000003_admin_role.sql`) — this screen only shows in Settings
+/// for an actual admin, and the RPCs behind it re-check `is_admin`
+/// server-side too, so hiding the row is real UX, not the actual security
+/// boundary. Used to be reachable by literally any signed-in user.
 struct AdminModerationView: View {
     @Environment(\.dismiss) private var dismiss
 

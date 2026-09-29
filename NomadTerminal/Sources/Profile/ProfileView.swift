@@ -40,6 +40,7 @@ struct ProfileView: View {
     /// `countriesVisited`.
     @State private var keptVisitPlaces: [String] = []
     @State private var followerCount = 0
+    @State private var referralCount = 0
     @State private var isLoading = true
     /// This session's own real user id — needed to highlight "my" row on
     /// the leaderboard. `MyProfile` doesn't carry one, so it's fetched
@@ -316,7 +317,7 @@ struct ProfileView: View {
                 RouteRepository.MyProfile(
                     username: $0.username, displayName: $0.displayName, homeLocation: $0.homeLocation,
                     kmLogged: $0.kmLogged, routesCompleted: $0.routesCompleted, badgeCount: $0.badgeCount,
-                    avatarUrl: url, isAnonymous: $0.isAnonymous
+                    avatarUrl: url, isAnonymous: $0.isAnonymous, isAdmin: $0.isAdmin, referralCode: $0.referralCode
                 )
             }
         } catch {
@@ -488,11 +489,16 @@ struct ProfileView: View {
 
     // MARK: - Referral / invite card
 
-    /// Styled as an invite, not a payout — no point count, no monetary
-    /// framing, single card, terracotta CTA (the one accent use on this
-    /// screen). Same real `ShareLink` pattern Route Detail's own share
-    /// button already uses, plain text rather than a deep link this app
-    /// doesn't have.
+    /// Real now — used to be a `ShareLink` with static text and a promise
+    /// ("you both unlock early access to the next region") nothing
+    /// backed. Every account has a real, unique `referralCode`
+    /// (`profiles.referral_code`); the person who enters it during sign-up
+    /// links the two accounts for real (`referrals` table) and *both*
+    /// sides get real points through the existing points economy
+    /// (`redeem_referral_code` → `award_points`, the same mechanism
+    /// liking/following/publishing already use) — not a second, fake
+    /// reward currency or a feature ("early access") this app has no
+    /// actual mechanism to grant.
     private var referralCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
@@ -503,24 +509,35 @@ struct ProfileView: View {
                     .background(Circle().fill(NTColor.accent.opacity(0.15)))
                 Text("Invite a friend").font(NTFont.body(14.5, .semibold)).foregroundStyle(NTColor.milk)
                 Spacer()
+                if referralCount > 0 {
+                    Text("\(referralCount) JOINED")
+                        .font(NTFont.mono(9.5, .semibold)).tracking(0.6).foregroundStyle(NTColor.sage)
+                }
             }
-            Text("You both unlock early access to the next region we open up.")
+            Text("Your code — they get 15 points on sign-up, you get 30 once they enter it.")
                 .font(NTFont.body(12.5, .light))
                 .foregroundStyle(NTColor.milk(0.6))
-            ShareLink(item: "Come log real routes with me on NomadCompass.") {
-                Text("Send invite")
-                    .font(NTFont.body(13, .semibold))
-                    .foregroundStyle(Color(hex: 0x231007))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 42)
-                    .background(NTColor.accent, in: Capsule())
+            if let code = profile?.referralCode {
+                Text(code)
+                    .font(NTFont.mono(20, .semibold)).tracking(3)
+                    .foregroundStyle(NTColor.milk)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ShareLink(item: "Come log real routes with me on NomadCompass — use my code \(code) when you sign up, we both get bonus points.") {
+                    Text("Send invite")
+                        .font(NTFont.body(13, .semibold))
+                        .foregroundStyle(Color(hex: 0x231007))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 42)
+                        .background(NTColor.accent, in: Capsule())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(16)
         .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
         .padding(.top, 18)
+        .task { referralCount = (try? await RouteRepository.shared.fetchReferralCount()) ?? 0 }
     }
 
     private func formatKM(_ km: Double) -> String {
