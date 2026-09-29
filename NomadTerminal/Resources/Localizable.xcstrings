@@ -1367,6 +1367,75 @@
         }
       }
     },
+    "Admin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrador"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Адміністратор"
+          }
+        }
+      }
+    },
+    "Admin panel (users, roles, content)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin panel (users, roles, content)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panel de administración (usuarios, roles, contenido)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Панель адміністратора (користувачі, ролі, контент)"
+          }
+        }
+      }
+    },
+    "Admin revoked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Admin revoked"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rol de administrador revocado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Права адміністратора скасовано"
+          }
+        }
+      }
+    },
     "All": {
       "extractionState": "manual",
       "localizations": {
@@ -1731,6 +1800,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Геолокація у фоні"
+          }
+        }
+      }
+    },
+    "Banned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banned"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bloqueado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заблокований"
           }
         }
       }
@@ -2264,6 +2356,75 @@
         }
       }
     },
+    "Couldn't change admin role": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't change admin role"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cambiar el rol de administrador"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалося змінити роль адміністратора"
+          }
+        }
+      }
+    },
+    "Couldn't change ban status": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't change ban status"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cambiar el estado de bloqueo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалося змінити статус блокування"
+          }
+        }
+      }
+    },
+    "Couldn't delete — try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete — try again"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo eliminar — inténtalo de nuevo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалося видалити — спробуйте ще раз"
+          }
+        }
+      }
+    },
     "Couldn't load analytics — check your connection and try again.": {
       "extractionState": "manual",
       "localizations": {
@@ -2582,6 +2743,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Видалити фото"
+          }
+        }
+      }
+    },
+    "Delete this permanently? This can't be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this permanently? This can't be undone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar permanentemente? Esto no se puede deshacer."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити назавжди? Це неможливо скасувати."
+          }
+        }
+      }
+    },
+    "Deleted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleted"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалено"
           }
         }
       }
@@ -3740,6 +3947,29 @@
         }
       }
     },
+    "HIDDEN": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HIDDEN"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCULTO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПРИХОВАНО"
+          }
+        }
+      }
+    },
     "HIDDEN COMMENTS (%lld)": {
       "extractionState": "manual",
       "localizations": {
@@ -3943,6 +4173,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сильне потовиділення, слабкість і нудота — це тепловиснаження: зупиніться, тінь, вода, електроліти. Сплутана свідомість, гаряча суха шкіра або втрата свідомості — це тепловий удар, справжня надзвичайна ситуація: охолоджуйте тіло будь-якими доступними засобами і негайно кличте на допомогу."
+          }
+        }
+      }
+    },
+    "Hide": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ocultar"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приховати"
           }
         }
       }
@@ -4288,6 +4541,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ЧЕР – ЖОВТ"
+          }
+        }
+      }
+    },
+    "Joined %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Joined %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se unió %@"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приєднався %@"
           }
         }
       }
@@ -4891,6 +5167,29 @@
         }
       }
     },
+    "Made admin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made admin"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombrado administrador"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Призначено адміністратором"
+          }
+        }
+      }
+    },
     "Milk": {
       "extractionState": "manual",
       "localizations": {
@@ -5232,6 +5531,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Нічний Брід"
+          }
+        }
+      }
+    },
+    "No accounts match.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No accounts match."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No coincide ninguna cuenta."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жоден акаунт не знайдено."
           }
         }
       }
@@ -5600,6 +5922,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Наразі нічого прихованого"
+          }
+        }
+      }
+    },
+    "Nothing posted yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing posted yet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no se ha publicado nada."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поки нічого не опубліковано."
           }
         }
       }
@@ -6037,6 +6382,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "ТЕЛЕФОН"
+          }
+        }
+      }
+    },
+    "PHOTOS (%lld)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PHOTOS (%lld)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FOTOS (%lld)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ФОТО (%lld)"
           }
         }
       }
@@ -6668,6 +7036,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "СПОРЯДЖЕННЯ ТА ВИМОГИ (НЕОБОВ’ЯЗКОВО)"
+          }
+        }
+      }
+    },
+    "ROUTES (%lld)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROUTES (%lld)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUTAS (%lld)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "МАРШРУТИ (%lld)"
           }
         }
       }
@@ -7519,6 +7910,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Зберегти контакт"
+          }
+        }
+      }
+    },
+    "Search username or name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search username or name"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar usuario o nombre"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пошук за ніком або іменем"
           }
         }
       }
@@ -8578,6 +8992,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Використати цей трек"
+          }
+        }
+      }
+    },
+    "User banned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User banned"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario bloqueado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Користувача заблоковано"
+          }
+        }
+      }
+    },
+    "User unbanned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "User unbanned"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usuario desbloqueado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Користувача розблоковано"
           }
         }
       }

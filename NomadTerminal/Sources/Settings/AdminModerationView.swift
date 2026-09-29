@@ -15,6 +15,8 @@ struct AdminModerationView: View {
     @State private var hiddenPhotos: [RouteRepository.HiddenPhoto] = []
     @State private var isLoading = true
     @State private var reinstatingId: String?
+    @State private var deletingId: String?
+    @State private var confirmDeleteAction: (() -> Void)?
     @State private var toast: String?
 
     var body: some View {
@@ -67,6 +69,17 @@ struct AdminModerationView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .confirmationDialog(
+                "Delete this permanently? This can't be undone.",
+                isPresented: Binding(get: { confirmDeleteAction != nil }, set: { if !$0 { confirmDeleteAction = nil } }),
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    confirmDeleteAction?()
+                    confirmDeleteAction = nil
+                }
+                Button("Cancel", role: .cancel) { confirmDeleteAction = nil }
+            }
         }
         .preferredColorScheme(ThemeManager.shared.colorScheme)
         .task { await load() }
@@ -116,10 +129,17 @@ struct AdminModerationView: View {
                 Text(reasonsLine(route.reasons, count: route.reportCount))
                     .font(NTFont.mono(10.5, .medium)).foregroundStyle(Color(hex: 0xE58272))
             }
-            reinstateButton(id: route.id.uuidString) {
-                try await RouteRepository.shared.reinstateRoute(id: route.id.uuidString)
-                hiddenRoutes.removeAll { $0.id == route.id }
-            }
+            actionRow(
+                id: route.id.uuidString,
+                reinstate: {
+                    try await RouteRepository.shared.reinstateRoute(id: route.id.uuidString)
+                    hiddenRoutes.removeAll { $0.id == route.id }
+                },
+                delete: {
+                    try await RouteRepository.shared.adminDeleteRoute(id: route.id.uuidString)
+                    hiddenRoutes.removeAll { $0.id == route.id }
+                }
+            )
         }
         .padding(16)
         .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
@@ -137,10 +157,17 @@ struct AdminModerationView: View {
                 Text(reasonsLine(comment.reasons, count: comment.reportCount))
                     .font(NTFont.mono(10.5, .medium)).foregroundStyle(Color(hex: 0xE58272))
             }
-            reinstateButton(id: comment.id.uuidString) {
-                try await RouteRepository.shared.reinstateComment(id: comment.id.uuidString)
-                hiddenComments.removeAll { $0.id == comment.id }
-            }
+            actionRow(
+                id: comment.id.uuidString,
+                reinstate: {
+                    try await RouteRepository.shared.reinstateComment(id: comment.id.uuidString)
+                    hiddenComments.removeAll { $0.id == comment.id }
+                },
+                delete: {
+                    try await RouteRepository.shared.adminDeleteComment(id: comment.id.uuidString)
+                    hiddenComments.removeAll { $0.id == comment.id }
+                }
+            )
         }
         .padding(16)
         .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
@@ -166,43 +193,83 @@ struct AdminModerationView: View {
                 Text(reasonsLine(photo.reasons, count: photo.reportCount))
                     .font(NTFont.mono(10.5, .medium)).foregroundStyle(Color(hex: 0xE58272))
             }
-            reinstateButton(id: photo.id.uuidString) {
-                try await RouteRepository.shared.reinstatePhoto(id: photo.id.uuidString)
-                hiddenPhotos.removeAll { $0.id == photo.id }
-            }
+            actionRow(
+                id: photo.id.uuidString,
+                reinstate: {
+                    try await RouteRepository.shared.reinstatePhoto(id: photo.id.uuidString)
+                    hiddenPhotos.removeAll { $0.id == photo.id }
+                },
+                delete: {
+                    try await RouteRepository.shared.adminDeletePhoto(id: photo.id.uuidString)
+                    hiddenPhotos.removeAll { $0.id == photo.id }
+                }
+            )
         }
         .padding(16)
         .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
     }
 
-    private func reinstateButton(id: String, action: @escaping () async throws -> Void) -> some View {
-        Button {
-            Task {
-                reinstatingId = id
-                do {
-                    try await action()
-                    showToast("Reinstated")
-                } catch {
-                    showToast("Couldn't reinstate — try again")
+    /// Two real actions per hidden item now, not just reinstate — a
+    /// permanent `delete` (`admin_delete_*`), confirmed first since it
+    /// can't be undone, alongside the existing `reinstate`.
+    private func actionRow(id: String, reinstate: @escaping () async throws -> Void, delete: @escaping () async throws -> Void) -> some View {
+        HStack(spacing: 10) {
+            Button {
+                Task {
+                    reinstatingId = id
+                    do {
+                        try await reinstate()
+                        showToast("Reinstated")
+                    } catch {
+                        showToast("Couldn't reinstate — try again")
+                    }
+                    reinstatingId = nil
                 }
-                reinstatingId = nil
+            } label: {
+                if reinstatingId == id {
+                    ProgressView().tint(NTColor.pine)
+                        .frame(maxWidth: .infinity).frame(height: 38)
+                        .background(Capsule().fill(NTColor.milk(0.5)))
+                } else {
+                    Text("Reinstate")
+                        .font(NTFont.body(13, .semibold))
+                        .foregroundStyle(NTColor.pine)
+                        .frame(maxWidth: .infinity).frame(height: 38)
+                        .background(Capsule().fill(NTColor.sage))
+                }
             }
-        } label: {
-            if reinstatingId == id {
-                ProgressView().tint(NTColor.pine)
-                    .frame(maxWidth: .infinity).frame(height: 38)
-                    .background(Capsule().fill(NTColor.milk(0.5)))
-            } else {
-                Text("Reinstate")
-                    .font(NTFont.body(13, .semibold))
-                    .foregroundStyle(NTColor.pine)
-                    .frame(maxWidth: .infinity).frame(height: 38)
-                    .background(Capsule().fill(NTColor.sage))
+            .buttonStyle(.plain)
+
+            Button(role: .destructive) {
+                confirmDeleteAction = {
+                    deletingId = id
+                    Task {
+                        do {
+                            try await delete()
+                            showToast("Deleted")
+                        } catch {
+                            showToast("Couldn't delete — try again")
+                        }
+                        deletingId = nil
+                    }
+                }
+            } label: {
+                if deletingId == id {
+                    ProgressView().tint(Color(hex: 0xE58272))
+                        .frame(width: 62, height: 38)
+                        .overlay(Capsule().stroke(Color(hex: 0xE58272).opacity(0.5), lineWidth: 1))
+                } else {
+                    Text("Delete")
+                        .font(NTFont.body(13, .semibold))
+                        .foregroundStyle(Color(hex: 0xE58272))
+                        .frame(width: 62, height: 38)
+                        .overlay(Capsule().stroke(Color(hex: 0xE58272).opacity(0.5), lineWidth: 1))
+                }
             }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
-        .disabled(reinstatingId != nil)
+        .disabled(reinstatingId != nil || deletingId != nil)
     }
 
     private func showToast(_ text: String) {

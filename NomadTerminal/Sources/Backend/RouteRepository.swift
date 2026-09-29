@@ -1054,6 +1054,10 @@ actor RouteRepository {
         /// this too on the server, so hiding the row is real UX, not the
         /// actual security boundary.
         let isAdmin: Bool
+        /// `profiles.is_super_admin` — the one role that can appoint/
+        /// revoke other admins (`admin_set_admin_role`). Only the
+        /// founder's real account has this.
+        let isSuperAdmin: Bool
         /// A real, unique, server-generated code (see
         /// `20260929000004_referrals.sql`) — every account has had one
         /// since that migration, existing accounts included (backfilled).
@@ -1068,6 +1072,7 @@ actor RouteRepository {
         let routes_completed: Int
         let avatar_url: String?
         let is_admin: Bool
+        let is_super_admin: Bool
         let referral_code: String
     }
 
@@ -1076,7 +1081,7 @@ actor RouteRepository {
         let isAnon = (try? await supabase.auth.session)?.user.isAnonymous ?? true
         let row: MyProfileRow = try await supabase
             .from("profiles")
-            .select("username, display_name, home_location, km_logged, routes_completed, avatar_url, is_admin, referral_code")
+            .select("username, display_name, home_location, km_logged, routes_completed, avatar_url, is_admin, is_super_admin, referral_code")
             .eq("id", value: userId.uuidString)
             .single()
             .execute()
@@ -1091,7 +1096,8 @@ actor RouteRepository {
         return MyProfile(
             username: row.username, displayName: row.display_name, homeLocation: row.home_location,
             kmLogged: row.km_logged, routesCompleted: row.routes_completed, badgeCount: badgeRows.count,
-            avatarUrl: row.avatar_url, isAnonymous: isAnon, isAdmin: row.is_admin, referralCode: row.referral_code
+            avatarUrl: row.avatar_url, isAnonymous: isAnon, isAdmin: row.is_admin, isSuperAdmin: row.is_super_admin,
+            referralCode: row.referral_code
         )
     }
 
@@ -1621,5 +1627,129 @@ actor RouteRepository {
         try await ensureSession()
         struct Params: Encodable { let target_id: String }
         try await supabase.rpc("admin_reinstate_photo", params: Params(target_id: id)).execute()
+    }
+
+    // MARK: - Admin: direct hide/delete (not just reinstate-after-report)
+
+    private struct TargetIDParams: Encodable { let target_id: String }
+
+    func adminDeleteRoute(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_delete_route", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    func adminDeleteComment(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_delete_comment", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    func adminDeletePhoto(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_delete_photo", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    func adminHideRoute(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_hide_route", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    func adminHideComment(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_hide_comment", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    func adminHidePhoto(id: String) async throws {
+        try await ensureSession()
+        try await supabase.rpc("admin_hide_photo", params: TargetIDParams(target_id: id)).execute()
+    }
+
+    // MARK: - Super admin: user management
+
+    struct AdminUser: Identifiable, Decodable {
+        let id: UUID
+        let username: String
+        let displayName: String?
+        let isAdmin: Bool
+        let isSuperAdmin: Bool
+        let isBanned: Bool
+        let createdAt: String
+
+        enum CodingKeys: String, CodingKey {
+            case id, username
+            case displayName = "display_name"
+            case isAdmin = "is_admin"
+            case isSuperAdmin = "is_super_admin"
+            case isBanned = "is_banned"
+            case createdAt = "created_at"
+        }
+    }
+
+    /// Empty `query` returns the 50 most recent accounts — a real starting
+    /// point for user management, not just a dead search box.
+    func searchUsers(_ query: String) async throws -> [AdminUser] {
+        try await ensureSession()
+        struct Params: Encodable { let query: String }
+        return try await supabase.rpc("admin_search_users", params: Params(query: query)).execute().value
+    }
+
+    /// Only a super admin can actually do this — `admin_set_admin_role`
+    /// re-checks `is_super_admin` server-side and throws for anyone else.
+    func setAdminRole(userId: String, isAdmin: Bool) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let target_user_id: String; let make_admin: Bool }
+        try await supabase.rpc("admin_set_admin_role", params: Params(target_user_id: userId, make_admin: isAdmin)).execute()
+    }
+
+    /// A real ban — blocks future sign-ins at the auth layer
+    /// (`auth.users.banned_until`) and immediately blocks new
+    /// routes/comments/photos (see the `is_banned` checks added to those
+    /// tables' write policies). Any admin can do this, not just a super
+    /// admin — banning a super admin is refused server-side.
+    func setUserBanned(userId: String, banned: Bool) async throws {
+        try await ensureSession()
+        struct Params: Encodable { let target_user_id: String; let banned: Bool }
+        try await supabase.rpc("admin_set_user_banned", params: Params(target_user_id: userId, banned: banned)).execute()
+    }
+
+    struct AdminUserPhoto: Identifiable, Decodable {
+        let id: UUID
+        let imageUrl: String
+        let routeId: UUID
+        let routeTitle: String
+        let hidden: Bool
+        let createdAt: String
+        enum CodingKeys: String, CodingKey {
+            case id, hidden
+            case imageUrl = "image_url"
+            case routeId = "route_id"
+            case routeTitle = "route_title"
+            case createdAt = "created_at"
+        }
+    }
+
+    struct AdminUserRoute: Identifiable, Decodable {
+        let id: UUID
+        let title: String
+        let status: String
+        let createdAt: String
+        enum CodingKeys: String, CodingKey {
+            case id, title, status
+            case createdAt = "created_at"
+        }
+    }
+
+    /// Real per-user content browsing — the actual "block/delete a
+    /// specific person's photos" workflow, not limited to whatever
+    /// already collected 3 reports.
+    func fetchUserPhotos(userId: String) async throws -> [AdminUserPhoto] {
+        try await ensureSession()
+        struct Params: Encodable { let target_user_id: String }
+        return try await supabase.rpc("admin_list_user_photos", params: Params(target_user_id: userId)).execute().value
+    }
+
+    func fetchUserRoutesForAdmin(userId: String) async throws -> [AdminUserRoute] {
+        try await ensureSession()
+        struct Params: Encodable { let target_user_id: String }
+        return try await supabase.rpc("admin_list_user_routes", params: Params(target_user_id: userId)).execute().value
     }
 }

@@ -24,8 +24,10 @@ struct SettingsView: View {
     @State private var showRewards = false
     @State private var showModeration = false
     @State private var showAnalytics = false
+    @State private var showSuperAdmin = false
     @State private var showEmergencyContacts = false
     @State private var isAdmin = false
+    @State private var isSuperAdmin = false
     @State private var isSigningOut = false
     @State private var subscription = SubscriptionManager.shared
     /// Real bytes under `OfflineRoutes`, not the hardcoded fake "2.4 / 8
@@ -88,6 +90,17 @@ struct SettingsView: View {
                                 valueRow(title: "Analytics", value: nil)
                             }
                             .buttonStyle(.plain)
+                            // Super admin only — appoints/revokes other
+                            // admins and bans/deletes real content directly.
+                            // `admin_set_admin_role` re-checks
+                            // `is_super_admin` server-side too.
+                            if isSuperAdmin {
+                                divider
+                                Button { showSuperAdmin = true } label: {
+                                    valueRow(title: "Admin panel (users, roles, content)", value: nil)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
 
@@ -121,6 +134,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showRewards) { RewardsView() }
             .sheet(isPresented: $showModeration) { AdminModerationView() }
             .sheet(isPresented: $showAnalytics) { AdminAnalyticsView() }
+            .sheet(isPresented: $showSuperAdmin) { SuperAdminView() }
             .sheet(isPresented: $showEmergencyContacts, onDismiss: { Task { await loadEmergencyContactCount() } }) {
                 EmergencyContactsView()
             }
@@ -135,7 +149,9 @@ struct SettingsView: View {
             refreshLocationStatus()
             offlineStorageBytes = await OfflineRouteStore.shared.diskUsageBytes()
             await loadEmergencyContactCount()
-            isAdmin = (try? await RouteRepository.shared.fetchMyProfile())?.isAdmin ?? false
+            let myProfile = try? await RouteRepository.shared.fetchMyProfile()
+            isAdmin = myProfile?.isAdmin ?? false
+            isSuperAdmin = myProfile?.isSuperAdmin ?? false
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             // Catches coming back from the system Settings deep link below —

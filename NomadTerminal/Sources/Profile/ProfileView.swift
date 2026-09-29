@@ -317,7 +317,8 @@ struct ProfileView: View {
                 RouteRepository.MyProfile(
                     username: $0.username, displayName: $0.displayName, homeLocation: $0.homeLocation,
                     kmLogged: $0.kmLogged, routesCompleted: $0.routesCompleted, badgeCount: $0.badgeCount,
-                    avatarUrl: url, isAnonymous: $0.isAnonymous, isAdmin: $0.isAdmin, referralCode: $0.referralCode
+                    avatarUrl: url, isAnonymous: $0.isAnonymous, isAdmin: $0.isAdmin, isSuperAdmin: $0.isSuperAdmin,
+                    referralCode: $0.referralCode
                 )
             }
         } catch {
