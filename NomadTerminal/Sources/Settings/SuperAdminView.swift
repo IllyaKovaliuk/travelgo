@@ -338,7 +338,17 @@ private struct UserModerationDetailView: View {
         Button {
             Task {
                 isBusy = true
-                try? await action()
+                do {
+                    try await action()
+                } catch {
+                    // Was `try?` before — a failed hide/delete (a real
+                    // network error, a revoked permission mid-session)
+                    // silently did nothing, no different from the button
+                    // not working at all. `action`'s own success path
+                    // already calls `onToast`; this is just the failure
+                    // side of that same contract.
+                    onToast("Something went wrong — try again")
+                }
                 isBusy = false
             }
         } label: {
