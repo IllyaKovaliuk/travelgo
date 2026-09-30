@@ -128,6 +128,7 @@ struct RecordTrackView: View {
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(
                 onClose: { showSOS = false },
+                lastKnownCoordinate: tracker.points.last?.coordinate,
                 onTriggered: { LiveActivityManager.shared.triggerSOS() },
                 onCancelled: { LiveActivityManager.shared.cancelSOS() }
             )

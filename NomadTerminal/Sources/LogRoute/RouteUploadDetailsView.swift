@@ -22,8 +22,16 @@ struct RouteUploadDetailsView: View {
     /// `RouteReviewPublishView` had already captured (and published) the
     /// draft's old value. Blocking Continue until the upload actually
     /// resolves closes that race outright, rather than patching around it.
+    ///
+    /// A cover photo is now required, not optional — a feed/search full of
+    /// routes with no image is a real, visible quality problem, and the
+    /// dashed-outline "Add cover photo" slot already made clear a photo
+    /// was expected here; this just actually enforces it instead of
+    /// letting someone skip straight past.
     private var canContinue: Bool {
-        !draft.title.trimmingCharacters(in: .whitespaces).isEmpty && !isUploadingCover
+        !draft.title.trimmingCharacters(in: .whitespaces).isEmpty
+            && !isUploadingCover
+            && draft.coverImageUrl != nil
     }
 
     var body: some View {
@@ -177,6 +185,7 @@ struct RouteUploadDetailsView: View {
                     VStack(spacing: 8) {
                         Image(systemName: "photo.badge.plus").font(.system(size: 24, weight: .light))
                         Text("Add cover photo").font(NTFont.body(12.5, .semibold))
+                        Text("REQUIRED TO PUBLISH").font(NTFont.mono(9, .medium)).tracking(0.6)
                     }
                     .foregroundStyle(NTColor.milk(0.6))
                 } else if draft.coverImageUrl != nil {

@@ -149,6 +149,15 @@ struct RouteReviewPublishView: View {
     }
 
     private func publish() {
+        // Defense in depth — the real gate is
+        // RouteUploadDetailsView.canContinue (that's the screen where a
+        // cover photo actually gets picked), but this is cheap insurance
+        // against ever publishing a route with no image regardless of how
+        // this screen got reached.
+        guard draft.coverImageUrl != nil else {
+            errorMessage = "Go back and add a cover photo before publishing."
+            return
+        }
         isPublishing = true
         errorMessage = nil
         Task {

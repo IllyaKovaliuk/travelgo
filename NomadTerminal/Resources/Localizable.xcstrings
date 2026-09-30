@@ -1306,6 +1306,29 @@
         }
       }
     },
+    "Add a phone number to an emergency contact in Settings to enable this — a text with your last known position will open, ready to send.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a phone number to an emergency contact in Settings to enable this — a text with your last known position will open, ready to send."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añade un número de teléfono a un contacto de emergencia en Ajustes para activarlo — se abrirá un mensaje con tu última posición, listo para enviar."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додайте номер телефону контакту в Налаштуваннях, щоб це запрацювало — відкриється повідомлення з вашою останньою позицією, готове до надсилання."
+          }
+        }
+      }
+    },
     "Add contact": {
       "extractionState": "manual",
       "localizations": {
@@ -3721,6 +3744,52 @@
         }
       }
     },
+    "GPS BEACON · NO SIGNAL": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GPS BEACON · NO SIGNAL"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BALIZA GPS · SIN SEÑAL"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GPS-МАЯК · НЕМАЄ ЗВ'ЯЗКУ"
+          }
+        }
+      }
+    },
+    "GPS BEACON · TEXTS CONTACTS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GPS BEACON · TEXTS CONTACTS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BALIZA GPS · AVISA A CONTACTOS"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GPS-МАЯК · ПОВІДОМЛЯЄ КОНТАКТАМ"
+          }
+        }
+      }
+    },
     "GPS FIX %lld M": {
       "extractionState": "manual",
       "localizations": {
@@ -3905,6 +3974,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Гіоргі К. та ще 1 отримають сповіщення"
+          }
+        }
+      }
+    },
+    "Go back and add a cover photo before publishing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go back and add a cover photo before publishing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve atrás y añade una foto de portada antes de publicar."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поверніться і додайте обкладинку перед публікацією."
           }
         }
       }
@@ -5198,6 +5290,29 @@
         }
       }
     },
+    "Message emergency contacts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message emergency contacts"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mensaje a contactos de emergencia"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Написати екстреним контактам"
+          }
+        }
+      }
+    },
     "Milk": {
       "extractionState": "manual",
       "localizations": {
@@ -5355,29 +5470,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "ПОТРЕБУЄ ПЕРЕВІРКИ (%lld)"
-          }
-        }
-      }
-    },
-    "NO CELLULAR · GPS ONLY": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NO CELLULAR · GPS ONLY"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SIN RED MÓVIL · SOLO GPS"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "БЕЗ МЕРЕЖІ · ЛИШЕ GPS"
           }
         }
       }
@@ -6302,6 +6394,52 @@
         }
       }
     },
+    "Opens a text to your emergency contacts, pre-filled with your last known position. You still tap Send yourself.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens a text to your emergency contacts, pre-filled with your last known position. You still tap Send yourself."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre un mensaje para tus contactos de emergencia con tu última posición. Tienes que pulsar Enviar tú mismo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відкриває повідомлення для ваших екстрених контактів із вашою останньою позицією. Надіслати треба самостійно."
+          }
+        }
+      }
+    },
+    "Opens your Messages app pre-filled with your last known position — not available in this environment (no active line).": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens your Messages app pre-filled with your last known position — not available in this environment (no active line)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre tu app de Mensajes con tu última posición conocida — no disponible ahora (sin línea activa)."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Відкриває Повідомлення з вашою останньою відомою позицією — недоступно зараз (немає активної лінії)."
+          }
+        }
+      }
+    },
     "Overland routes, river lines and ridge traverses, logged by the people who drove them.": {
       "extractionState": "manual",
       "localizations": {
@@ -6998,6 +7136,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "РЕГІОН"
+          }
+        }
+      }
+    },
+    "REQUIRED TO PUBLISH": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REQUIRED TO PUBLISH"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OBLIGATORIO PARA PUBLICAR"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ОБОВ'ЯЗКОВО ДЛЯ ПУБЛІКАЦІЇ"
           }
         }
       }
@@ -9924,29 +10085,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ваш код — вони отримують 15 балів при реєстрації, ви — 30, коли вони його введуть."
-          }
-        }
-      }
-    },
-    "Your last known position, route name and battery level to your emergency contacts and local rescue where covered.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Your last known position, route name and battery level to your emergency contacts and local rescue where covered."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tu última posición conocida, el nombre de la ruta y el nivel de batería a tus contactos de emergencia y al rescate local donde esté disponible."
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Твоя остання відома позиція, назва маршруту й рівень заряду — контактам для екстрених випадків і місцевим рятувальникам, де це доступно."
           }
         }
       }

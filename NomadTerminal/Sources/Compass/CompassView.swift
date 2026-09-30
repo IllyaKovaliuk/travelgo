@@ -69,6 +69,7 @@ struct CompassView: View {
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(
                 onClose: { showSOS = false },
+                lastKnownCoordinate: tracker.currentLocation?.coordinate,
                 onTriggered: { LiveActivityManager.shared.triggerSOS() },
                 onCancelled: { LiveActivityManager.shared.cancelSOS() }
             )

@@ -1,8 +1,20 @@
 import SwiftUI
+import CoreLocation
+import MessageUI
 
-/// 17 · SOS — hold-to-send emergency beacon.
+/// 17 · SOS — hold-to-send emergency beacon. "Send" is now real: holding
+/// the dial opens a pre-filled system Messages sheet addressed to your
+/// emergency contacts with your last known position, via
+/// `MessageComposeView`. It still needs a human tap on Send inside that
+/// sheet — Apple gives no API to fire an SMS/iMessage with zero user
+/// interaction, on purpose — so this is as automatic as it can honestly be.
 struct SOSView: View {
     var onClose: () -> Void
+    /// Real last GPS fix from whichever screen presented this — threaded in
+    /// from `RouteTracker.points.last` (recording) or
+    /// `CompassTracker.currentLocation` (compass). Nil is handled: the
+    /// message just omits the position line rather than sending a lie.
+    var lastKnownCoordinate: CLLocationCoordinate2D? = nil
     /// Fired the instant the hold gesture completes — flips the Dynamic
     /// Island / lock-screen Live Activity into SOS mode (see
     /// `LiveActivityManager.triggerSOS`). Defaults to a no-op so existing
@@ -18,6 +30,26 @@ struct SOSView: View {
     /// Real, not the hardcoded fake "Giorgi K." this row used to show
     /// regardless of whether anyone had ever set up a real contact.
     @State private var contacts: [RouteRepository.EmergencyContact] = []
+    @State private var showMessageCompose = false
+
+    /// Contacts we can actually text — `MFMessageComposeViewController`
+    /// needs a phone number, an email-only contact can't receive an SMS.
+    private var textableContacts: [RouteRepository.EmergencyContact] {
+        contacts.filter { $0.phone?.isEmpty == false }
+    }
+    /// False in Simulator (no cellular/iMessage stack) and on a real
+    /// device with no active line/iMessage — checked before ever offering
+    /// the button, instead of presenting a sheet doomed to fail.
+    private var canMessage: Bool { MFMessageComposeViewController.canSendText() }
+
+    private var messageBody: String {
+        var lines = ["🆘 This is an emergency — I need help."]
+        if let lastKnownCoordinate {
+            lines.append("My last known position: https://maps.apple.com/?ll=\(lastKnownCoordinate.latitude),\(lastKnownCoordinate.longitude)")
+        }
+        lines.append("Sent from NomadCompass.")
+        return lines.joined(separator: "\n")
+    }
 
     var body: some View {
         ZStack {
@@ -38,6 +70,14 @@ struct SOSView: View {
         .task {
             contacts = (try? await RouteRepository.shared.fetchEmergencyContacts()) ?? []
         }
+        .sheet(isPresented: $showMessageCompose) {
+            MessageComposeView(
+                recipients: textableContacts.compactMap { $0.phone },
+                body: messageBody,
+                onFinish: { showMessageCompose = false }
+            )
+            .ignoresSafeArea()
+        }
     }
 
     private var background: some View {
@@ -56,7 +96,7 @@ struct SOSView: View {
 
     private var header: some View {
         HStack {
-            Text("NO CELLULAR · GPS ONLY")
+            Text(canMessage ? "GPS BEACON · TEXTS CONTACTS" : "GPS BEACON · NO SIGNAL")
                 .font(NTFont.mono(10, .medium)).tracking(1.6).foregroundStyle(NTColor.milk(0.5))
             Spacer()
             Button(action: onClose) {
@@ -117,7 +157,7 @@ struct SOSView: View {
     private var willSendCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("WILL SEND").font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.5))
-            Text("Your last known position, route name and battery level to your emergency contacts and local rescue where covered.")
+            Text(willSendCopy)
                 .font(NTFont.body(13, .medium))
                 .foregroundStyle(NTColor.milk(0.82))
                 .fixedSize(horizontal: false, vertical: true)
@@ -129,26 +169,55 @@ struct SOSView: View {
         .padding(.top, 10)
     }
 
+    /// Honest, not aspirational — describes exactly what holding the dial
+    /// actually does on this device, not a fictional dispatch service.
+    /// There is no rescue-service integration; never claim there is one.
+    private var willSendCopy: LocalizedStringKey {
+        if !canMessage {
+            return "Opens your Messages app pre-filled with your last known position — not available in this environment (no active line)."
+        } else if textableContacts.isEmpty {
+            return "Add a phone number to an emergency contact in Settings to enable this — a text with your last known position will open, ready to send."
+        } else {
+            return "Opens a text to your emergency contacts, pre-filled with your last known position. You still tap Send yourself."
+        }
+    }
+
     private var contactsRow: some View {
-        HStack(spacing: 10) {
-            if let first = contacts.first {
-                ZStack {
-                    LinearGradient(colors: [NTColor.water, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Text(initials(first.name)).font(NTFont.mono(11, .semibold)).foregroundStyle(NTColor.milk)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                if let first = contacts.first {
+                    ZStack {
+                        LinearGradient(colors: [NTColor.water, NTColor.pineRaised], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        Text(initials(first.name)).font(NTFont.mono(11, .semibold)).foregroundStyle(NTColor.milk)
+                    }
+                    .frame(width: 32, height: 32)
+                    .clipShape(Circle())
+                    Text(contactsLabel)
+                        .font(NTFont.body(12.5, .medium))
+                        .foregroundStyle(NTColor.milk(0.7))
+                } else {
+                    Image(systemName: "person.crop.circle.badge.exclamationmark")
+                        .font(.system(size: 18)).foregroundStyle(NTColor.milk(0.4))
+                    Text("No emergency contacts set — add some in Settings")
+                        .font(NTFont.body(12.5, .medium))
+                        .foregroundStyle(NTColor.milk(0.5))
                 }
-                .frame(width: 32, height: 32)
-                .clipShape(Circle())
-                Text(contactsLabel)
-                    .font(NTFont.body(12.5, .medium))
-                    .foregroundStyle(NTColor.milk(0.7))
-            } else {
-                Image(systemName: "person.crop.circle.badge.exclamationmark")
-                    .font(.system(size: 18)).foregroundStyle(NTColor.milk(0.4))
-                Text("No emergency contacts set — add some in Settings")
-                    .font(NTFont.body(12.5, .medium))
-                    .foregroundStyle(NTColor.milk(0.5))
+                Spacer()
             }
-            Spacer()
+
+            if isSent && canMessage && !textableContacts.isEmpty {
+                Button(action: { showMessageCompose = true }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "message.fill")
+                        Text("Message emergency contacts").font(NTFont.body(13, .semibold))
+                    }
+                    .foregroundStyle(Color(hex: 0x1A0A07))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 46)
+                    .background(NTColor.milk, in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -193,6 +262,14 @@ struct SOSView: View {
                 onTriggered()
                 holdTimer?.invalidate()
                 holdTimer = nil
+                // The actual "send" — opens the real Messages compose sheet
+                // right away rather than making it a second, easy-to-miss
+                // tap. Only when it can actually work; otherwise the
+                // "Message emergency contacts" button stays available below
+                // for a retry once there's signal.
+                if canMessage && !textableContacts.isEmpty {
+                    showMessageCompose = true
+                }
             }
         }
     }
