@@ -4760,6 +4760,29 @@
         }
       }
     },
+    "KM REMAINING": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM REMAINING"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KM RESTANTES"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "КМ ЗАЛИШИЛОСЬ"
+          }
+        }
+      }
+    },
     "KM TOTAL": {
       "extractionState": "manual",
       "localizations": {
@@ -5240,6 +5263,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "М НАЙВИЩА Т."
+          }
+        }
+      }
+    },
+    "M OFF TRAIL — HEAD BACK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M OFF TRAIL — HEAD BACK"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "M FUERA DEL SENDERO — VUELVE"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "М ВІД СТЕЖКИ — ПОВЕРТАЙТЕСЬ"
           }
         }
       }
@@ -7738,6 +7784,29 @@
         }
       }
     },
+    "Route complete — nice work": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Route complete — nice work"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ruta completada — buen trabajo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Маршрут завершено — чудова робота"
+          }
+        }
+      }
+    },
     "Route crosses a border or restricted zone": {
       "extractionState": "manual",
       "localizations": {
@@ -9648,6 +9717,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вода піднімається, поки ви на іншому березі"
+          }
+        }
+      }
+    },
+    "Waypoint reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waypoint reached"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punto alcanzado"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Точку досягнуто"
           }
         }
       }

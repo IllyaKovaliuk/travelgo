@@ -51,7 +51,63 @@ struct CompassView: View {
     @State private var segmentStretches: [MapSegmentStretch] = []
     @State private var viewport: Viewport = .styleDefault
 
+    /// The real recorded track as one `Turf.LineString` — built once in
+    /// `.onAppear`, reused every ~2.5s tick (`updateNavigationState`) to
+    /// answer two real questions plain "distance to waypoint" can't: how
+    /// far off the actual path is the user right now (`closestOnTrail` +
+    /// `offTrailMeters`), and how far along the whole route have they
+    /// actually gotten (`progressMeters`/`progressFraction`) — real
+    /// on-trail detection and route progress, the two things a recorded-
+    /// track "follow" screen can offer that a plain compass dial can't,
+    /// with no routing engine or paid Nav SDK involved.
+    @State private var fullLine: LineString?
+    /// The user's own real path during this navigation session, sampled
+    /// every tick when they've moved >`breadcrumbMinMoveM` — drawn as a
+    /// distinct line on the map so it's visible whether they're tracking
+    /// the planned route or wandering off it, not just told a number.
+    @State private var breadcrumb: [CLLocationCoordinate2D] = []
+    @State private var offTrailMetersBanner: Int?
+    @State private var transientMessage: TransientMessage?
+    @State private var hasArrived = false
+
+    private let offTrailThresholdM: Double = 50
+    private let waypointArrivalThresholdM: Double = 40
+    private let breadcrumbMinMoveM: Double = 8
+
+    enum TransientMessage: Equatable {
+        case reachedWaypoint
+        case routeComplete
+    }
+
     private var hasRealTrack: Bool { trackPoints.count > 1 }
+
+    private var closestOnTrail: LineString.IndexedCoordinate? {
+        guard let fullLine, let current = tracker.currentLocation?.coordinate else { return nil }
+        return fullLine.closestCoordinate(to: current)
+    }
+    private var offTrailMeters: Double? {
+        guard let closestOnTrail, let current = tracker.currentLocation else { return nil }
+        return current.distance(from: CLLocation(latitude: closestOnTrail.coordinate.latitude, longitude: closestOnTrail.coordinate.longitude))
+    }
+    private var routeTotalMeters: Double { fullLine?.distance() ?? 0 }
+    private var progressMeters: Double { closestOnTrail?.distance ?? 0 }
+    private var remainingMeters: Double { max(0, routeTotalMeters - progressMeters) }
+    private var progressFraction: Double {
+        routeTotalMeters > 1 ? min(1, max(0, progressMeters / routeTotalMeters)) : 0
+    }
+    /// The Standard Satellite style supports real time-of-day lighting for
+    /// free (built into the style, no extra data or API call) — a small
+    /// thing none of AllTrails/Komoot/Gaia GPS bother with on their own
+    /// "follow route" screens, and it makes the map look alive rather than
+    /// a flat, always-noon satellite tile.
+    private var lightPreset: StandardLightPreset {
+        switch Calendar.current.component(.hour, from: Date()) {
+        case 5..<8: return .dawn
+        case 8..<18: return .day
+        case 18..<20: return .dusk
+        default: return .night
+        }
+    }
 
     private var currentWaypoint: CompassWaypoint? {
         waypoints.indices.contains(waypointIndex) ? waypoints[waypointIndex] : nil
@@ -86,6 +142,7 @@ struct CompassView: View {
 
             VStack(spacing: 0) {
                 header
+                if hasRealTrack { banners }
                 Spacer(minLength: 0)
                 if isMapActive {
                     recenterButton
@@ -112,10 +169,22 @@ struct CompassView: View {
             segmentStretches = MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
             displayRotation = needleRotation
             if hasRealTrack {
+                fullLine = LineString(trackPoints.map(\.coordinate))
                 viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
             }
         }
         .onDisappear { tracker.stop() }
+        .task {
+            // Polling, not `.onChange(of: tracker.currentLocation)` — a
+            // fresh `CLLocation` arrives many times a second on a real
+            // device and none of on-trail/progress/arrival needs that
+            // granularity; a steady ~2.5s tick is plenty responsive for a
+            // walking/driving pace and a lot cheaper.
+            while !Task.isCancelled {
+                updateNavigationState()
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+            }
+        }
         .sheet(isPresented: $showWaypoints) {
             WaypointsSheet(waypoints: waypoints, current: waypointIndex) { index in
                 UISelectionFeedbackGenerator().selectionChanged()
@@ -232,6 +301,35 @@ struct CompassView: View {
                     .lineBorderWidth(2)
             }
 
+            // The user's own real path this session, distinct from the
+            // planned route line above it — makes it visible at a glance
+            // whether they're tracking the trail or drifting, not just a
+            // number in the HUD.
+            if breadcrumb.count > 1 {
+                let bcId = "compass-breadcrumb"
+                GeoJSONSource(id: bcId).data(.geometry(.lineString(LineString(breadcrumb))))
+                LineLayer(id: "\(bcId)-line", source: bcId)
+                    .lineColor(UIColor(NTColor.milk))
+                    .lineWidth(4)
+                    .lineCap(.round)
+                    .lineJoin(.round)
+                    .lineOpacity(0.9)
+            }
+
+            // A cheap, honest stand-in for "reroute" — there's no routing
+            // engine here, so this doesn't calculate a real path back, it
+            // just draws the straight real-geometry line from the user's
+            // real position to the nearest real point on the trail, so
+            // "which way is back" is visually obvious.
+            if let offTrailMetersBanner, offTrailMetersBanner > 0, let current = tracker.currentLocation?.coordinate, let target = closestOnTrail?.coordinate {
+                let rejoinId = "compass-rejoin"
+                GeoJSONSource(id: rejoinId).data(.geometry(.lineString(LineString([current, target]))))
+                LineLayer(id: "\(rejoinId)-line", source: rejoinId)
+                    .lineColor(UIColor(Color(hex: 0xE58272)))
+                    .lineWidth(3)
+                    .lineDashArray([0, 2])
+            }
+
             ForEvery(pois) { poi in
                 MapViewAnnotation(coordinate: poi.coordinate) {
                     POIMapMarker(category: poi.category)
@@ -250,8 +348,54 @@ struct CompassView: View {
                 }
             }
         }
-        .mapStyle(.standardSatellite)
+        .mapStyle(.standardSatellite(lightPreset: lightPreset))
         .ignoresSafeArea()
+    }
+
+    /// Off-trail warning (persists as long as the condition holds) and the
+    /// transient "waypoint reached" / "route complete" toasts, stacked —
+    /// both are plain-literal `Text` per branch (never an interpolated-
+    /// then-formatted `String`), so both stay real `LocalizedStringKey`s.
+    @ViewBuilder
+    private var banners: some View {
+        VStack(spacing: 8) {
+            if let offTrailMetersBanner {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text(String(offTrailMetersBanner)).fontWeight(.semibold)
+                    Text("M OFF TRAIL — HEAD BACK")
+                }
+                .font(NTFont.mono(11, .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14).padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color(hex: 0xB33A2B), in: Capsule())
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            if let transientMessage {
+                HStack(spacing: 8) {
+                    switch transientMessage {
+                    case .reachedWaypoint:
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("Waypoint reached")
+                    case .routeComplete:
+                        Image(systemName: "flag.checkered.circle.fill")
+                        Text("Route complete — nice work")
+                    }
+                }
+                .font(NTFont.body(13, .semibold))
+                .foregroundStyle(NTColor.pine)
+                .padding(.horizontal, 14).padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(NTColor.sage, in: Capsule())
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .animation(NTMotion.spring, value: offTrailMetersBanner)
+        .animation(NTMotion.spring, value: transientMessage)
     }
 
     private var recenterButton: some View {
@@ -305,6 +449,28 @@ struct CompassView: View {
                 readoutStat(String(format: "%.1f", tracker.speedKMH), "KM/H")
                 readoutStat(etaMinutes.map { "\($0)m" } ?? "—", "ETA")
                 Spacer(minLength: 0)
+            }
+
+            // Real progress along the actual recorded track (via
+            // `Turf.LineString.closestCoordinate`'s cumulative distance),
+            // not a straight-line guess — this is what "how far through
+            // the route am I" actually means when the route isn't a
+            // straight line.
+            if hasRealTrack && routeTotalMeters > 1 {
+                VStack(alignment: .leading, spacing: 6) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(NTColor.milk(0.16)).frame(height: 4)
+                            Capsule().fill(NTColor.accent).frame(width: max(4, geo.size.width * progressFraction), height: 4)
+                        }
+                    }
+                    .frame(height: 4)
+                    HStack(spacing: 4) {
+                        Text(String(format: "%.1f", remainingMeters / 1000)).font(NTFont.mono(11, .semibold))
+                        Text("KM REMAINING").font(NTFont.mono(9, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.5))
+                    }
+                }
+                .padding(.top, 2)
             }
         }
         .padding(16)
@@ -420,6 +586,53 @@ struct CompassView: View {
         if tracker.authorizationDenied { return Color(hex: 0xE58272) }
         if tracker.horizontalAccuracyM < 0 { return NTColor.gold }
         return NTColor.sage
+    }
+
+    /// One tick of the real navigation logic: samples the breadcrumb,
+    /// flags on/off-trail, auto-advances to the next waypoint on real
+    /// proximity, and flags arrival at the route's end — all from real
+    /// GPS + the real recorded track, no routing engine involved.
+    private func updateNavigationState() {
+        guard hasRealTrack, let current = tracker.currentLocation?.coordinate else { return }
+
+        if let last = breadcrumb.last {
+            let moved = CLLocation(latitude: current.latitude, longitude: current.longitude)
+                .distance(from: CLLocation(latitude: last.latitude, longitude: last.longitude))
+            if moved > breadcrumbMinMoveM { breadcrumb.append(current) }
+        } else {
+            breadcrumb.append(current)
+        }
+
+        if let offTrailMeters {
+            if offTrailMeters > offTrailThresholdM {
+                if offTrailMetersBanner == nil {
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                }
+                offTrailMetersBanner = Int(offTrailMeters.rounded())
+            } else {
+                offTrailMetersBanner = nil
+            }
+        }
+
+        guard !showingPlain, !hasArrived, let distanceKM, distanceKM * 1000 < waypointArrivalThresholdM else { return }
+        if waypointIndex < waypoints.count - 1 {
+            waypointIndex += 1
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            showTransient(.reachedWaypoint)
+        } else {
+            hasArrived = true
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            showTransient(.routeComplete)
+            RouteRepository.shared.logEvent("route_navigation_completed")
+        }
+    }
+
+    private func showTransient(_ message: TransientMessage) {
+        transientMessage = message
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if transientMessage == message { transientMessage = nil }
+        }
     }
 
     private func compassPoint(_ degrees: Double) -> String {
