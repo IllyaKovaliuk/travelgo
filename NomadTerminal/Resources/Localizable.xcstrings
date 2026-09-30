@@ -4047,6 +4047,29 @@
         }
       }
     },
+    "HEADING": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HEADING"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUMBO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НАПРЯМОК"
+          }
+        }
+      }
+    },
     "HIDDEN": {
       "extractionState": "manual",
       "localizations": {
@@ -8655,6 +8678,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "НАЗВА"
+          }
+        }
+      }
+    },
+    "TO WAYPOINT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TO WAYPOINT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AL PUNTO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ДО ТОЧКИ"
           }
         }
       }

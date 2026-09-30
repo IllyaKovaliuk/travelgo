@@ -1,5 +1,7 @@
 import SwiftUI
 import CoreLocation
+import MapboxMaps
+import Turf
 
 /// 06 · Compass mode — real device heading via CoreLocation. Given a
 /// route's real segments/POIs, builds a real ordered waypoint list (each
@@ -7,6 +9,14 @@ import CoreLocation
 /// POI) instead of faking a single "WAYPOINT 3 OF 5" label; without route
 /// data at all, it's an honest plain compass instead of faking a waypoint
 /// that doesn't exist.
+///
+/// Defaults to a real Mapbox map (same satellite/polyline rendering as
+/// `RouteFullMapView`, plus a live-following location puck) rather than
+/// the bearing-only dial — actually seeing the real route's shape under
+/// your real moving position is the point of "launching" a route, not
+/// just an arrow and a distance number. The dial is still one tap away
+/// (`showMapMode` toggle in the header) for a GPS-only fallback / battery
+/// saver, or when there's no track to draw at all.
 struct CompassView: View {
     var routeId: String? = nil
     var segments: [RouteDetailInfo.Segment] = []
@@ -32,6 +42,17 @@ struct CompassView: View {
     /// a real device (where heading updates constantly) looked jerky.
     @State private var displayRotation: Double = 0
 
+    /// True by default — the map is the "launch a route" experience now;
+    /// the dial is the fallback. Computed once in `.onAppear` from the
+    /// same `MapSegmentStretch` pipeline `RouteFullMapView` uses, so the
+    /// polyline this screen draws can't disagree with the one on Route
+    /// Detail's own full map.
+    @State private var showMapMode = true
+    @State private var segmentStretches: [MapSegmentStretch] = []
+    @State private var viewport: Viewport = .styleDefault
+
+    private var hasRealTrack: Bool { trackPoints.count > 1 }
+
     private var currentWaypoint: CompassWaypoint? {
         waypoints.indices.contains(waypointIndex) ? waypoints[waypointIndex] : nil
     }
@@ -53,15 +74,26 @@ struct CompassView: View {
         return Int((distanceKM / tracker.speedKMH * 60).rounded())
     }
 
+    private var isMapActive: Bool { showMapMode && hasRealTrack }
+
     var body: some View {
         ZStack {
-            NTColor.pineDeep.ignoresSafeArea()
+            if isMapActive {
+                mapLayer
+            } else {
+                NTColor.pineDeep.ignoresSafeArea()
+            }
 
             VStack(spacing: 0) {
                 header
                 Spacer(minLength: 0)
-                dial
-                Spacer(minLength: 0)
+                if isMapActive {
+                    recenterButton
+                    hudStrip
+                } else {
+                    dial
+                    Spacer(minLength: 0)
+                }
                 footer
             }
         }
@@ -77,7 +109,11 @@ struct CompassView: View {
         .onAppear {
             tracker.start()
             waypoints = CompassWaypoint.build(segments: segments, trackPoints: trackPoints, pois: pois)
+            segmentStretches = MapSegmentStretch.compute(trackPoints: trackPoints, segments: segments)
             displayRotation = needleRotation
+            if hasRealTrack {
+                viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+            }
         }
         .onDisappear { tracker.stop() }
         .sheet(isPresented: $showWaypoints) {
@@ -123,7 +159,27 @@ struct CompassView: View {
 
             Spacer()
 
-            if !waypoints.isEmpty {
+            if hasRealTrack {
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    withAnimation(NTMotion.spring) { showMapMode.toggle() }
+                    if showMapMode {
+                        withViewportAnimation(.easeOut(duration: 0.6)) {
+                            viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+                        }
+                    }
+                } label: {
+                    Image(systemName: showMapMode ? "location.north.circle.fill" : "map.fill")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(NTColor.milk(0.8))
+                        .frame(width: 40, height: 40)
+                        .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
+            }
+
+            if !waypoints.isEmpty && !isMapActive {
                 Button {
                     UISelectionFeedbackGenerator().selectionChanged()
                     withAnimation { showingPlain.toggle() }
@@ -149,6 +205,114 @@ struct CompassView: View {
         }
         .padding(.horizontal, 22)
         .padding(.top, 14)
+    }
+
+    /// The real map — same satellite/polyline rendering `RouteFullMapView`
+    /// uses (segment-colored polyline, POI pins), plus a real live-updating
+    /// location puck (`Puck2D`) that the `.followPuck` viewport keeps
+    /// centered and rotated to the device's real heading. Panning away
+    /// switches Mapbox's own viewport binding to `.idle` automatically —
+    /// `recenterButton` below snaps it back.
+    private var mapLayer: some View {
+        Map(viewport: $viewport) {
+            Puck2D(bearing: .heading)
+                .pulsing(.default)
+
+            if !segmentStretches.isEmpty {
+                RouteSegmentMapContent(stretches: segmentStretches, flowStep: 0)
+            } else {
+                let sourceId = "compass-route-plain"
+                GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
+                LineLayer(id: "\(sourceId)-line", source: sourceId)
+                    .lineColor(UIColor(NTColor.accent))
+                    .lineWidth(7)
+                    .lineCap(.round)
+                    .lineJoin(.round)
+                    .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                    .lineBorderWidth(2)
+            }
+
+            ForEvery(pois) { poi in
+                MapViewAnnotation(coordinate: poi.coordinate) {
+                    POIMapMarker(category: poi.category)
+                }
+            }
+
+            if let currentWaypoint {
+                MapViewAnnotation(coordinate: currentWaypoint.coordinate) {
+                    ZStack {
+                        Circle().fill(currentWaypoint.tint)
+                        Image(systemName: currentWaypoint.icon).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                    }
+                    .frame(width: 36, height: 36)
+                    .overlay(Circle().stroke(.white, lineWidth: 2.4))
+                    .shadow(color: .black.opacity(0.35), radius: 5, y: 3)
+                }
+            }
+        }
+        .mapStyle(.standardSatellite)
+        .ignoresSafeArea()
+    }
+
+    private var recenterButton: some View {
+        HStack {
+            Spacer()
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                withViewportAnimation(.easeOut(duration: 0.6)) {
+                    viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+                }
+            } label: {
+                Image(systemName: "location.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(NTColor.pine)
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(NTColor.milk))
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+    }
+
+    /// Compact readout docked near the bottom of the map — the same real
+    /// distance/ETA/bearing numbers `readoutCard` shows in dial mode, just
+    /// small enough not to block the actual view of the route underneath.
+    private var hudStrip: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Two separately-localized pieces, not one interpolated-then-
+            // uppercased String — a ternary with a dynamic branch forces
+            // Text(String) instead of Text(LocalizedStringKey), which
+            // silently never translates (the same trap the header/dial
+            // readoutCard's plain "TO WAYPOINT"/"HEADING" ternary avoids by
+            // having both branches be string literals). The waypoint's own
+            // name is already shown in the screen header above, so it isn't
+            // repeated here.
+            Text(hasTarget ? "TO WAYPOINT" : "HEADING")
+                .font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.6))
+                .lineLimit(1)
+
+            HStack(alignment: .lastTextBaseline, spacing: 18) {
+                if hasTarget, let distanceKM {
+                    HStack(alignment: .lastTextBaseline, spacing: 5) {
+                        Text(String(format: "%.2f", distanceKM)).font(NTFont.mono(30, .semibold))
+                        Text("KM").font(NTFont.mono(12, .medium)).foregroundStyle(NTColor.milk(0.55))
+                    }
+                } else {
+                    Text(String(format: "%03d°", Int(tracker.headingDegrees.rounded()))).font(NTFont.mono(28, .semibold))
+                }
+                Rectangle().fill(NTColor.milk(0.16)).frame(width: 1, height: 26)
+                readoutStat(String(format: "%.1f", tracker.speedKMH), "KM/H")
+                readoutStat(etaMinutes.map { "\($0)m" } ?? "—", "ETA")
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .environment(\.colorScheme, .dark)
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.18), lineWidth: 1))
+        .padding(.horizontal, 20)
+        .padding(.top, 10)
     }
 
     private var dial: some View {
