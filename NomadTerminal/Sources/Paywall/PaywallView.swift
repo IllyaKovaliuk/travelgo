@@ -47,15 +47,22 @@ struct PaywallView: View {
                         .foregroundStyle(NTColor.milk)
                         .padding(.top, 18)
 
-                    Text("NomadCompass Pro — everything you need where there's no signal at all.")
+                    Text("NomadCompass Pro — the full leg-by-leg itinerary on every route.")
                         .font(NTFont.body(14.5, .light))
                         .foregroundStyle(NTColor.milk(0.62))
                         .padding(.top, 8)
 
+                    // Only one thing is actually behind this paywall —
+                    // `RouteItineraryPanel.isPro` — so only real claims
+                    // belong here. SOS, offline caching, and publishing
+                    // are free for everyone regardless of Pro status;
+                    // claiming otherwise (a past version of this screen
+                    // did, including a fictional "satellite SOS beacon")
+                    // is exactly the kind of thing that gets an app
+                    // rejected or worse, trusted wrongly in an emergency.
                     VStack(alignment: .leading, spacing: 13) {
-                        feature("Unlimited offline map downloads")
-                        feature("Satellite SOS beacon, no bars needed")
-                        feature("Publish unlimited routes")
+                        feature("Full leg-by-leg itinerary with estimated timing on every route")
+                        feature("Supports NomadCompass's development")
                     }
                     .padding(.top, 22)
 
@@ -163,7 +170,7 @@ struct PaywallView: View {
             .padding(.top, 30)
 
             Text("You're Pro.").font(NTFont.heading(28, .extraBold))
-            Text("Offline maps and the SOS beacon are all unlocked.")
+            Text("The full itinerary is unlocked on every route.")
                 .font(NTFont.body(14, .light))
                 .foregroundStyle(NTColor.milk(0.62))
                 .multilineTextAlignment(.center)

@@ -62,7 +62,8 @@ struct NomadTripAttributes: ActivityAttributes {
             /// claim — SOSView's own "message contacts" action still needs
             /// a human tap inside the system Messages sheet it opens (no
             /// API fires an SMS with zero user interaction), so the island
-            /// can't honestly claim more than "the beacon is on."
+            /// can't honestly claim more than "you held the dial, go check
+            /// whether the message actually sent."
             case sos(triggeredAt: Date)
         }
         var mode: Mode

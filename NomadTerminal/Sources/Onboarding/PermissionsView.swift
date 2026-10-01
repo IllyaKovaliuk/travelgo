@@ -5,7 +5,6 @@ struct PermissionsView: View {
     var onFinished: () -> Void
 
     @StateObject private var location = LocationPermission()
-    @State private var offlineReady = false
 
     var body: some View {
         ZStack {
@@ -28,33 +27,29 @@ struct PermissionsView: View {
                             icon: "location.fill",
                             iconTint: NTColor.water,
                             title: "Precise location",
-                            description: "Turn-by-turn on unnamed tracks, and an SOS ping that still works with no signal.",
+                            description: "Live position on the map and your real track while recording — plus a last-known position to send if you ever use SOS.",
                             buttonLabel: "Allow while using",
                             doneLabel: "Allowed",
                             isDone: location.isGranted,
                             action: location.request
                         )
                         .revealOnAppear(delay: 0.14, distance: 20)
-
-                        PermissionCard(
-                            icon: "arrow.down.circle.fill",
-                            iconTint: NTColor.gold,
-                            title: "Offline storage",
-                            description: "Cache tiles, elevation and gear lists so the route survives four days without a bar of service.",
-                            buttonLabel: "Allow",
-                            doneLabel: "Allowed",
-                            isDone: offlineReady,
-                            action: { offlineReady = true }
-                        )
-                        .revealOnAppear(delay: 0.2, distance: 20)
                     }
                     .padding(.top, 30)
 
+                    // There used to be a second "Offline storage" card here
+                    // promising cached map tiles, elevation and gear lists —
+                    // none of that exists. The real offline cache
+                    // (`OfflineRouteStore`) saves a route's own JSON + cover
+                    // photo once you've opened it, automatically, with
+                    // nothing to "allow" here — so removed the card rather
+                    // than ship a button that only flipped a local boolean
+                    // and did nothing real.
                     HStack(spacing: 10) {
                         Image(systemName: "info.circle")
                             .font(.system(size: 15))
                             .foregroundStyle(NTColor.milk(0.6))
-                        Text("You can browse without either. Navigation stays locked.")
+                        Text("You can skip this — live position, recording, and SOS messaging just won't work without it.")
                             .font(NTFont.body(13, .light))
                             .foregroundStyle(NTColor.milk(0.62))
                             .fixedSize(horizontal: false, vertical: true)
@@ -83,11 +78,10 @@ struct PermissionsView: View {
         .onChange(of: location.isGranted) { _, granted in
             if granted { advanceIfReady() }
         }
-        .onChange(of: offlineReady) { _, _ in advanceIfReady() }
     }
 
     private func advanceIfReady() {
-        guard location.isGranted, offlineReady else { return }
+        guard location.isGranted else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             onFinished()
         }

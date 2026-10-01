@@ -78,8 +78,8 @@ targets:
         # how the real Pine/Milk theme switch (ThemeManager) actually works.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
-        NSLocationWhenInUseUsageDescription: "Turn-by-turn on unnamed tracks, and an SOS ping that still works with no signal."
-        NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and SOS beacon accurate while the app is in your pocket, and — only if you turn on Passive visit detection in Settings — quietly notices new places you've stopped for your Journal."
+        NSLocationWhenInUseUsageDescription: "Shows your live position on the map and your real track while recording — plus a last-known position for the SOS screen if you ever need it."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and last-known SOS position accurate while the app is in your pocket, and — only if you turn on Passive visit detection in Settings — quietly notices new places you've stopped for your Journal."
         NSSupportsLiveActivities: true
         UIBackgroundModes:
           - location

@@ -56,9 +56,9 @@ extension GuideCategory {
             .init(title: "No cell signal to verify anything", body: "This is exactly why permits get sorted before departure, not en route. Download a route's requirements before you lose signal so you have them even offline.")
         ]),
         GuideCategory(icon: "cross.case.fill", title: "When it's serious", tint: NTColor.hard, situations: [
-            .init(title: "Real injury, can't self-rescue", body: "Stop, assess, treat what you can (bleeding control, keep warm, keep still if a fracture's possible), and use SOS to signal — don't move an injured person further than necessary."),
-            .init(title: "Using the SOS beacon", body: "It's for genuine emergencies, not \"we're running late.\" Once triggered, stay put if you safely can — moving after triggering a rescue makes you harder to find, not easier."),
-            .init(title: "A basic kit worth actually carrying", body: "A small first aid kit you know how to use beats a large one you don't. At minimum: bleeding control, blister care, any personal medication, and a way to signal — which is exactly what SOS and a charged phone are for.")
+            .init(title: "Real injury, can't self-rescue", body: "Stop, assess, treat what you can (bleeding control, keep warm, keep still if a fracture's possible). If you have signal, call local emergency services directly — that's faster and more reliable than anything in this app. Use the app's SOS screen to text your own emergency contacts your position as a backup, not a replacement."),
+            .init(title: "Using the in-app SOS screen", body: "Be clear on what it actually is: it opens a pre-filled text message to your own emergency contacts with your last position — nothing more. It's not a satellite beacon, nobody is monitoring it, and nothing is dispatched automatically. It only works at all if you have phone signal and someone added as a contact actually sees the message and chooses to act. For real backcountry trips beyond cell coverage, carry a dedicated device (e.g. a Garmin inReach or similar satellite messenger) — don't rely on this screen for that."),
+            .init(title: "A basic kit worth actually carrying", body: "A small first aid kit you know how to use beats a large one you don't. At minimum: bleeding control, blister care, any personal medication, and a real way to call or signal for help where you're going — a phone alone isn't that everywhere.")
         ])
     ]
 }

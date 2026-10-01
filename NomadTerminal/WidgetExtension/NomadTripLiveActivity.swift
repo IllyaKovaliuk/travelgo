@@ -211,7 +211,10 @@ private struct ExpandedLeading: View {
                 Text("SOS ACTIVE")
                     .font(.system(size: 9, weight: .bold)).tracking(1)
                     .foregroundStyle(NTColor.hardBright)
-                Text("GPS beacon on")
+                // Not "beacon on" — nothing is monitoring this. Honest
+                // version of "you held the dial, go confirm the message
+                // actually sent."
+                Text("Message your contacts")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(NTColor.milk(0.7))
             }

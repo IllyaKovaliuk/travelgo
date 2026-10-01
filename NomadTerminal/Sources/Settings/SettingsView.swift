@@ -277,7 +277,7 @@ struct SettingsView: View {
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(subscription.isPro ? "NomadCompass Pro" : "Get NomadCompass Pro").font(NTFont.body(14.5, .semibold))
-                    Text(subscription.isPro ? "Active — manage your plan" : "Offline maps, SOS beacon")
+                    Text(subscription.isPro ? "Active — manage your plan" : "Full itinerary on every route")
                         .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
                 }
                 Spacer()

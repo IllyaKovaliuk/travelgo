@@ -12,7 +12,10 @@ import MessageUI
 struct MessageComposeView: UIViewControllerRepresentable {
     let recipients: [String]
     let body: String
-    var onFinish: () -> Void
+    /// The real outcome (`.sent`/`.cancelled`/`.failed`) — callers (SOSView)
+    /// rely on this being accurate to decide whether they're allowed to
+    /// say anything resembling "sent."
+    var onFinish: (MessageComposeResult) -> Void
 
     func makeUIViewController(context: Context) -> MFMessageComposeViewController {
         let controller = MFMessageComposeViewController()
@@ -27,11 +30,11 @@ struct MessageComposeView: UIViewControllerRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(onFinish: onFinish) }
 
     final class Coordinator: NSObject, MFMessageComposeViewControllerDelegate {
-        let onFinish: () -> Void
-        init(onFinish: @escaping () -> Void) { self.onFinish = onFinish }
+        let onFinish: (MessageComposeResult) -> Void
+        init(onFinish: @escaping (MessageComposeResult) -> Void) { self.onFinish = onFinish }
 
         func messageComposeViewController(_ controller: MFMessageComposeViewController, didFinishWith result: MessageComposeResult) {
-            controller.dismiss(animated: true, completion: onFinish)
+            controller.dismiss(animated: true) { [onFinish] in onFinish(result) }
         }
     }
 }

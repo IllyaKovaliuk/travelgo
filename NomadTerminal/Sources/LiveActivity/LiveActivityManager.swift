@@ -3,8 +3,8 @@ import Foundation
 import Observation
 
 /// Owns the single Live Activity for an in-progress trip — a route
-/// recording, a route navigation (CompassView's map mode), and/or an SOS
-/// beacon. These are never separate, competing island entries: triggering
+/// recording, a route navigation (CompassView's map mode), and/or the SOS
+/// screen. These are never separate, competing island entries: triggering
 /// SOS mid-recording/mid-navigation flips the same activity's content state
 /// (see `NomadTripAttributes`); cancelling SOS resumes whatever
 /// recording/navigating state was live before it, or ends the activity if

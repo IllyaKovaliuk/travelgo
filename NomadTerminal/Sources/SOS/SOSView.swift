@@ -2,12 +2,20 @@ import SwiftUI
 import CoreLocation
 import MessageUI
 
-/// 17 · SOS — hold-to-send emergency beacon. "Send" is now real: holding
-/// the dial opens a pre-filled system Messages sheet addressed to your
-/// emergency contacts with your last known position, via
-/// `MessageComposeView`. It still needs a human tap on Send inside that
-/// sheet — Apple gives no API to fire an SMS/iMessage with zero user
-/// interaction, on purpose — so this is as automatic as it can honestly be.
+/// 17 · SOS. Holding the dial opens a pre-filled system Messages sheet
+/// addressed to your emergency contacts with your last known position, via
+/// `MessageComposeView` — that's the entire mechanism. There is no rescue
+/// service, no monitored beacon, no dispatch of any kind behind this
+/// screen, and the UI must never imply otherwise: "SENT" only appears once
+/// `MFMessageComposeViewController` itself reports the message actually
+/// went out (`messageResult == .sent`), and "help is on the way" never
+/// appears at all — nobody has been notified that anyone needs help until
+/// a real contact reads a real text message and decides to act on it.
+/// (Previously this screen marked every completed hold as "SENT — HELP IS
+/// ON THE WAY" regardless of whether a message sheet even opened, which a
+/// field read flagged correctly as a real safety hazard: someone could
+/// hold the dial, see "help is on the way," and wait for rescue that was
+/// never actually requested.)
 struct SOSView: View {
     var onClose: () -> Void
     /// Real last GPS fix from whichever screen presented this — threaded in
@@ -25,7 +33,15 @@ struct SOSView: View {
     var onCancelled: () -> Void = {}
 
     @State private var holdProgress: CGFloat = 0
-    @State private var isSent = false
+    /// True once the hold gesture itself completes — says nothing about
+    /// whether a message actually sent. Kept separate from `messageResult`
+    /// on purpose: this screen must never conflate "you held the dial"
+    /// with "help was requested."
+    @State private var isTriggered = false
+    /// Real outcome from `MFMessageComposeViewController`, nil until it
+    /// reports one. Only `.sent` means a message genuinely went out —
+    /// `.cancelled`/`.failed` must read as failure, not success.
+    @State private var messageResult: MessageComposeResult?
     @State private var holdTimer: Timer?
     /// Real, not the hardcoded fake "Giorgi K." this row used to show
     /// regardless of whether anyone had ever set up a real contact.
@@ -41,6 +57,33 @@ struct SOSView: View {
     /// device with no active line/iMessage — checked before ever offering
     /// the button, instead of presenting a sheet doomed to fail.
     private var canMessage: Bool { MFMessageComposeViewController.canSendText() }
+
+    /// What the dial's center actually says — every branch here is real,
+    /// not aspirational. Nothing in this screen may claim help is coming;
+    /// the honest ceiling is "a message genuinely sent" or "nothing was
+    /// sent, here's why."
+    private var dialTitle: LocalizedStringKey {
+        guard isTriggered else { return "SOS" }
+        switch messageResult {
+        case .sent: return "SENT"
+        case .cancelled, .failed: return "NOT SENT"
+        case .none: return canMessage && !textableContacts.isEmpty ? "SOS" : "NO HELP CALLED"
+        @unknown default: return "NOT SENT"
+        }
+    }
+
+    private var dialSubtitle: LocalizedStringKey {
+        guard isTriggered else { return "HOLD TO SEND" }
+        switch messageResult {
+        case .sent: return "MESSAGE SENT TO CONTACTS"
+        case .cancelled, .failed: return "TRY AGAIN BELOW"
+        case .none:
+            if textableContacts.isEmpty { return "ADD CONTACTS IN SETTINGS" }
+            if !canMessage { return "NO SIGNAL — CAN'T SEND" }
+            return "OPEN MESSAGES BELOW"
+        @unknown default: return "TRY AGAIN BELOW"
+        }
+    }
 
     private var messageBody: String {
         var lines = ["🆘 This is an emergency — I need help."]
@@ -74,7 +117,13 @@ struct SOSView: View {
             MessageComposeView(
                 recipients: textableContacts.compactMap { $0.phone },
                 body: messageBody,
-                onFinish: { showMessageCompose = false }
+                onFinish: { result in
+                    showMessageCompose = false
+                    messageResult = result
+                    if result == .sent {
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    }
+                }
             )
             .ignoresSafeArea()
         }
@@ -96,7 +145,7 @@ struct SOSView: View {
 
     private var header: some View {
         HStack {
-            Text(canMessage ? "GPS BEACON · TEXTS CONTACTS" : "GPS BEACON · NO SIGNAL")
+            Text(canMessage ? "SOS · MESSAGES YOUR CONTACTS" : "SOS · NO SIGNAL TO SEND")
                 .font(NTFont.mono(10, .medium)).tracking(1.6).foregroundStyle(NTColor.milk(0.5))
             Spacer()
             Button(action: onClose) {
@@ -113,8 +162,8 @@ struct SOSView: View {
 
     private var dial: some View {
         VStack(spacing: 22) {
-            if !isSent {
-                Text("Emergency\nbeacon")
+            if !isTriggered {
+                Text("Emergency\nSOS")
                     .font(NTFont.heading(30, .extraBold))
                     .multilineTextAlignment(.center)
             }
@@ -132,17 +181,22 @@ struct SOSView: View {
                 Circle()
                     .fill(RadialGradient(colors: [Color(hex: 0xD24C36), Color(hex: 0x7C1405)], center: UnitPoint(x: 0.4, y: 0.32), startRadius: 0, endRadius: 100))
                     .frame(width: 192, height: 192)
-                    .scaleEffect(isSent ? 1.05 : (1 - holdProgress * 0.04))
+                    .scaleEffect(isTriggered ? 1.05 : (1 - holdProgress * 0.04))
 
                 VStack(spacing: 6) {
-                    if isSent {
+                    if messageResult == .sent {
                         Image(systemName: "checkmark.seal.fill").font(.system(size: 22))
+                    } else if isTriggered {
+                        Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 20))
                     }
-                    Text(isSent ? "SENT" : "SOS")
-                        .font(NTFont.heading(isSent ? 22 : 30, .extraBold))
+                    Text(dialTitle)
+                        .font(NTFont.heading(isTriggered ? 20 : 30, .extraBold))
                         .tracking(0.4)
-                    Text(isSent ? "HELP IS ON THE WAY" : "HOLD TO SEND")
+                        .multilineTextAlignment(.center)
+                    Text(dialSubtitle)
                         .font(NTFont.mono(10, .medium)).tracking(1.2).foregroundStyle(NTColor.milk(0.75))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
                 }
             }
             .contentShape(Circle())
@@ -161,6 +215,13 @@ struct SOSView: View {
                 .font(NTFont.body(13, .medium))
                 .foregroundStyle(NTColor.milk(0.82))
                 .fixedSize(horizontal: false, vertical: true)
+            // Real, not boilerplate — this is the one place someone about
+            // to rely on this screen actually reads it.
+            Text("Not a satellite beacon. Nothing here is monitored — only your contacts will see this if they open the message. Call local emergency services directly when you have signal.")
+                .font(NTFont.body(11, .medium))
+                .foregroundStyle(NTColor.milk(0.55))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 2)
         }
         .padding(16)
         .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
@@ -205,11 +266,11 @@ struct SOSView: View {
                 Spacer()
             }
 
-            if isSent && canMessage && !textableContacts.isEmpty {
+            if isTriggered && canMessage && !textableContacts.isEmpty {
                 Button(action: { showMessageCompose = true }) {
                     HStack(spacing: 8) {
                         Image(systemName: "message.fill")
-                        Text("Message emergency contacts").font(NTFont.body(13, .semibold))
+                        Text(messageResult == .sent ? "Send again" : "Message emergency contacts").font(NTFont.body(13, .semibold))
                     }
                     .foregroundStyle(Color(hex: 0x1A0A07))
                     .frame(maxWidth: .infinity)
@@ -252,21 +313,23 @@ struct SOSView: View {
     }
 
     private func startHold() {
-        guard holdTimer == nil, !isSent else { return }
+        guard holdTimer == nil, !isTriggered else { return }
         holdTimer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { _ in
             holdProgress = min(1, holdProgress + 0.03 / 2.4)
             if holdProgress >= 1 {
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                withAnimation(NTMotion.spring) { isSent = true }
+                withAnimation(NTMotion.spring) { isTriggered = true }
                 RouteRepository.shared.logEvent("sos_triggered")
                 onTriggered()
                 holdTimer?.invalidate()
                 holdTimer = nil
-                // The actual "send" — opens the real Messages compose sheet
-                // right away rather than making it a second, easy-to-miss
-                // tap. Only when it can actually work; otherwise the
-                // "Message emergency contacts" button stays available below
-                // for a retry once there's signal.
+                // Opens the real Messages compose sheet right away rather
+                // than making it a second, easy-to-miss tap — but this is
+                // still only an offer to send, not a send. `messageResult`
+                // (and therefore `dialTitle`/`dialSubtitle`) stays honest
+                // either way: nil until the sheet actually reports an
+                // outcome, so the dial never claims more than really
+                // happened.
                 if canMessage && !textableContacts.isEmpty {
                     showMessageCompose = true
                 }
@@ -277,7 +340,7 @@ struct SOSView: View {
     private func cancelHold() {
         holdTimer?.invalidate()
         holdTimer = nil
-        if !isSent {
+        if !isTriggered {
             withAnimation(.easeOut(duration: 0.3)) { holdProgress = 0 }
         }
     }
