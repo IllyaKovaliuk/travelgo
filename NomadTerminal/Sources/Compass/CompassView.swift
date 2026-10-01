@@ -50,6 +50,15 @@ struct CompassView: View {
     @State private var showMapMode = true
     @State private var segmentStretches: [MapSegmentStretch] = []
     @State private var viewport: Viewport = .styleDefault
+    /// True = tilted "navigator" camera (pitch 40°), false = flat top-down.
+    /// Both still follow the puck and rotate with real device heading —
+    /// this only changes the tilt, same as Waze/Google Maps' own 2D/3D
+    /// toggle.
+    @State private var is3DMap = true
+
+    private var followViewport: Viewport {
+        .followPuck(zoom: 17, bearing: .heading, pitch: is3DMap ? 40 : 0)
+    }
 
     /// The real recorded track as one `Turf.LineString` — built once in
     /// `.onAppear`, reused every ~2.5s tick (`updateNavigationState`) to
@@ -170,7 +179,7 @@ struct CompassView: View {
             displayRotation = needleRotation
             if hasRealTrack {
                 fullLine = LineString(trackPoints.map(\.coordinate))
-                viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+                viewport = followViewport
             }
         }
         .onDisappear { tracker.stop() }
@@ -234,7 +243,7 @@ struct CompassView: View {
                     withAnimation(NTMotion.spring) { showMapMode.toggle() }
                     if showMapMode {
                         withViewportAnimation(.easeOut(duration: 0.6)) {
-                            viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+                            viewport = followViewport
                         }
                     }
                 } label: {
@@ -349,6 +358,23 @@ struct CompassView: View {
             }
         }
         .mapStyle(.standardSatellite(lightPreset: lightPreset))
+        // Mapbox's own compass ornament defaults to `.topTrailing` and
+        // auto-shows (`.adaptive`) the instant the camera bearing stops
+        // being exactly north — which is permanently true here, since
+        // `.followPuck(bearing: .heading)` keeps the map rotated to the
+        // real device heading. Its default position sits exactly on top
+        // of the SOS button, and the scale bar's own default
+        // `.topLeading` sits on top of the close (X) button — both are
+        // real native UIKit controls (the compass is tappable, resets
+        // bearing to north) that intercept the touch before it reaches
+        // the SwiftUI buttons underneath, not just a visual overlap. This
+        // screen already has its own GPS/heading HUD, so neither ornament
+        // is needed — hiding both is the fix, not working around their
+        // position.
+        .ornamentOptions(OrnamentOptions(
+            scaleBar: ScaleBarViewOptions(visibility: .hidden),
+            compass: CompassViewOptions(visibility: .hidden)
+        ))
         .ignoresSafeArea()
     }
 
@@ -399,12 +425,33 @@ struct CompassView: View {
     }
 
     private var recenterButton: some View {
-        HStack {
+        HStack(spacing: 10) {
             Spacer()
+
+            // Same toggle Waze/Google Maps offer — tilt the camera flat
+            // (2D, pitch 0) or back to the angled "navigator" view (3D,
+            // pitch 40). Both still follow the puck and rotate with real
+            // heading; this only changes the tilt.
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                is3DMap.toggle()
+                withViewportAnimation(.easeOut(duration: 0.5)) {
+                    viewport = followViewport
+                }
+            } label: {
+                Text(is3DMap ? "3D" : "2D")
+                    .font(NTFont.mono(13, .semibold))
+                    .foregroundStyle(NTColor.pine)
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(NTColor.milk))
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+            }
+            .buttonStyle(.plain)
+
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 withViewportAnimation(.easeOut(duration: 0.6)) {
-                    viewport = .followPuck(zoom: 17, bearing: .heading, pitch: 40)
+                    viewport = followViewport
                 }
             } label: {
                 Image(systemName: "location.fill")
