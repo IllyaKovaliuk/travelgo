@@ -19,6 +19,11 @@ import Turf
 /// saver, or when there's no track to draw at all.
 struct CompassView: View {
     var routeId: String? = nil
+    /// The route's own real title — threaded through to
+    /// `LiveActivityManager.startNavigating` so the Dynamic Island shows
+    /// the actual route name, not a generic label. Nil only for the
+    /// plain, target-less compass (no route involved at all).
+    var routeName: String? = nil
     var segments: [RouteDetailInfo.Segment] = []
     var trackPoints: [TrackPoint] = []
     var pois: [RouteDetailInfo.POI] = []
@@ -186,9 +191,18 @@ struct CompassView: View {
             if hasRealTrack {
                 fullLine = LineString(trackPoints.map(\.coordinate))
                 viewport = followViewport
+                // Real Dynamic Island / Lock Screen presence for
+                // navigation, same as recording already gets — lock the
+                // phone or switch apps mid-hike and the real distance/ETA
+                // is still right there, not just silently tracked in the
+                // background with nothing to show for it.
+                LiveActivityManager.shared.startNavigating(routeName: routeName, plannedLengthKM: routeTotalMeters / 1000)
             }
         }
-        .onDisappear { tracker.stop() }
+        .onDisappear {
+            tracker.stop()
+            LiveActivityManager.shared.endNavigating()
+        }
         .task {
             // Polling, not `.onChange(of: tracker.currentLocation)` — a
             // fresh `CLLocation` arrives many times a second on a real
@@ -667,6 +681,15 @@ struct CompassView: View {
                 offTrailMetersBanner = nil
             }
         }
+
+        LiveActivityManager.shared.updateNavigating(.init(
+            waypointName: showingPlain ? "" : (currentWaypoint?.name ?? ""),
+            distanceToWaypointKM: distanceKM,
+            remainingKM: remainingMeters / 1000,
+            progressFraction: progressFraction,
+            etaMinutes: etaMinutes,
+            isOffTrail: offTrailMetersBanner != nil
+        ))
 
         guard !showingPlain, !hasArrived, let distanceKM, distanceKM * 1000 < waypointArrivalThresholdM else { return }
         if waypointIndex < waypoints.count - 1 {

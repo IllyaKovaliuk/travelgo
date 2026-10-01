@@ -12,6 +12,7 @@ struct RouteDetailFlow: View {
             .fullScreenCover(isPresented: $showCompass) {
                 CompassView(
                     routeId: route.id,
+                    routeName: route.title,
                     segments: route.detail.segments,
                     trackPoints: route.detail.trackPoints,
                     pois: route.detail.pois,

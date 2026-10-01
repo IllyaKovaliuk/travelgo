@@ -24,7 +24,7 @@ struct NomadTripLiveActivity: Widget {
                     ExpandedTrailing(mode: context.state.mode)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    if let routeName = context.attributes.routeName, case .recording = context.state.mode {
+                    if let routeName = context.attributes.routeName, showsRouteName(context.state.mode) {
                         Text(routeName)
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(NTColor.milk(0.8))
@@ -52,6 +52,7 @@ struct NomadTripLiveActivity: Widget {
 private func tint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
     switch mode {
     case .recording: return NTColor.accent
+    case .navigating(let s): return s.isOffTrail ? NTColor.hardBright : NTColor.accent
     case .sos: return NTColor.hard
     }
 }
@@ -59,8 +60,19 @@ private func tint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
 @MainActor
 private func backgroundTint(for mode: NomadTripAttributes.ContentState.Mode) -> Color {
     switch mode {
-    case .recording: return NTColor.pineDeep
+    case .recording, .navigating: return NTColor.pineDeep
     case .sos: return Color(hex: 0x1A0A07) // matches SOSView's own background
+    }
+}
+
+/// Recording and navigating both show the real route/segment name in the
+/// expanded island's center region; SOS doesn't (no route necessarily
+/// involved, and the center region is better spent empty there).
+@MainActor
+private func showsRouteName(_ mode: NomadTripAttributes.ContentState.Mode) -> Bool {
+    switch mode {
+    case .recording, .navigating: return true
+    case .sos: return false
     }
 }
 
@@ -110,6 +122,12 @@ private struct CompactLeading: View {
                 Image(systemName: s.isPaused ? "pause.fill" : "point.topleft.down.curvedto.point.bottomright.up")
                     .foregroundStyle(NTColor.accent)
             }
+        case .navigating(let s):
+            Gauge(value: max(0, min(s.progressFraction, 1))) {
+                Image(systemName: s.isOffTrail ? "exclamationmark.triangle.fill" : "location.north.line.fill")
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+            .tint(s.isOffTrail ? NTColor.hardBright : NTColor.accent)
         case .sos:
             Image(systemName: "sos").foregroundStyle(NTColor.hardBright)
         }
@@ -124,6 +142,10 @@ private struct CompactTrailing: View {
             Text(String(format: "%.1f", s.distanceKM) + " KM")
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundStyle(NTColor.milk)
+        case .navigating(let s):
+            Text(String(format: "%.1f", s.remainingKM) + " KM")
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk)
         case .sos(let triggeredAt):
             Text(triggeredAt, style: .timer)
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
@@ -156,6 +178,34 @@ private struct ExpandedLeading: View {
                         .foregroundStyle(NTColor.milk)
                 }
             }
+        case .navigating(let s):
+            HStack(spacing: 8) {
+                Image(systemName: s.isOffTrail ? "exclamationmark.triangle.fill" : "location.north.line.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.accent)
+                    .frame(width: 28, height: 28)
+                    .background(Circle().fill((s.isOffTrail ? NTColor.hardBright : NTColor.accent).opacity(0.16)))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(s.isOffTrail ? "OFF TRAIL" : "NAVIGATING")
+                        .font(.system(size: 9, weight: .semibold)).tracking(1)
+                        .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk(0.55))
+                    // Not a ternary with one dynamic branch — that infers
+                    // Text(String) and silently skips localizing "On
+                    // route" (same trap documented in CompassView).
+                    if s.waypointName.isEmpty {
+                        Text("On route")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(NTColor.milk)
+                            .lineLimit(1)
+                    } else {
+                        Text(s.waypointName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(NTColor.milk)
+                            .lineLimit(1)
+                    }
+                }
+            }
         case .sos:
             VStack(alignment: .leading, spacing: 3) {
                 Text("SOS ACTIVE")
@@ -181,6 +231,16 @@ private struct ExpandedTrailing: View {
                 stat(String(format: "%.2f", s.distanceKM), "KM")
                 stat(String(format: "%.0f", s.ascentM), "M ASCENT")
                 stat(String(format: "%.1f", s.avgSpeedKMH), "KM/H")
+            }
+        case .navigating(let s):
+            VStack(alignment: .trailing, spacing: 4) {
+                if let d = s.distanceToWaypointKM {
+                    stat(String(format: "%.2f", d), "TO WAYPOINT")
+                }
+                stat(String(format: "%.1f", s.remainingKM), "KM LEFT")
+                if let eta = s.etaMinutes {
+                    stat("\(eta)", "MIN ETA")
+                }
             }
         case .sos(let triggeredAt):
             Text(triggeredAt, style: .relative)
@@ -234,6 +294,19 @@ private struct ExpandedBottom: View {
                     .buttonStyle(.plain)
                 }
             }
+        case .navigating(let s):
+            // Read-only — no real "end navigation" intent reaching
+            // CompassView exists (unlike recording's NotificationCenter
+            // bridge), so this doesn't offer a button pretending to be one.
+            VStack(spacing: 6) {
+                LinearProgressBar(progress: s.progressFraction)
+                HStack {
+                    Text(s.isOffTrail ? "Off trail — head back" : "On route")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk(0.55))
+                    Spacer()
+                }
+            }
         case .sos:
             Button(intent: CancelSOSIntent()) {
                 Text("Cancel SOS")
@@ -268,10 +341,16 @@ private struct LockScreenTripView: View {
                     Text(caption)
                         .font(.system(size: 10, weight: .bold)).tracking(1)
                         .foregroundStyle(iconColor)
-                    Text(headline)
+                    // `headline` is String-typed (mixes dynamic elapsed-
+                    // time/waypoint-name content with the static "On
+                    // route" fallback) — wrap at the display point so the
+                    // static fallback still gets looked up, same safe
+                    // "translate if it matches, else show itself" pattern
+                    // used throughout the main app target.
+                    Text(LocalizedStringKey(headline))
                         .font(.system(size: 17, weight: .semibold, design: .monospaced))
                         .foregroundStyle(NTColor.milk)
-                    if let routeName, case .recording = mode {
+                    if let routeName, showsRouteName(mode) {
                         Text(routeName)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(NTColor.milk(0.6))
@@ -290,11 +369,24 @@ private struct LockScreenTripView: View {
                             .font(.system(size: 10, weight: .medium))
                             .foregroundStyle(NTColor.milk(0.55))
                     }
+                } else if case .navigating(let s) = mode {
+                    VStack(alignment: .trailing, spacing: 3) {
+                        Text(String(format: "%.1f KM LEFT", s.remainingKM))
+                            .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk)
+                        if let eta = s.etaMinutes {
+                            Text("\(eta) MIN ETA")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(NTColor.milk(0.55))
+                        }
+                    }
                 }
             }
 
             if case .recording(let s) = mode, let planned = plannedLengthKM, planned > 0 {
                 LinearProgressBar(progress: s.distanceKM / planned)
+            } else if case .navigating(let s) = mode {
+                LinearProgressBar(progress: s.progressFraction)
             }
 
             HStack(spacing: 10) {
@@ -318,6 +410,15 @@ private struct LockScreenTripView: View {
                             .background(NTColor.milk, in: Capsule())
                     }
                     .buttonStyle(.plain)
+                case .navigating(let s):
+                    // Read-only, same reasoning as the expanded island's
+                    // bottom region — no real "end navigation" intent exists.
+                    HStack {
+                        Text(s.isOffTrail ? "Off trail — head back" : "On route")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk(0.55))
+                        Spacer()
+                    }
                 case .sos:
                     Button(intent: CancelSOSIntent()) {
                         Text("Cancel SOS")
@@ -335,23 +436,30 @@ private struct LockScreenTripView: View {
     }
 
     private var icon: String {
-        switch mode { case .recording(let s): return s.isPaused ? "pause.fill" : s.transportIcon; case .sos: return "sos" }
+        switch mode {
+        case .recording(let s): return s.isPaused ? "pause.fill" : s.transportIcon
+        case .navigating(let s): return s.isOffTrail ? "exclamationmark.triangle.fill" : "location.north.line.fill"
+        case .sos: return "sos"
+        }
     }
     private var iconColor: Color {
         switch mode {
         case .recording(let s): return s.isPaused ? NTColor.milk(0.55) : Color(hex: s.transportColorHex)
+        case .navigating(let s): return s.isOffTrail ? NTColor.hardBright : NTColor.accent
         case .sos: return NTColor.hardBright
         }
     }
     private var caption: LocalizedStringKey {
         switch mode {
         case .recording(let s): return s.isPaused ? "PAUSED" : "RECORDING"
+        case .navigating(let s): return s.isOffTrail ? "OFF TRAIL" : "NAVIGATING"
         case .sos: return "SOS ACTIVE"
         }
     }
     private var headline: String {
         switch mode {
         case .recording(let s): return elapsedString(s.elapsedSeconds)
+        case .navigating(let s): return s.waypointName.isEmpty ? "On route" : s.waypointName
         case .sos(let triggeredAt): return elapsedString(Int(Date.now.timeIntervalSince(triggeredAt)))
         }
     }

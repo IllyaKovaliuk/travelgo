@@ -5543,6 +5543,29 @@
         }
       }
     },
+    "NAVIGATING": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NAVIGATING"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NAVEGANDO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "НАВІГАЦІЯ"
+          }
+        }
+      }
+    },
     "NEAR %@": {
       "extractionState": "manual",
       "localizations": {
@@ -6233,6 +6256,29 @@
         }
       }
     },
+    "OFF TRAIL": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OFF TRAIL"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FUERA DEL SENDERO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЗБИВСЯ ЗІ СТЕЖКИ"
+          }
+        }
+      }
+    },
     "OPEN MAP": {
       "extractionState": "manual",
       "localizations": {
@@ -6298,6 +6344,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "НА ПРИРОДІ"
+          }
+        }
+      }
+    },
+    "Off trail — head back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off trail — head back"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fuera del sendero — vuelve"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Збився зі стежки — повертайтесь"
           }
         }
       }
@@ -6413,6 +6482,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пішки звідси"
+          }
+        }
+      }
+    },
+    "On route": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On route"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En ruta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На маршруті"
           }
         }
       }

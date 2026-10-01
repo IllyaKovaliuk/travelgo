@@ -3,11 +3,12 @@ import Foundation
 import Observation
 
 /// Owns the single Live Activity for an in-progress trip — a route
-/// recording and/or an SOS beacon. Recording and SOS are never two separate
-/// island entries: triggering SOS mid-recording flips the same activity's
-/// content state (see `NomadTripAttributes`); cancelling SOS resumes
-/// whatever recording state was live before it, or ends the activity if
-/// SOS was triggered standalone (no recording in progress).
+/// recording, a route navigation (CompassView's map mode), and/or an SOS
+/// beacon. These are never separate, competing island entries: triggering
+/// SOS mid-recording/mid-navigation flips the same activity's content state
+/// (see `NomadTripAttributes`); cancelling SOS resumes whatever
+/// recording/navigating state was live before it, or ends the activity if
+/// SOS was triggered standalone (nothing else in progress).
 ///
 /// Compiled into both the app target (the only place that calls
 /// start/update/end) and the widget extension target (so `CancelSOSIntent`,
@@ -19,8 +20,8 @@ final class LiveActivityManager {
     private init() {}
 
     private var activity: Activity<NomadTripAttributes>?
-    /// The recording state to restore if the active SOS gets cancelled —
-    /// nil when SOS was triggered standalone.
+    /// The recording/navigating state to restore if the active SOS gets
+    /// cancelled — nil when SOS was triggered standalone.
     private var preSOSRecordingState: NomadTripAttributes.ContentState.Mode?
 
     var isSOSActive: Bool {
@@ -63,6 +64,42 @@ final class LiveActivityManager {
     /// instead of the island just vanishing mid-glance.
     func endRecording() {
         guard let activity, case .recording = activity.content.state.mode else { return }
+        endActivity(dismissalPolicy: .after(Date.now.addingTimeInterval(3)), for: activity)
+    }
+
+    // MARK: Navigating
+
+    /// Started once from `CompassView.onAppear` when there's a real track
+    /// to navigate (never for the plain, target-less compass — nothing
+    /// real to show on the island there). `plannedLengthKM` is the route's
+    /// actual total track length, always real here (never a guess).
+    func startNavigating(routeName: String?, plannedLengthKM: Double) {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        endActivity(dismissalPolicy: .immediate)
+
+        let state = NomadTripAttributes.ContentState(
+            mode: .navigating(.init(waypointName: "", distanceToWaypointKM: nil, remainingKM: plannedLengthKM, progressFraction: 0, etaMinutes: nil, isOffTrail: false))
+        )
+        activity = try? Activity.request(
+            attributes: NomadTripAttributes(routeName: routeName, plannedLengthKM: plannedLengthKM),
+            content: .init(state: state, staleDate: nil)
+        )
+    }
+
+    /// Call on every `CompassView.updateNavigationState()` tick — same
+    /// cadence (~2.5s) as its own HUD numbers, so the island is never
+    /// ahead of or behind what's on screen.
+    func updateNavigating(_ snapshot: NomadTripAttributes.NavigatingSnapshot) {
+        guard let activity, case .navigating = activity.content.state.mode else { return }
+        let state = NomadTripAttributes.ContentState(mode: .navigating(snapshot))
+        Task { await activity.update(.init(state: state, staleDate: nil)) }
+    }
+
+    /// Leaving the navigate screen (X button, or arriving) — same brief
+    /// "leave the last frame up" courtesy `endRecording` gives a finished
+    /// route.
+    func endNavigating() {
+        guard let activity, case .navigating = activity.content.state.mode else { return }
         endActivity(dismissalPolicy: .after(Date.now.addingTimeInterval(3)), for: activity)
     }
 

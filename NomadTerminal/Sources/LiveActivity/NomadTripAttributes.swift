@@ -36,27 +36,47 @@ struct NomadTripAttributes: ActivityAttributes {
         var transportColorHex: UInt32
     }
 
+    /// Live snapshot pushed from `CompassView`'s own real on-trail math
+    /// (`Turf.LineString.closestCoordinate`) every ~2.5s tick while
+    /// navigating a published route's map mode — same real distance/ETA/
+    /// progress numbers the in-app HUD shows, not a separate computation.
+    struct NavigatingSnapshot: Codable, Hashable {
+        var waypointName: String
+        /// nil in plain-compass mode (no waypoint target) — the island is
+        /// written to just not show a "to waypoint" stat rather than fake one.
+        var distanceToWaypointKM: Double?
+        var remainingKM: Double
+        var progressFraction: Double
+        var etaMinutes: Int?
+        /// Mirrors `CompassView`'s own off-trail banner — real, not
+        /// decorative, since this is visible on the Lock Screen too.
+        var isOffTrail: Bool
+    }
+
     struct ContentState: Codable, Hashable {
         enum Mode: Codable, Hashable {
             case recording(RecordingSnapshot)
+            case navigating(NavigatingSnapshot)
             /// `triggeredAt` is the real hold-to-send moment. Deliberately
             /// shows elapsed time, never a "sent" / "help is on the way"
-            /// claim — there's no real dispatch to emergency contacts wired
-            /// yet (see SOSView), and the island is too visible (lock
-            /// screen!) to overclaim.
+            /// claim — SOSView's own "message contacts" action still needs
+            /// a human tap inside the system Messages sheet it opens (no
+            /// API fires an SMS with zero user interaction), so the island
+            /// can't honestly claim more than "the beacon is on."
             case sos(triggeredAt: Date)
         }
         var mode: Mode
     }
 
     /// Static for the activity's lifetime. Nil for a standalone SOS
-    /// triggered with no route being recorded (e.g. from the plain Compass).
+    /// triggered with no route being recorded/navigated (e.g. from the
+    /// plain Compass).
     var routeName: String?
-    /// A target distance, when one is actually known — real today only for
-    /// a route recording started against a planned length; freeform
-    /// recording (the only mode this app has right now — see
-    /// `LogRouteStartView`, there's no "follow a planned route" flow yet)
-    /// always passes nil, and every progress indicator below is written to
-    /// simply not render rather than fake a target that doesn't exist.
+    /// A target distance, when one is actually known — real for a route
+    /// recording started against a planned length, and always real while
+    /// navigating a published route (the route's own total track length).
+    /// Freeform recording (no planned route) always passes nil here, and
+    /// every progress indicator below is written to simply not render
+    /// rather than fake a target that doesn't exist.
     var plannedLengthKM: Double? = nil
 }
