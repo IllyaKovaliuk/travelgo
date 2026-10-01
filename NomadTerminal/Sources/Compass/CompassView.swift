@@ -50,14 +50,20 @@ struct CompassView: View {
     @State private var showMapMode = true
     @State private var segmentStretches: [MapSegmentStretch] = []
     @State private var viewport: Viewport = .styleDefault
-    /// True = tilted "navigator" camera (pitch 40°), false = flat top-down.
-    /// Both still follow the puck and rotate with real device heading —
-    /// this only changes the tilt, same as Waze/Google Maps' own 2D/3D
-    /// toggle.
+    /// True = satellite imagery, tilted "navigator" camera (pitch 40°).
+    /// False = the actual flat classic navigator look — Standard's plain
+    /// vector style (clean roads/paths/labels, no satellite photo) at a
+    /// top-down pitch 0 — not just the satellite photo tilted flat, which
+    /// still reads as "a photo" rather than "a map." Both follow the puck
+    /// and rotate with real device heading regardless; this only changes
+    /// the look, same as Waze/Google Maps' own 2D/3D toggle.
     @State private var is3DMap = true
 
     private var followViewport: Viewport {
         .followPuck(zoom: 17, bearing: .heading, pitch: is3DMap ? 40 : 0)
+    }
+    private var mapStyle: MapboxMaps.MapStyle {
+        is3DMap ? .standardSatellite(lightPreset: lightPreset) : .standard(lightPreset: lightPreset)
     }
 
     /// The real recorded track as one `Turf.LineString` — built once in
@@ -357,7 +363,7 @@ struct CompassView: View {
                 }
             }
         }
-        .mapStyle(.standardSatellite(lightPreset: lightPreset))
+        .mapStyle(mapStyle)
         // Mapbox's own compass ornament defaults to `.topTrailing` and
         // auto-shows (`.adaptive`) the instant the camera bearing stops
         // being exactly north — which is permanently true here, since
@@ -428,10 +434,11 @@ struct CompassView: View {
         HStack(spacing: 10) {
             Spacer()
 
-            // Same toggle Waze/Google Maps offer — tilt the camera flat
-            // (2D, pitch 0) or back to the angled "navigator" view (3D,
-            // pitch 40). Both still follow the puck and rotate with real
-            // heading; this only changes the tilt.
+            // Same toggle Waze/Google Maps offer — a real flat 2D map
+            // (Standard's plain vector style, no satellite photo, pitch 0)
+            // versus the tilted 3D satellite "navigator" view, not just the
+            // same satellite photo laid flat. Both still follow the puck
+            // and rotate with real heading either way.
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 is3DMap.toggle()
