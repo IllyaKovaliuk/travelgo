@@ -23,12 +23,19 @@ actor RouteRepository {
         return session.user.id
     }
 
+    // No client-side `.eq("visibility", "public")` anywhere in this file
+    // (removed from every query below, not just this one) — RLS
+    // (`route_readable_by_viewer()`) is the real authority on which rows a
+    // given viewer may read: public-published to everyone, followers-
+    // published to real followers, everything to the owner. Filtering to
+    // "public" again on the client used to silently hide followers-
+    // visibility routes from the very followers RLS already allowed to see
+    // them — the feed/profile/search just never asked Postgres for them.
     func fetchRoutes() async throws -> [Route] {
         let rows: [RouteDTO] = try await supabase
             .from("routes")
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .order("created_at")
             .execute()
             .value
@@ -89,7 +96,6 @@ actor RouteRepository {
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("author_id", value: authorId)
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .order("created_at", ascending: false)
             .execute()
             .value
@@ -99,6 +105,10 @@ actor RouteRepository {
     /// "Following" feed tab — routes from authors the current session
     /// actually follows. Was previously just relabeled `fetchRoutes()` —
     /// same content under all 3 tabs regardless of which was selected.
+    /// This is specifically where dropping the client's own visibility
+    /// filter matters most: a followed author's followers-visibility
+    /// routes belong here, and RLS (real follow-row check) is what decides
+    /// that now, not a client filter that used to flatly exclude them.
     func fetchFollowingRoutes() async throws -> [Route] {
         let userId = try await ensureSession()
         struct FollowRow: Decodable { let followee_id: UUID }
@@ -114,7 +124,6 @@ actor RouteRepository {
             .from("routes")
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .in("author_id", values: ids)
             .order("created_at", ascending: false)
             .execute()
@@ -156,7 +165,6 @@ actor RouteRepository {
             .from("routes")
             .select("place, track_points, cover_image_url")
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .execute()
             .value
         return rows.compactMap { row in
@@ -171,7 +179,6 @@ actor RouteRepository {
             .from("routes")
             .select("place")
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .execute()
             .value
         return Array(Set(rows.map(\.place))).sorted()
@@ -203,7 +210,6 @@ actor RouteRepository {
             .from("routes")
             .select("*, profiles!routes_author_id_fkey(*), route_segments(*), route_requirements(*), route_points_of_interest(*), likes:route_likes(count), comments:route_comments(count), saves:route_saves(count)")
             .eq("status", value: "published")
-            .eq("visibility", value: "public")
             .in("transport", values: transports)
             .in("difficulty", values: difficulties)
             .gte("distance_km", value: minKM)
