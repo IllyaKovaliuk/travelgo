@@ -31,6 +31,14 @@ struct RouteFullMapView: View {
     @State private var viewport: Viewport
     @State private var hasFlownIn = false
     @State private var flowStep = 0
+    /// Real geotagged photos on this route (`RouteRepository.fetchPhotos`,
+    /// the same data `RoutePhotosSection` shows as a horizontal strip) —
+    /// fetched independently here since this map and that section are
+    /// sibling views with no shared state. Clustered into `photoSpots` and
+    /// drawn as their own pin type, distinct from the author's placed POIs.
+    @State private var photos: [RouteRepository.RoutePhoto] = []
+    @State private var currentUserId: String?
+    @State private var photoViewerSpot: PhotoSpot?
     /// Computed once (init), not a plain computed property — this file
     /// reads `segmentStretches` from three different spots in one body
     /// pass (the map content, the water-flow `.task` guard, `focusTarget`),
@@ -69,6 +77,8 @@ struct RouteFullMapView: View {
     private var fullRouteTarget: Viewport {
         .fitting(trackPoints.map(\.coordinate) + pois.map(\.coordinate), padding: EdgeInsets(top: 60, leading: 40, bottom: 60, trailing: 40))
     }
+
+    private var photoSpots: [PhotoSpot] { PhotoSpot.cluster(photos) }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -109,6 +119,22 @@ struct RouteFullMapView: View {
                         .buttonStyle(.plain)
                     }
                 }
+
+                // Real photo pins — "people actually stood here," distinct
+                // from the author's own placed POIs above. Drawn after
+                // them so a photo pin never sits visually under a POI pin
+                // at a near-identical spot.
+                ForEvery(photoSpots) { spot in
+                    MapViewAnnotation(coordinate: spot.coordinate) {
+                        Button {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            photoViewerSpot = spot
+                        } label: {
+                            PhotoSpotMapMarker(spot: spot)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
             .mapStyle(mapStyle)
             .ignoresSafeArea()
@@ -126,6 +152,10 @@ struct RouteFullMapView: View {
                     flowStep += 1
                 }
             }
+            .task {
+                photos = (try? await RouteRepository.shared.fetchPhotos(routeId: route.id)) ?? []
+                currentUserId = (try? await supabase.auth.session)?.user.id.uuidString
+            }
 
             VStack {
                 topBar
@@ -139,6 +169,26 @@ struct RouteFullMapView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
+        .fullScreenCover(item: $photoViewerSpot) { spot in
+            // Reuses the exact same viewer `RoutePhotosSection` presents —
+            // one real swipeable photo screen, not a second one built for
+            // the map specifically. Starts at the tapped spot's first
+            // photo but still pages through every photo on the route so
+            // swiping isn't a dead end at the edge of a small cluster.
+            PhotoViewerView(
+                photos: photos,
+                startIndex: photos.firstIndex(where: { $0.id == spot.photos.first?.id }) ?? 0,
+                currentUserId: currentUserId,
+                onDelete: { photo in
+                    photos.removeAll { $0.id == photo.id }
+                    Task { try? await RouteRepository.shared.deletePhoto(id: photo.id) }
+                },
+                onReport: { photo in
+                    Task { try? await RouteRepository.shared.report(.photo, id: photo.id, reason: "Reported from map") }
+                },
+                onClose: { photoViewerSpot = nil }
+            )
+        }
     }
 
     private var focusTarget: Viewport? {

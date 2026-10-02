@@ -292,6 +292,88 @@ struct POIMapMarker: View {
     }
 }
 
+/// A real cluster of geotagged photos (`RouteRepository.RoutePhoto.lat/lng`
+/// — only ever real when taken mid-recording, see that struct's own doc
+/// comment) that happened to be taken near the same spot — one pin per
+/// cluster rather than one per photo, since several shots at the same
+/// viewpoint are the common case and a pile of overlapping pins at one
+/// spot would be worse than one. Distinct on purpose from `POIMapMarker`
+/// (the author's own placed pins): this is "people actually stood here and
+/// took a real photo," not an annotation — so the pin IS the photo, not an
+/// icon describing one.
+struct PhotoSpot: Identifiable {
+    let id = UUID()
+    let coordinate: CLLocationCoordinate2D
+    let photos: [RouteRepository.RoutePhoto]
+
+    /// Groups photos with real coordinates within `radiusM` of each other
+    /// — simple greedy clustering (first photo seeds a cluster, anything
+    /// close enough joins it), good enough for the handful of geotagged
+    /// photos a single route realistically has. Photos with no real
+    /// lat/lng (the after-the-fact library-upload path) are excluded
+    /// entirely rather than placed at a fake/default coordinate.
+    static func cluster(_ photos: [RouteRepository.RoutePhoto], radiusM: CLLocationDistance = 40) -> [PhotoSpot] {
+        var remaining = photos.compactMap { photo -> (photo: RouteRepository.RoutePhoto, coordinate: CLLocationCoordinate2D)? in
+            guard let lat = photo.lat, let lng = photo.lng else { return nil }
+            return (photo, CLLocationCoordinate2D(latitude: lat, longitude: lng))
+        }
+        var spots: [PhotoSpot] = []
+        while let seed = remaining.first {
+            let seedLocation = CLLocation(latitude: seed.coordinate.latitude, longitude: seed.coordinate.longitude)
+            var clustered: [RouteRepository.RoutePhoto] = []
+            remaining.removeAll { entry in
+                let distance = seedLocation.distance(from: CLLocation(latitude: entry.coordinate.latitude, longitude: entry.coordinate.longitude))
+                guard distance <= radiusM else { return false }
+                clustered.append(entry.photo)
+                return true
+            }
+            spots.append(PhotoSpot(coordinate: seed.coordinate, photos: clustered))
+        }
+        return spots
+    }
+}
+
+/// The pin itself — a real circular thumbnail of the cluster's first photo
+/// (not a generic camera glyph), a small camera badge so it still reads as
+/// "photo" at a glance, and a count badge when more than one photo was
+/// taken here.
+struct PhotoSpotMapMarker: View {
+    let spot: PhotoSpot
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            AsyncImage(url: URL(string: spot.photos.first?.imageUrl ?? "")) { phase in
+                if let image = phase.image {
+                    image.resizable().aspectRatio(contentMode: .fill)
+                } else {
+                    Rectangle().fill(NTColor.milk(0.15))
+                }
+            }
+            .frame(width: 44, height: 44)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(.white, lineWidth: 2.5))
+            .shadow(color: .black.opacity(0.35), radius: 4, y: 2)
+
+            ZStack {
+                Circle().fill(NTColor.accent)
+                Image(systemName: "camera.fill").font(.system(size: 8, weight: .bold)).foregroundStyle(Color(hex: 0x231007))
+            }
+            .frame(width: 18, height: 18)
+            .overlay(Circle().stroke(.white, lineWidth: 1.5))
+
+            if spot.photos.count > 1 {
+                Text("\(spot.photos.count)")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: 17, height: 17)
+                    .background(Circle().fill(Color(hex: 0x1A0A07)))
+                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                    .offset(x: 4, y: -28)
+            }
+        }
+    }
+}
+
 /// Shared per-segment map rendering — casing, transport-styled colored
 /// line, the animated water-flow overlay, label chips, and transition
 /// markers at every real changeover. One implementation, reused by both
