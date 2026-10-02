@@ -8,6 +8,18 @@ struct RouteUploadDetailsView: View {
     @Binding var draft: NewRouteDraft
     var onContinue: () -> Void
 
+    /// Real fix for a real bug: this screen had no way back at all — no
+    /// button, and `.toolbar(.hidden, for: .navigationBar)` on a
+    /// `navigationDestination`-pushed view also silently kills the
+    /// system's interactive edge-swipe-to-pop gesture (a known SwiftUI
+    /// quirk, not a Simulator-only artifact), so there was genuinely no
+    /// way to leave this screen except finishing it. `dismiss()` inside a
+    /// pushed destination pops just that one destination off the
+    /// `NavigationStack`, landing back on whichever screen (record/
+    /// import/draw) produced this draft — real "go back a step," not a
+    /// full flow restart.
+    @Environment(\.dismiss) private var dismiss
+
     @State private var pickerItem: PhotosPickerItem?
     @State private var previewImage: UIImage?
     @State private var isUploadingCover = false
@@ -209,7 +221,11 @@ struct RouteUploadDetailsView: View {
         }
         .overlay(alignment: .bottom) {
             if let coverUploadError {
-                Text(coverUploadError)
+                // `coverUploadError` is String-typed (it's @State), so
+                // Text(coverUploadError) would resolve to Text(String) and
+                // silently skip localization — same trap documented
+                // elsewhere this session, same wrap-at-display fix.
+                Text(LocalizedStringKey(coverUploadError))
                     .font(NTFont.body(11, .medium))
                     .foregroundStyle(Color(hex: 0xE58272))
                     .padding(.bottom, -18)
@@ -219,15 +235,49 @@ struct RouteUploadDetailsView: View {
 
     private func uploadCover(_ item: PhotosPickerItem) async {
         coverUploadError = nil
-        guard let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) else {
-            coverUploadError = "Couldn't load that photo — try another."
+
+        // Real fix for a real bug: `try?` here used to swallow whatever
+        // `loadTransferable` actually threw (most commonly an iCloud
+        // photo that hadn't finished downloading to the device yet, or a
+        // slow connection timing the fetch out) and always showed the
+        // same generic "couldn't load" message regardless of cause —
+        // real do/catch now, so a transient fetch failure reads as one.
+        let data: Data
+        do {
+            guard let loaded = try await item.loadTransferable(type: Data.self) else {
+                coverUploadError = "Couldn't read that photo — try picking it again."
+                return
+            }
+            data = loaded
+        } catch {
+            coverUploadError = "Couldn't load that photo (it may still be downloading from iCloud) — try again."
             return
         }
+
+        // A decode failure here no longer blocks the upload outright —
+        // only `UIImage` needs the bytes decoded (for the preview +
+        // downscale pass); Supabase Storage just wants bytes and a
+        // content type, and `PhotosPicker(matching: .images)` already
+        // guarantees this is a real photo. Falling back to the original,
+        // un-resized bytes on a rare decode miss (an exotic format
+        // `UIImage` doesn't recognize) means someone's actual pick still
+        // gets published, not silently rejected with no real reason given.
+        guard let image = UIImage(data: data) else {
+            isUploadingCover = true
+            do {
+                draft.coverImageUrl = try await RouteRepository.shared.uploadCoverImage(data)
+            } catch {
+                coverUploadError = "Upload failed — check your connection and try again."
+            }
+            isUploadingCover = false
+            return
+        }
+
         withAnimation { previewImage = image }
         // Downscale before upload — a full-res phone photo is overkill for
         // a card thumbnail and needlessly slow to upload over cellular.
         let resized = image.resized(maxDimension: 1600)
-        guard let jpeg = resized.jpegData(compressionQuality: 0.82) else { return }
+        let jpeg = resized.jpegData(compressionQuality: 0.82) ?? data
 
         isUploadingCover = true
         do {
@@ -241,6 +291,16 @@ struct RouteUploadDetailsView: View {
     private func stepHeader(title: LocalizedStringKey, step: Int) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 34, height: 34)
+                        .background(Circle().fill(NTColor.milk(0.08)))
+                        .overlay(Circle().stroke(NTColor.milk(0.2), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 4)
+
                 Text(title).font(NTFont.body(15, .semibold))
                 Spacer()
                 Text("\(step) OF 3").font(NTFont.mono(10, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.5))

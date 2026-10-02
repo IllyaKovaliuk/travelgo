@@ -2575,6 +2575,29 @@
         }
       }
     },
+    "Couldn't load that photo (it may still be downloading from iCloud) — try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load that photo (it may still be downloading from iCloud) — try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo cargar esa foto (puede seguir descargándose desde iCloud) — inténtalo de nuevo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалось завантажити це фото (можливо, воно ще завантажується з iCloud) — спробуйте ще раз."
+          }
+        }
+      }
+    },
     "Couldn't load this profile": {
       "extractionState": "manual",
       "localizations": {
@@ -2594,6 +2617,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не вдалось завантажити профіль"
+          }
+        }
+      }
+    },
+    "Couldn't read that photo — try picking it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read that photo — try picking it again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo leer esa foto — intenta elegirla de nuevo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалось прочитати це фото — спробуйте вибрати ще раз."
           }
         }
       }
@@ -9671,6 +9717,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Відкрий повний розклад за етапами з Pro"
+          }
+        }
+      }
+    },
+    "Upload failed — check your connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upload failed — check your connection and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error al subir — comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалось завантажити — перевірте з’єднання і спробуйте ще раз."
           }
         }
       }

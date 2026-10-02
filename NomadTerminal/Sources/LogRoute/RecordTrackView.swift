@@ -64,6 +64,7 @@ struct RecordTrackView: View {
     @State private var droppedPhotos: [DraftPhoto] = []
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var isUploadingPhoto = false
+    @State private var photoUploadError: String?
     /// `uploadRoutePhotoFile` wants a route id to group storage paths under
     /// — there isn't a real one yet mid-recording (the route doesn't exist
     /// until publish), so this is just an opaque per-session grouping key,
@@ -267,6 +268,26 @@ struct RecordTrackView: View {
     }
 
     private var controls: some View {
+        VStack(spacing: 10) {
+            if let photoUploadError {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 12))
+                    // Same String-vs-LocalizedStringKey wrap as
+                    // RouteUploadDetailsView's coverUploadError.
+                    Text(LocalizedStringKey(photoUploadError)).font(NTFont.body(12, .medium))
+                }
+                .foregroundStyle(Color(hex: 0xE58272))
+                .padding(.horizontal, 16).padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color(hex: 0xB33A2B).opacity(0.18), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                .padding(.horizontal, 22)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+            controlButtons
+        }
+    }
+
+    private var controlButtons: some View {
         HStack(spacing: 16) {
             Button {
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -341,11 +362,41 @@ struct RecordTrackView: View {
             let here = tracker.points.last
             Task {
                 isUploadingPhoto = true
+                withAnimation { photoUploadError = nil }
                 defer { isUploadingPhoto = false; photoPickerItem = nil }
-                guard let data = try? await newItem.loadTransferable(type: Data.self) else { return }
-                guard let url = try? await RouteRepository.shared.uploadRoutePhotoFile(data, routeId: recordingSessionId) else { return }
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-                droppedPhotos.append(DraftPhoto(imageUrl: url, lat: here?.lat, lng: here?.lng))
+                // Real fix for a real bug: both steps used to fail
+                // completely silently (`try?` swallowing whatever was
+                // actually thrown, then just `return`ing) — a tap on the
+                // camera button that visibly spun and then did nothing,
+                // with zero indication anything had gone wrong or why.
+                // Most common real cause: an iCloud-only photo that
+                // hadn't finished downloading to the device yet.
+                let data: Data
+                do {
+                    guard let loaded = try await newItem.loadTransferable(type: Data.self) else {
+                        withAnimation { photoUploadError = "Couldn't read that photo — try picking it again." }
+                        return
+                    }
+                    data = loaded
+                } catch {
+                    withAnimation { photoUploadError = "Couldn't load that photo (it may still be downloading from iCloud) — try again." }
+                    return
+                }
+                do {
+                    let url = try await RouteRepository.shared.uploadRoutePhotoFile(data, routeId: recordingSessionId)
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    droppedPhotos.append(DraftPhoto(imageUrl: url, lat: here?.lat, lng: here?.lng))
+                } catch {
+                    UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    withAnimation { photoUploadError = "Upload failed — check your connection and try again." }
+                }
+            }
+        }
+        .onChange(of: photoUploadError) { _, newValue in
+            guard newValue != nil else { return }
+            Task {
+                try? await Task.sleep(nanoseconds: 4_000_000_000)
+                withAnimation { photoUploadError = nil }
             }
         }
     }

@@ -6,6 +6,13 @@ struct RouteReviewPublishView: View {
     let draft: NewRouteDraft
     var onDone: () -> Void
 
+    /// Same real fix as `RouteUploadDetailsView` — this screen had no way
+    /// back either. Only offered before publishing succeeds: once
+    /// `published != nil` the route is already live, so "back" no longer
+    /// means anything real (same reasoning the bottom button already
+    /// switches from Publish to Done at that point).
+    @Environment(\.dismiss) private var dismiss
+
     @State private var visibility: String = "public"
     @State private var isPublishing = false
     @State private var errorMessage: String?
@@ -113,6 +120,18 @@ struct RouteReviewPublishView: View {
     private var stepHeader: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
+                if published == nil {
+                    Button { dismiss() } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 34, height: 34)
+                            .background(Circle().fill(NTColor.milk(0.08)))
+                            .overlay(Circle().stroke(NTColor.milk(0.2), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 4)
+                }
+
                 Text("Review & publish").font(NTFont.body(15, .semibold))
                 Spacer()
                 Text("3 OF 3").font(NTFont.mono(10, .medium)).tracking(0.6).foregroundStyle(NTColor.milk(0.5))
