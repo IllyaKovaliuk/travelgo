@@ -238,11 +238,28 @@ struct CompassView: View {
 
     private var header: some View {
         HStack {
+            // Real fix for a real bug: every header button here was a
+            // stroke-only outline with no solid fill — unlike every other
+            // close/back button in the app (RecordTrackView, DrawRouteView,
+            // ImportRouteView, RouteUploadDetailsView's new back button all
+            // have a real `.background(Circle().fill(...))`). Over a plain
+            // color background that's harmless; layered on top of
+            // Mapbox's own live, actively-gesture-handling `Map` (this
+            // screen's default mode now), a hit area with no opaque
+            // backing and no explicit `.contentShape` can lose the touch
+            // to the map's pan recognizer underneath — which matched
+            // exactly what got reported (X not responding specifically in
+            // map mode, while the filled 3D/recenter buttons did). Added a
+            // real fill + explicit `.contentShape(Circle())` to every
+            // button in this header, not just X, since they're all the
+            // same shape.
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
                     .frame(width: 40, height: 40)
+                    .background(Circle().fill(NTColor.milk(0.12)))
                     .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
 
@@ -271,7 +288,9 @@ struct CompassView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(NTColor.milk(0.8))
                         .frame(width: 40, height: 40)
+                        .background(Circle().fill(NTColor.milk(0.12)))
                         .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                        .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 8)
@@ -286,7 +305,9 @@ struct CompassView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(showingPlain ? NTColor.accent : NTColor.milk(0.8))
                         .frame(width: 40, height: 40)
+                        .background(Circle().fill(NTColor.milk(0.12)))
                         .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                        .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .padding(.trailing, 8)
@@ -297,7 +318,9 @@ struct CompassView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Color(hex: 0xE58272))
                     .frame(width: 40, height: 40)
+                    .background(Circle().fill(NTColor.milk(0.12)))
                     .overlay(Circle().stroke(NTColor.milk(0.25), lineWidth: 1))
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
         }
@@ -466,6 +489,7 @@ struct CompassView: View {
                     .frame(width: 44, height: 44)
                     .background(Circle().fill(NTColor.milk))
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
 
@@ -481,6 +505,7 @@ struct CompassView: View {
                     .frame(width: 44, height: 44)
                     .background(Circle().fill(NTColor.milk))
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    .contentShape(Circle())
             }
             .buttonStyle(.plain)
         }
