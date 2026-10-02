@@ -2437,6 +2437,29 @@
         }
       }
     },
+    "Contacts notified": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contacts notified"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contactos notificados"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Контакти сповіщено"
+          }
+        }
+      }
+    },
     "Continue": {
       "extractionState": "manual",
       "localizations": {
@@ -5386,6 +5409,29 @@
         }
       }
     },
+    "MESSAGE SENT": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MESSAGE SENT"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MENSAJE ENVIADO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПОВІДОМЛЕННЯ НАДІСЛАНО"
+          }
+        }
+      }
+    },
     "MESSAGE SENT TO CONTACTS": {
       "extractionState": "manual",
       "localizations": {
@@ -8294,29 +8340,6 @@
         }
       }
     },
-    "SOS ACTIVE": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SOS ACTIVE"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SOS ACTIVO"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SOS АКТИВНО"
-          }
-        }
-      }
-    },
     "SOS TRIGGERS 7D": {
       "extractionState": "manual",
       "localizations": {
@@ -8382,6 +8405,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "SOS · НЕМАЄ ЗВ'ЯЗКУ ДЛЯ НАДСИЛАННЯ"
+          }
+        }
+      }
+    },
+    "SOS — NOT SENT YET": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOS — NOT SENT YET"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOS — AÚN NO ENVIADO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOS — ЩЕ НЕ НАДІСЛАНО"
           }
         }
       }

@@ -106,10 +106,12 @@ final class LiveActivityManager {
     // MARK: SOS
 
     /// Called the instant the hold-to-send gesture completes — whether or
-    /// not a recording is currently in progress.
+    /// not a recording is currently in progress. `messageSent` always
+    /// starts false here: holding the dial only opens the Messages sheet,
+    /// it doesn't send anything by itself.
     func triggerSOS() {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
-        let sosState = NomadTripAttributes.ContentState(mode: .sos(triggeredAt: Date()))
+        let sosState = NomadTripAttributes.ContentState(mode: .sos(.init(triggeredAt: Date(), messageSent: false)))
 
         if let activity {
             preSOSRecordingState = activity.content.state.mode
@@ -121,6 +123,16 @@ final class LiveActivityManager {
                 content: .init(state: sosState, staleDate: nil)
             )
         }
+    }
+
+    /// Called once `MFMessageComposeViewController` reports its real
+    /// outcome — only ever with `true` when that result is `.sent`. Keeps
+    /// the same `triggeredAt` (the island's timer/relative-time display
+    /// shouldn't reset) and just flips whether a message genuinely went.
+    func updateSOSMessageSent(_ sent: Bool) {
+        guard let activity, case .sos(let snapshot) = activity.content.state.mode else { return }
+        let state = NomadTripAttributes.ContentState(mode: .sos(.init(triggeredAt: snapshot.triggeredAt, messageSent: sent)))
+        Task { await activity.update(.init(state: state, staleDate: nil)) }
     }
 
     /// Called from the island's own "Cancel SOS" button (via

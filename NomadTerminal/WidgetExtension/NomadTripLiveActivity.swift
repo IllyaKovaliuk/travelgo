@@ -146,8 +146,8 @@ private struct CompactTrailing: View {
             Text(String(format: "%.1f", s.remainingKM) + " KM")
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundStyle(s.isOffTrail ? NTColor.hardBright : NTColor.milk)
-        case .sos(let triggeredAt):
-            Text(triggeredAt, style: .timer)
+        case .sos(let snapshot):
+            Text(snapshot.triggeredAt, style: .timer)
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundStyle(NTColor.hardBright)
                 .frame(width: 46)
@@ -206,15 +206,16 @@ private struct ExpandedLeading: View {
                     }
                 }
             }
-        case .sos:
+        case .sos(let snapshot):
             VStack(alignment: .leading, spacing: 3) {
-                Text("SOS ACTIVE")
+                // "SOS ACTIVE" the instant the dial was held — before
+                // anyone had sent anything — read as "already sent" at a
+                // glance. Real state now: distinct caption for "triggered,
+                // nothing sent yet" vs. "a message genuinely went."
+                Text(snapshot.messageSent ? "MESSAGE SENT" : "SOS — NOT SENT YET")
                     .font(.system(size: 9, weight: .bold)).tracking(1)
                     .foregroundStyle(NTColor.hardBright)
-                // Not "beacon on" — nothing is monitoring this. Honest
-                // version of "you held the dial, go confirm the message
-                // actually sent."
-                Text("Message your contacts")
+                Text(snapshot.messageSent ? "Contacts notified" : "Message your contacts")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(NTColor.milk(0.7))
             }
@@ -245,8 +246,8 @@ private struct ExpandedTrailing: View {
                     stat("\(eta)", "MIN ETA")
                 }
             }
-        case .sos(let triggeredAt):
-            Text(triggeredAt, style: .relative)
+        case .sos(let snapshot):
+            Text(snapshot.triggeredAt, style: .relative)
                 .font(.system(size: 12, weight: .semibold, design: .monospaced))
                 .foregroundStyle(NTColor.hardBright)
         }
@@ -456,14 +457,16 @@ private struct LockScreenTripView: View {
         switch mode {
         case .recording(let s): return s.isPaused ? "PAUSED" : "RECORDING"
         case .navigating(let s): return s.isOffTrail ? "OFF TRAIL" : "NAVIGATING"
-        case .sos: return "SOS ACTIVE"
+        // Same "ACTIVE" ≠ "sent" fix as the expanded island — real state,
+        // not the moment the dial was held.
+        case .sos(let snapshot): return snapshot.messageSent ? "MESSAGE SENT" : "SOS — NOT SENT YET"
         }
     }
     private var headline: String {
         switch mode {
         case .recording(let s): return elapsedString(s.elapsedSeconds)
         case .navigating(let s): return s.waypointName.isEmpty ? "On route" : s.waypointName
-        case .sos(let triggeredAt): return elapsedString(Int(Date.now.timeIntervalSince(triggeredAt)))
+        case .sos(let snapshot): return elapsedString(Int(Date.now.timeIntervalSince(snapshot.triggeredAt)))
         }
     }
 }

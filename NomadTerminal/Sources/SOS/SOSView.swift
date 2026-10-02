@@ -120,6 +120,12 @@ struct SOSView: View {
                 onFinish: { result in
                     showMessageCompose = false
                     messageResult = result
+                    // Real outcome, not "hold completed" — the island
+                    // showed "SOS ACTIVE" the instant the dial was held,
+                    // before anyone had actually sent anything, which read
+                    // as "already sent." It only flips to a real sent
+                    // state now, from the real compose result.
+                    LiveActivityManager.shared.updateSOSMessageSent(result == .sent)
                     if result == .sent {
                         UINotificationFeedbackGenerator().notificationOccurred(.success)
                     }

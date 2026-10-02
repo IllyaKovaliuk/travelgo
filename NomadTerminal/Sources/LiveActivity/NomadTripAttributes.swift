@@ -53,18 +53,24 @@ struct NomadTripAttributes: ActivityAttributes {
         var isOffTrail: Bool
     }
 
+    /// `triggeredAt` is the real hold-to-send moment — holding the dial,
+    /// not a message going out. `messageSent` starts false and only ever
+    /// flips true once `MFMessageComposeViewController` itself reports
+    /// `.sent` (see `SOSView`/`LiveActivityManager.updateSOSMessageSent`);
+    /// cancelled/failed/never-attempted all stay false. The island must
+    /// never conflate "SOS triggered" with "help was actually notified" —
+    /// a prior version showed "SOS ACTIVE" immediately on hold, which
+    /// read as "already sent" to a glance.
+    struct SOSSnapshot: Codable, Hashable {
+        var triggeredAt: Date
+        var messageSent: Bool
+    }
+
     struct ContentState: Codable, Hashable {
         enum Mode: Codable, Hashable {
             case recording(RecordingSnapshot)
             case navigating(NavigatingSnapshot)
-            /// `triggeredAt` is the real hold-to-send moment. Deliberately
-            /// shows elapsed time, never a "sent" / "help is on the way"
-            /// claim — SOSView's own "message contacts" action still needs
-            /// a human tap inside the system Messages sheet it opens (no
-            /// API fires an SMS with zero user interaction), so the island
-            /// can't honestly claim more than "you held the dial, go check
-            /// whether the message actually sent."
-            case sos(triggeredAt: Date)
+            case sos(SOSSnapshot)
         }
         var mode: Mode
     }
