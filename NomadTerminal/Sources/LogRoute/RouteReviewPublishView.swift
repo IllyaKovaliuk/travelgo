@@ -20,6 +20,31 @@ struct RouteReviewPublishView: View {
 
     private var distance: Double { Double(draft.distanceKM.replacingOccurrences(of: ",", with: ".")) ?? 0 }
 
+    /// The real "what transport is this route" — used for both the tag
+    /// shown on this screen and the published row's `transport`/
+    /// `transport_label`. `draft.transport` alone used to be "good
+    /// enough," but it's just whatever DrawRouteView/RecordTrackView/
+    /// ImportRouteView's own single top-level picker happened to default
+    /// to (`.foot` for Draw) — a route built from several named SEGMENTS
+    /// with their own real transports still showed as that single
+    /// leftover default, which read as "it thinks the whole thing was
+    /// walking" even when it clearly wasn't. When real segments exist,
+    /// derive this from them instead: whichever transport covers the most
+    /// real distance, or — if nobody filled in a distance at all — the
+    /// one used by the most segments.
+    private var effectiveTransport: Transport {
+        guard !draft.segments.isEmpty else { return draft.transport }
+        let withDistance = draft.segments.map { seg -> (Transport, Double) in
+            (seg.transport, Double(seg.distanceKM.replacingOccurrences(of: ",", with: ".")) ?? 0)
+        }
+        let totalKM = withDistance.reduce(0) { $0 + $1.1 }
+        if totalKM > 0, let dominant = withDistance.max(by: { $0.1 < $1.1 }) {
+            return dominant.0
+        }
+        let counts = Dictionary(grouping: draft.segments, by: \.transport).mapValues(\.count)
+        return counts.max(by: { $0.value < $1.value })?.key ?? draft.transport
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
@@ -42,7 +67,7 @@ struct RouteReviewPublishView: View {
 
                     HStack(spacing: 8) {
                         tag(draft.difficulty.rawValue, filled: draft.difficulty.color)
-                        tag(draft.transport.rawValue, filled: nil)
+                        tag(effectiveTransport.rawValue, filled: nil)
                         tag(String(format: "%.1f KM", distance), filled: nil)
                     }
                     .padding(.top, 16)
@@ -185,8 +210,8 @@ struct RouteReviewPublishView: View {
                     title: draft.title.isEmpty ? "Untitled route" : draft.title,
                     place: draft.place.isEmpty ? "Unknown region" : draft.place,
                     difficulty: draft.difficulty.dbKey,
-                    transport: draft.transport.dbKey,
-                    transportLabel: draft.transport.rawValue,
+                    transport: effectiveTransport.dbKey,
+                    transportLabel: effectiveTransport.rawValue,
                     distanceKM: distance,
                     ascentM: Int(draft.ascentM.rounded()),
                     highPointM: Int(draft.highPointM.rounded()),

@@ -48,7 +48,21 @@ struct MapSegmentStretch: Identifiable {
         guard trackPoints.count > 1, !segments.isEmpty else { return [] }
         let coords = trackPoints.map(\.coordinate)
         let totalKM = segments.reduce(0) { $0 + $1.distanceKM }
-        guard totalKM > 0 else { return [] }
+
+        // Real fix for a real bug: a segment added with a name/transport
+        // but no distance (easy to skip — the whole "SEGMENTS" section is
+        // labeled "(OPTIONAL)", which reads as "the distance field inside
+        // it is optional too") used to zero out `totalKM` for every
+        // segment at once, and this function bailed to an empty array the
+        // instant that happened. With no stretches, every call site falls
+        // back to one single generic-colored line for the *entire* route —
+        // not just the blank segment, all of them, with no transport
+        // distinction visible anywhere. When nobody filled in a real
+        // distance for *any* segment, split the actual trackpoints evenly
+        // by count instead of refusing to render segment colors at all —
+        // an honest "split evenly since nobody said otherwise" fallback,
+        // not a silent failure.
+        let useEqualSplit = totalKM <= 0
 
         let lastIndex = coords.count - 1
         var stretches: [MapSegmentStretch] = []
@@ -58,9 +72,15 @@ struct MapSegmentStretch: Identifiable {
         for (i, seg) in segments.enumerated() {
             cumulative += seg.distanceKM
             let isLast = i == segments.count - 1
-            let endIdx = isLast
-                ? lastIndex
-                : max(startIdx + 1, Int((Double(lastIndex) * (cumulative / totalKM)).rounded()))
+            let endIdx: Int
+            if isLast {
+                endIdx = lastIndex
+            } else if useEqualSplit {
+                let fraction = Double(i + 1) / Double(segments.count)
+                endIdx = max(startIdx + 1, Int((Double(lastIndex) * fraction).rounded()))
+            } else {
+                endIdx = max(startIdx + 1, Int((Double(lastIndex) * (cumulative / totalKM)).rounded()))
+            }
             let clampedEnd = min(endIdx, lastIndex)
             guard clampedEnd > startIdx else { continue }
             let rawSlice = Array(coords[startIdx...clampedEnd])

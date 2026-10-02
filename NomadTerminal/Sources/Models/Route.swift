@@ -69,7 +69,13 @@ enum Transport: String, CaseIterable {
         case .water: return NTColor.water
         case .climb: return NTColor.extreme
         case .bike: return NTColor.gold
-        case .paraglide: return NTColor.extreme
+        // Real fix for a real bug: this used to be `NTColor.extreme`, the
+        // exact same color `.climb` uses — a route mixing climb and
+        // paraglide legs rendered them as one indistinguishable color. No
+        // existing NTColor token was free, so this is its own literal
+        // (teal — distinct from every other transport's hue, including
+        // `.water`'s blue).
+        case .paraglide: return Color(hex: 0x4FA89B)
         }
     }
 
@@ -105,7 +111,9 @@ enum Transport: String, CaseIterable {
     }
 
     /// Matches `color` above — stored alongside a published segment so it
-    /// renders with the same tint on Route Detail.
+    /// renders with the same tint on Route Detail. Every case has its own
+    /// real hex — `.climb`/`.paraglide` used to share `#7A5FBF`, so a route
+    /// mixing the two rendered both legs in one indistinguishable color.
     var dbHex: String {
         switch self {
         case .overland: return "#E8743B"
@@ -113,7 +121,7 @@ enum Transport: String, CaseIterable {
         case .water: return "#3E92CC"
         case .climb: return "#7A5FBF"
         case .bike: return "#E0A458"
-        case .paraglide: return "#7A5FBF"
+        case .paraglide: return "#4FA89B"
         }
     }
 
