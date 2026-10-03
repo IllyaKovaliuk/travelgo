@@ -29,7 +29,13 @@ enum RootTab: Int, CaseIterable {
 /// matches the frosted capsule with the accent "you are here" bubble.
 struct FloatingTabBar: View {
     @Binding var selection: RootTab
-    var profileInitials: String = "SK"
+    /// Real fix for a real bug: this used to default to a hardcoded "SK"
+    /// that nothing ever overrode — every account saw the same fake
+    /// initials here regardless of who was actually signed in. No default
+    /// now, on purpose — `RootTabView` is the one real call site and must
+    /// pass the real signed-in user's own initials explicitly, so this
+    /// can't silently go stale/unset again the way the old default did.
+    var profileInitials: String
 
     var body: some View {
         HStack(spacing: 5) {
