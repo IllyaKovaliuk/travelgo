@@ -43,7 +43,7 @@ Account, route, and social data is stored with Supabase (Postgres + Auth), our b
 - **Route visibility** — set per route to public, followers-only, or private at publish time.
 - **Passive visit detection** — off by default; toggle it in Settings at any time. Turning it off stops background location use immediately.
 - **Emergency contacts** — add, edit, or remove them at any time in Settings.
-- **Account deletion** — contact us (see below) to delete your account and associated data. In-app self-service deletion is planned but not yet built; until then, this is a manual request we process ourselves.
+- **Account deletion** — Settings → Delete account, directly in the app. This permanently removes your profile, routes, photos, comments, likes, saves, follows, emergency contacts, points, referrals, and badges; it can't be undone and takes effect immediately.
 - **Location permission** — controlled via iOS Settings → NomadCompass → Location. Denying it disables route recording, live navigation, and SOS's position-sharing, but the rest of the app still works.
 - **Reporting content** — you can report a route, photo, or comment; content that collects enough reports is automatically hidden pending review, and our moderators can review, hide, or remove it directly.
 

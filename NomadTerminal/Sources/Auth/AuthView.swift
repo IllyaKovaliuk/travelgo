@@ -203,6 +203,35 @@ struct AuthView: View {
                 .disabled(isBusy || !canSubmit)
                 .opacity(canSubmit ? 1 : 0.6)
 
+                // Real, required link, not boilerplate — this is the one
+                // place someone agrees to these before an account even
+                // exists. Only shown creating an account, not signing
+                // back into one that already agreed.
+                if mode == .signUp {
+                    // One flowing `Text` with Markdown link syntax, not an
+                    // `HStack` of separate Text/Link pieces — an HStack's
+                    // children don't reflow onto a second line on a narrow
+                    // screen, they just overflow; a single Text wraps
+                    // normally while keeping the two links real and
+                    // tappable inline.
+                    // The URLs are plain literal text here on purpose, not
+                    // `\(LegalLinks....)` interpolation — a String
+                    // interpolation inside a LocalizedStringKey compiles
+                    // to a `%@` format placeholder at the actual runtime
+                    // lookup key (regardless of what Xcode's own
+                    // extraction tool shows), not the resolved URL text,
+                    // which would silently break this catalog entry. These
+                    // must match `LegalLinks` exactly.
+                    Text("By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd).")
+                        .font(NTFont.body(11, .medium))
+                        .foregroundStyle(NTColor.milk(0.5))
+                        .tint(NTColor.milk(0.75))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 10)
+                }
+
                 Button {
                     withAnimation { mode = mode == .signIn ? .signUp : .signIn }
                 } label: {

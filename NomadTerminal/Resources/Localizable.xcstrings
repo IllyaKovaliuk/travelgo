@@ -2023,6 +2023,29 @@
         }
       }
     },
+    "By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd).": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al continuar, aceptas nuestros [Términos](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) y nuestra [Política de privacidad](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продовжуючи, ви погоджуєтесь з нашими [Умовами](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) та [Політикою приватності](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+          }
+        }
+      }
+    },
     "By vehicle from here": {
       "extractionState": "manual",
       "localizations": {
@@ -2529,6 +2552,29 @@
         }
       }
     },
+    "Couldn't delete account": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't delete account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo eliminar la cuenta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не вдалось видалити акаунт"
+          }
+        }
+      }
+    },
     "Couldn't delete — try again": {
       "extractionState": "manual",
       "localizations": {
@@ -2897,6 +2943,29 @@
         }
       }
     },
+    "Delete account": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar cuenta"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити акаунт"
+          }
+        }
+      }
+    },
     "Delete photo": {
       "extractionState": "manual",
       "localizations": {
@@ -2939,6 +3008,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Видалити назавжди? Це неможливо скасувати."
+          }
+        }
+      }
+    },
+    "Delete your account?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar tu cuenta?"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видалити акаунт?"
           }
         }
       }
@@ -6536,6 +6628,29 @@
         }
       }
     },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Гаразд"
+          }
+        }
+      }
+    },
     "OPEN MAP": {
       "extractionState": "manual",
       "localizations": {
@@ -7439,6 +7554,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Запобігання краще за реакцію: їжу і все запашне тримайте герметично закритим і подалі від місця сну — ідеально підвішеним або в спеціальному контейнері, кожної ночі, а не лише коли згадаєте."
+          }
+        }
+      }
+    },
+    "Privacy Policy": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Política de privacidad"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Політика приватності"
           }
         }
       }
@@ -8938,6 +9076,29 @@
         }
       }
     },
+    "Something went wrong — check your connection and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong — check your connection and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo salió mal — comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Щось пішло не так — перевірте з’єднання і спробуйте ще раз."
+          }
+        }
+      }
+    },
     "Something went wrong — try again": {
       "extractionState": "manual",
       "localizations": {
@@ -9376,6 +9537,29 @@
         }
       }
     },
+    "Terms of Service": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terms of Service"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Términos de servicio"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Умови використання"
+          }
+        }
+      }
+    },
     "That's everything that matches": {
       "extractionState": "manual",
       "localizations": {
@@ -9487,6 +9671,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Саме тому варто розповісти комусь про свій план перед виходом: маршрут, орієнтовний час повернення і що робити, якщо ви не вийдете на зв'язок. Застосунок сам по собі нікого не викликає на допомогу — це роблять завантажений маршрут і реальна людина, яка знає ваш план."
+          }
+        }
+      }
+    },
+    "This permanently removes your profile, routes, photos, and comments. It can't be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This permanently removes your profile, routes, photos, and comments. It can't be undone."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto elimina permanentemente tu perfil, rutas, fotos y comentarios. No se puede deshacer."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Це назавжди видалить ваш профіль, маршрути, фото і коментарі. Це неможливо скасувати."
           }
         }
       }

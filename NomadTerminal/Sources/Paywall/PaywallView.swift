@@ -133,6 +133,24 @@ struct PaywallView: View {
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 8)
+
+                        // Real, required directly on the paywall for any
+                        // app offering a subscription (App Store Review
+                        // Guideline 3.1.2) — neither existed anywhere in
+                        // the app before this.
+                        HStack(spacing: 14) {
+                            Link(destination: LegalLinks.termsOfService) {
+                                Text("Terms of Service")
+                            }
+                            Text("·").foregroundStyle(NTColor.milk(0.3))
+                            Link(destination: LegalLinks.privacyPolicy) {
+                                Text("Privacy Policy")
+                            }
+                        }
+                        .font(NTFont.mono(10, .medium)).tracking(0.2)
+                        .foregroundStyle(NTColor.milk(0.4))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 14)
                     }
                 }
             }

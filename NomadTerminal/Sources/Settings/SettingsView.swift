@@ -29,6 +29,9 @@ struct SettingsView: View {
     @State private var isAdmin = false
     @State private var isSuperAdmin = false
     @State private var isSigningOut = false
+    @State private var showDeleteConfirm = false
+    @State private var isDeletingAccount = false
+    @State private var deleteError: String?
     @State private var subscription = SubscriptionManager.shared
     /// Real bytes under `OfflineRoutes`, not the hardcoded fake "2.4 / 8
     /// GB" this row used to show — there's no real storage quota anywhere
@@ -104,6 +107,21 @@ struct SettingsView: View {
                         }
                     }
 
+                    // Real, public, hosted documents — required directly on
+                    // the paywall for any app offering a subscription (App
+                    // Store Review 3.1.2); Settings is the obvious second
+                    // place someone looks. Neither existed anywhere in the
+                    // app before this.
+                    cardGroup {
+                        Link(destination: LegalLinks.privacyPolicy) {
+                            valueRow(title: "Privacy Policy", value: nil)
+                        }
+                        divider
+                        Link(destination: LegalLinks.termsOfService) {
+                            valueRow(title: "Terms of Service", value: nil)
+                        }
+                    }
+
                     Button {
                         signOut()
                     } label: {
@@ -119,6 +137,30 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(isSigningOut)
+
+                    // Real self-service deletion — App Store Review
+                    // Guideline 5.1.1(v) requires this directly in-app for
+                    // any app that supports account creation. Previously
+                    // the only path was "email us." `delete_my_account()`
+                    // (security definer) deletes `profiles` — which real
+                    // `on delete cascade` foreign keys carry through to
+                    // routes/comments/likes/saves/photos/follows/emergency
+                    // contacts/points/referrals/badges/visits — then
+                    // `auth.users` itself, ending the session for good.
+                    Button {
+                        showDeleteConfirm = true
+                    } label: {
+                        HStack {
+                            if isDeletingAccount { ProgressView().tint(Color(hex: 0xB33A2B)) }
+                            Text("Delete account")
+                        }
+                        .font(NTFont.body(13, .medium))
+                        .foregroundStyle(Color(hex: 0xB33A2B).opacity(0.75))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isDeletingAccount)
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 8)
@@ -142,6 +184,19 @@ struct SettingsView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
                 }
+            }
+            .alert("Delete your account?", isPresented: $showDeleteConfirm) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete account", role: .destructive) { deleteAccount() }
+            } message: {
+                Text("This permanently removes your profile, routes, photos, and comments. It can't be undone.")
+            }
+            .alert("Couldn't delete account", isPresented: Binding(
+                get: { deleteError != nil }, set: { if !$0 { deleteError = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(deleteError ?? "")
             }
         }
         .preferredColorScheme(themeManager.colorScheme)
@@ -321,6 +376,31 @@ struct SettingsView: View {
             UserDefaults.standard.removeObject(forKey: "authSessionStartedAt")
             isSigningOut = false
             showAuth = true
+        }
+    }
+
+    /// Real self-service deletion — calls `delete_my_account()` (see
+    /// `supabase/migrations/20261003000001_account_deletion.sql`), which
+    /// deletes the real `profiles` row (cascading through routes/photos/
+    /// comments/etc. via real foreign keys) and then the real `auth.users`
+    /// row itself. The local session's refresh token is dead the instant
+    /// that RPC returns — `supabase.auth.signOut()` right after just
+    /// clears it out of this device's own Keychain too, same as a normal
+    /// sign-out, so nothing stale lingers locally. Routes to `AuthView`
+    /// afterward, same as signing out — there's nothing to go "back" to.
+    private func deleteAccount() {
+        isDeletingAccount = true
+        Task {
+            do {
+                try await supabase.rpc("delete_my_account").execute()
+                try? await supabase.auth.signOut()
+                UserDefaults.standard.removeObject(forKey: "authSessionStartedAt")
+                isDeletingAccount = false
+                showAuth = true
+            } catch {
+                isDeletingAccount = false
+                deleteError = "Something went wrong — check your connection and try again."
+            }
         }
     }
 
