@@ -37,6 +37,12 @@ struct SettingsView: View {
     /// GB" this row used to show — there's no real storage quota anywhere
     /// in this app, so this is usage only, no invented cap.
     @State private var offlineStorageBytes: Int64 = 0
+    /// Real count of routes with downloaded map tiles (`OfflineMapStore`,
+    /// Pro-only) — separate from `offlineStorageBytes` above (that one is
+    /// just this app's own small JSON/snapshot cache; the actual map tiles
+    /// live in Mapbox's own `TileStore` and don't cleanly expose a single
+    /// combined byte count the way a plain file directory does).
+    @State private var offlineMapRegionCount = 0
     @State private var emergencyContactCount = 0
 
     var body: some View {
@@ -65,6 +71,8 @@ struct SettingsView: View {
 
                     cardGroup {
                         valueRow(title: "Offline storage", value: formattedOfflineStorage)
+                        divider
+                        valueRow(title: "Offline map tiles", value: "\(offlineMapRegionCount)")
                         divider
                         Button { showEmergencyContacts = true } label: {
                             valueRow(
@@ -203,6 +211,7 @@ struct SettingsView: View {
         .task {
             refreshLocationStatus()
             offlineStorageBytes = await OfflineRouteStore.shared.diskUsageBytes()
+            offlineMapRegionCount = await OfflineMapStore.shared.downloadedRegionCount()
             await loadEmergencyContactCount()
             let myProfile = try? await RouteRepository.shared.fetchMyProfile()
             isAdmin = myProfile?.isAdmin ?? false

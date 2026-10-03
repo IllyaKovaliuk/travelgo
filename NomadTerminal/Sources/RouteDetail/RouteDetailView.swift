@@ -14,6 +14,10 @@ struct RouteDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var savedOffline = false
     @State private var isDownloading = false
+    /// Real fraction from `OfflineMapStore`'s tile-region progress callback,
+    /// not a spinner pretending — the tile download is the slow part (style
+    /// packs are small and finish before this starts moving).
+    @State private var downloadProgress: Double = 0
     @State private var cachedSnapshot: UIImage?
     @State private var showFullMap = false
     @State private var showEditExtras = false
@@ -409,15 +413,31 @@ struct RouteDetailView: View {
             withAnimation(NTMotion.spring) { savedOffline = false }
             Task {
                 await OfflineRouteStore.shared.remove(routeId: route.id)
+                await OfflineMapStore.shared.remove(routeId: route.id)
                 try? await RouteRepository.shared.setSaved(routeId: route.id, saved: false, downloadedOffline: false)
             }
             return
         }
+        // Real offline map TILES (not just this route's own data) are Pro —
+        // without them, "Save offline" used to leave the live map needing
+        // real network the moment signal actually dropped, exactly the fake
+        // offline this replaces. `OfflineRouteStore` (route data + a static
+        // preview) still runs for everyone below; Pro adds the genuinely
+        // working interactive map + navigation tiles via `OfflineMapStore`.
+        guard subscription.isPro else {
+            showPaywall = true
+            return
+        }
         isDownloading = true
+        downloadProgress = 0
         Task {
             do {
-                _ = try await OfflineRouteStore.shared.download(routeId: route.id, wifiOnly: AppPreferences.wifiOnlyDownloads)
+                let downloaded = try await OfflineRouteStore.shared.download(routeId: route.id, wifiOnly: AppPreferences.wifiOnlyDownloads)
                 cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
+                let coordinates = downloaded.detail.trackPoints.map(\.coordinate) + downloaded.detail.pois.map(\.coordinate)
+                try await OfflineMapStore.shared.download(routeId: route.id, coordinates: coordinates) { fraction in
+                    Task { @MainActor in downloadProgress = fraction }
+                }
                 try await RouteRepository.shared.setSaved(routeId: route.id, saved: true, downloadedOffline: true)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation(NTMotion.spring) { savedOffline = true }
@@ -427,6 +447,24 @@ struct RouteDetailView: View {
             }
             isDownloading = false
         }
+    }
+
+    /// A real percentage during download, not a bare spinner — split into
+    /// a localized phrase plus a plain-digit number, same pattern used
+    /// everywhere else in this app a localized string wraps a live number
+    /// (e.g. `SavedView.savedTile`'s distance): the number itself doesn't
+    /// need translating, only "Downloading" does.
+    private var downloadButtonLabel: Text {
+        if isDownloading {
+            return Text("Downloading…") + Text(" \(Int(downloadProgress * 100))%")
+        }
+        if savedOffline {
+            return Text("Saved offline")
+        }
+        if !subscription.isPro {
+            return Text("Save offline") + Text(" · PRO")
+        }
+        return Text("Save offline")
     }
 
     private func showDownloadToast(_ text: String) {
@@ -446,11 +484,13 @@ struct RouteDetailView: View {
                 HStack(spacing: 9) {
                     if isDownloading {
                         ProgressView().tint(Color(hex: 0x231007))
+                    } else if !savedOffline && !subscription.isPro {
+                        Image(systemName: "crown.fill").font(.system(size: 14))
                     } else {
                         Image(systemName: savedOffline ? "checkmark.circle.fill" : "arrow.down.circle")
                             .font(.system(size: 17))
                     }
-                    Text(isDownloading ? "Downloading…" : (savedOffline ? "Saved offline" : "Save offline"))
+                    downloadButtonLabel
                         .font(NTFont.body(15, .semibold))
                 }
                 .foregroundStyle(Color(hex: 0x231007))

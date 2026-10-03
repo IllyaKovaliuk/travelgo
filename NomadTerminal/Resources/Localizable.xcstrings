@@ -3219,6 +3219,29 @@
         }
       }
     },
+    "Downloading…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargando…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завантаження…"
+          }
+        }
+      }
+    },
     "Drop pin": {
       "extractionState": "manual",
       "localizations": {
@@ -6766,6 +6789,29 @@
         }
       }
     },
+    "Offline map tiles": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline map tiles"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapas sin conexión"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Офлайн-карти"
+          }
+        }
+      }
+    },
     "Offline maps, SOS beacon and weather alerts are all unlocked.": {
       "extractionState": "manual",
       "localizations": {
@@ -7949,6 +7995,29 @@
         }
       }
     },
+    "Real offline maps — the whole route downloaded, not just the data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Real offline maps — the whole route downloaded, not just the data"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapas reales sin conexión: toda la ruta descargada, no solo los datos"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Реальні офлайн-карти — весь маршрут завантажено, а не тільки дані"
+          }
+        }
+      }
+    },
     "Record now": {
       "extractionState": "manual",
       "localizations": {
@@ -8727,6 +8796,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Зберегти контакт"
+          }
+        }
+      }
+    },
+    "Save offline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save offline"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar sin conexión"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зберегти офлайн"
+          }
+        }
+      }
+    },
+    "Saved offline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved offline"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardado sin conexión"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Збережено офлайн"
           }
         }
       }

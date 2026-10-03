@@ -52,15 +52,18 @@ struct PaywallView: View {
                         .foregroundStyle(NTColor.milk(0.62))
                         .padding(.top, 8)
 
-                    // Only one thing is actually behind this paywall —
-                    // `RouteItineraryPanel.isPro` — so only real claims
-                    // belong here. SOS, offline caching, and publishing
-                    // are free for everyone regardless of Pro status;
-                    // claiming otherwise (a past version of this screen
-                    // did, including a fictional "satellite SOS beacon")
-                    // is exactly the kind of thing that gets an app
-                    // rejected or worse, trusted wrongly in an emergency.
+                    // Two real things behind this paywall now —
+                    // `RouteItineraryPanel.isPro` and `OfflineMapStore`
+                    // (real Mapbox tile regions, not just the route's own
+                    // JSON) — so only real claims belong here. SOS and
+                    // publishing stay free for everyone regardless of Pro
+                    // status; claiming otherwise (a past version of this
+                    // screen did, including a fictional "satellite SOS
+                    // beacon") is exactly the kind of thing that gets an
+                    // app rejected or worse, trusted wrongly in an
+                    // emergency.
                     VStack(alignment: .leading, spacing: 13) {
+                        feature("Real offline maps — the whole route downloaded, not just the data")
                         feature("Full leg-by-leg itinerary with estimated timing on every route")
                         feature("Supports NomadCompass's development")
                     }
