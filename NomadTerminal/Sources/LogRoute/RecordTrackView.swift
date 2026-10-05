@@ -58,11 +58,15 @@ struct RecordTrackView: View {
     @State private var droppedPOIs: [DraftPOI] = []
     @State private var pendingPin: TrackPoint?
     @State private var showSOS = false
-    // Part 2a — photos geotagged live, mid-recording. `photoPickerItem` is
-    // PhotosUI's own selection handle, not the photo itself; the real
-    // upload happens in `.onChange` below once its `Data` loads.
+    // Part 2a — photos geotagged live, mid-recording. `photoPickerItems` is
+    // PhotosUI's own selection handles, not the photos themselves; the real
+    // upload happens in `.onChange` below once each one's `Data` loads.
+    // Multi-select (up to `photoPickerSelectionLimit`) so "a few shots at
+    // this viewpoint" is one pick, not one pin-at-a-time round trip through
+    // the picker — they land as separate `DraftPhoto`s at the same "here"
+    // coordinate, which `PhotoSpot.cluster` groups into one pin downstream.
     @State private var droppedPhotos: [DraftPhoto] = []
-    @State private var photoPickerItem: PhotosPickerItem?
+    @State private var photoPickerItems: [PhotosPickerItem] = []
     @State private var isUploadingPhoto = false
     @State private var photoUploadError: String?
     /// `uploadRoutePhotoFile` wants a route id to group storage paths under
@@ -70,6 +74,9 @@ struct RecordTrackView: View {
     /// until publish), so this is just an opaque per-session grouping key,
     /// same role `DraftPOI`/`DraftPhoto` already play for the DB row.
     private let recordingSessionId = UUID().uuidString
+    /// Matches `PhotosPicker`'s own `maxSelectionCount` below — a real cap
+    /// on one pick, not an arbitrary display limit elsewhere.
+    private let photoPickerSelectionLimit = 10
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -339,7 +346,7 @@ struct RecordTrackView: View {
             // window, but a photo taken in the first second or two of a
             // recording is still real and still worth keeping, just
             // without a geotag).
-            PhotosPicker(selection: $photoPickerItem, matching: .images) {
+            PhotosPicker(selection: $photoPickerItems, maxSelectionCount: photoPickerSelectionLimit, matching: .images) {
                 if isUploadingPhoto {
                     ProgressView().tint(NTColor.milk)
                         .frame(width: 56, height: 56)
@@ -357,13 +364,18 @@ struct RecordTrackView: View {
         }
         .padding(.horizontal, 22)
         .padding(.bottom, 14)
-        .onChange(of: photoPickerItem) { _, newItem in
-            guard let newItem else { return }
+        .onChange(of: photoPickerItems) { _, newItems in
+            guard !newItems.isEmpty else { return }
+            // One real "here" for the whole batch — all picked together
+            // means all taken at this same viewpoint, which is exactly
+            // what makes `PhotoSpot.cluster` group them into one pin
+            // instead of scattering `photoPickerSelectionLimit` separate
+            // ones a few meters apart from GPS drift between picks.
             let here = tracker.points.last
             Task {
                 isUploadingPhoto = true
                 withAnimation { photoUploadError = nil }
-                defer { isUploadingPhoto = false; photoPickerItem = nil }
+                defer { isUploadingPhoto = false; photoPickerItems = [] }
                 // Real fix for a real bug: both steps used to fail
                 // completely silently (`try?` swallowing whatever was
                 // actually thrown, then just `return`ing) — a tap on the
@@ -371,24 +383,43 @@ struct RecordTrackView: View {
                 // with zero indication anything had gone wrong or why.
                 // Most common real cause: an iCloud-only photo that
                 // hadn't finished downloading to the device yet.
-                let data: Data
-                do {
-                    guard let loaded = try await newItem.loadTransferable(type: Data.self) else {
-                        withAnimation { photoUploadError = "Couldn't read that photo — try picking it again." }
-                        return
+                //
+                // Each item in the batch is independent — one failing
+                // (unreadable, iCloud still downloading, a dropped
+                // connection mid-upload) doesn't throw away the others
+                // that already succeeded.
+                var uploadedCount = 0
+                var hadFailure = false
+                for item in newItems {
+                    let data: Data
+                    do {
+                        guard let loaded = try await item.loadTransferable(type: Data.self) else {
+                            hadFailure = true
+                            continue
+                        }
+                        data = loaded
+                    } catch {
+                        hadFailure = true
+                        continue
                     }
-                    data = loaded
-                } catch {
-                    withAnimation { photoUploadError = "Couldn't load that photo (it may still be downloading from iCloud) — try again." }
-                    return
+                    do {
+                        let url = try await RouteRepository.shared.uploadRoutePhotoFile(data, routeId: recordingSessionId)
+                        droppedPhotos.append(DraftPhoto(imageUrl: url, lat: here?.lat, lng: here?.lng))
+                        uploadedCount += 1
+                    } catch {
+                        hadFailure = true
+                    }
                 }
-                do {
-                    let url = try await RouteRepository.shared.uploadRoutePhotoFile(data, routeId: recordingSessionId)
+                if uploadedCount > 0 {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
-                    droppedPhotos.append(DraftPhoto(imageUrl: url, lat: here?.lat, lng: here?.lng))
-                } catch {
+                }
+                if hadFailure {
                     UINotificationFeedbackGenerator().notificationOccurred(.error)
-                    withAnimation { photoUploadError = "Upload failed — check your connection and try again." }
+                    withAnimation {
+                        photoUploadError = uploadedCount > 0
+                            ? "Some photos couldn't be uploaded — check your connection and try the rest again."
+                            : "Upload failed — check your connection and try again."
+                    }
                 }
             }
         }

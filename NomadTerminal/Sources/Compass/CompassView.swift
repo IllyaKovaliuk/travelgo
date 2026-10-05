@@ -89,6 +89,17 @@ struct CompassView: View {
     @State private var offTrailMetersBanner: Int?
     @State private var transientMessage: TransientMessage?
     @State private var hasArrived = false
+    /// Real geotagged photos on this route and the author's own placed
+    /// POIs — same two pin types `RouteFullMapView` already shows, tap-to-
+    /// reveal and all. This screen (live navigation) previously had
+    /// neither: POI pins were decorative glyphs with no tap action, and
+    /// there were no photo pins at all, even though this is the screen
+    /// someone's actually looking at mid-hike.
+    @State private var photos: [RouteRepository.RoutePhoto] = []
+    @State private var currentUserId: String?
+    @State private var selectedPOI: RouteDetailInfo.POI?
+    @State private var photoViewerSpot: PhotoSpot?
+    private var photoSpots: [PhotoSpot] { PhotoSpot.cluster(photos) }
 
     private let offTrailThresholdM: Double = 50
     private let waypointArrivalThresholdM: Double = 40
@@ -166,6 +177,12 @@ struct CompassView: View {
                 Spacer(minLength: 0)
                 if isMapActive {
                     recenterButton
+                    if let selectedPOI {
+                        poiCard(selectedPOI)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 8)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                     hudStrip
                 } else {
                     dial
@@ -213,6 +230,26 @@ struct CompassView: View {
                 updateNavigationState()
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
             }
+        }
+        .task {
+            guard let routeId else { return }
+            photos = (try? await RouteRepository.shared.fetchPhotos(routeId: routeId)) ?? []
+            currentUserId = (try? await supabase.auth.session)?.user.id.uuidString
+        }
+        .fullScreenCover(item: $photoViewerSpot) { spot in
+            PhotoViewerView(
+                photos: photos,
+                startIndex: photos.firstIndex(where: { $0.id == spot.photos.first?.id }) ?? 0,
+                currentUserId: currentUserId,
+                onDelete: { photo in
+                    photos.removeAll { $0.id == photo.id }
+                    Task { try? await RouteRepository.shared.deletePhoto(id: photo.id) }
+                },
+                onReport: { photo in
+                    Task { try? await RouteRepository.shared.report(.photo, id: photo.id, reason: "Reported from map") }
+                },
+                onClose: { photoViewerSpot = nil }
+            )
         }
         .sheet(isPresented: $showWaypoints) {
             WaypointsSheet(waypoints: waypoints, current: waypointIndex) { index in
@@ -384,7 +421,28 @@ struct CompassView: View {
 
             ForEvery(pois) { poi in
                 MapViewAnnotation(coordinate: poi.coordinate) {
-                    POIMapMarker(category: poi.category)
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        withAnimation(NTMotion.spring) { selectedPOI = poi }
+                    } label: {
+                        POIMapMarker(category: poi.category)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // Real photo pins — clustered the same way `RouteFullMapView`
+            // does, drawn after the POI pins so one never sits visually
+            // under a near-identical POI pin.
+            ForEvery(photoSpots) { spot in
+                MapViewAnnotation(coordinate: spot.coordinate) {
+                    Button {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        photoViewerSpot = spot
+                    } label: {
+                        PhotoSpotMapMarker(spot: spot)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
 
@@ -465,6 +523,48 @@ struct CompassView: View {
         .padding(.top, 8)
         .animation(NTMotion.spring, value: offTrailMetersBanner)
         .animation(NTMotion.spring, value: transientMessage)
+    }
+
+    /// Same card `RouteFullMapView.poiCard` shows — icon, title, category,
+    /// the author's own note — just styled for this screen's dark HUD
+    /// chrome instead of that one's.
+    private func poiCard(_ poi: RouteDetailInfo.POI) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle().fill(poi.category.tint)
+                Image(systemName: poi.category.icon).font(.system(size: 17, weight: .semibold)).foregroundStyle(.white)
+            }
+            .frame(width: 42, height: 42)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(poi.title).font(NTFont.body(15, .semibold)).foregroundStyle(NTColor.milk)
+                Text(poi.category.label).font(NTFont.mono(10, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+                if let note = poi.note, !note.isEmpty {
+                    Text(note)
+                        .font(NTFont.body(12.5, .light))
+                        .foregroundStyle(NTColor.milk(0.75))
+                        .padding(.top, 2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            Button {
+                withAnimation(NTMotion.spring) { selectedPOI = nil }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(NTColor.milk(0.6))
+                    .frame(width: 26, height: 26)
+                    .background(Circle().fill(NTColor.milk(0.1)))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .shadow(color: .black.opacity(0.3), radius: 16, y: 8)
     }
 
     private var recenterButton: some View {
