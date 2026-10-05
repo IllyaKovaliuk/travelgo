@@ -1402,6 +1402,52 @@
         }
       }
     },
+    "Add a photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a photo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir una foto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додати фото"
+          }
+        }
+      }
+    },
+    "Add another photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add another photo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Añadir otra foto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Додати ще фото"
+          }
+        }
+      }
+    },
     "Add contact": {
       "extractionState": "manual",
       "localizations": {
@@ -6628,6 +6674,29 @@
         }
       }
     },
+    "Now tap the map…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now tap the map…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora toca el mapa…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тепер торкнись карти…"
+          }
+        }
+      }
+    },
     "OFF TRAIL": {
       "extractionState": "manual",
       "localizations": {
@@ -7830,6 +7899,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "СПОРЯДЖЕННЯ ТА ВИМОГИ (НЕОБОВ’ЯЗКОВО)"
+          }
+        }
+      }
+    },
+    "ROUTE PREVIEW": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ROUTE PREVIEW"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VISTA PREVIA DE LA RUTA"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ПОПЕРЕДНІЙ ПЕРЕГЛЯД МАРШРУТУ"
           }
         }
       }
@@ -9468,6 +9560,29 @@
       }
     },
     "System": {},
+    "TAP TO PLACE PHOTO": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TAP TO PLACE PHOTO"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOCA PARA COLOCAR FOTO"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ТОРКНИСЬ, ЩОБ РОЗМІСТИТИ ФОТО"
+          }
+        }
+      }
+    },
     "TITLE": {
       "extractionState": "manual",
       "localizations": {
@@ -9602,6 +9717,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Торкнись будь-де на глобусі — будь-яка країна, будь-яка точка Землі. Нумеровані фотопозначки вже показують, де є маршрути."
+          }
+        }
+      }
+    },
+    "Tap the map to place this photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the map to place this photo"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toca el mapa para colocar esta foto"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Торкнись карти, щоб розмістити фото"
           }
         }
       }
