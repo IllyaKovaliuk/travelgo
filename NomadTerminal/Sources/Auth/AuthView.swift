@@ -247,6 +247,25 @@ struct AuthView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 16)
+
+                // Real, required, reachable regardless of which mode this
+                // screen is in — unlike the agreement sentence above
+                // (sign-up only, since "by continuing you agree" only
+                // makes sense there), Apple's own review guideline
+                // (5.1.1/3.1.2) means these have to be findable the moment
+                // someone lands on this screen, including the very first
+                // open where `mode` defaults to `.signIn`. This is the
+                // last mandatory screen before an account exists — there's
+                // no "onboarding slide after this" to put it on instead.
+                HStack(spacing: 14) {
+                    Link(destination: LegalLinks.termsOfService) { Text("Terms of Service") }
+                    Text("·").foregroundStyle(NTColor.milk(0.3))
+                    Link(destination: LegalLinks.privacyPolicy) { Text("Privacy Policy") }
+                }
+                .font(NTFont.mono(10, .medium)).tracking(0.2)
+                .foregroundStyle(NTColor.milk(0.4))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 18)
             }
             .padding(.horizontal, 30)
             .padding(.top, 24)
