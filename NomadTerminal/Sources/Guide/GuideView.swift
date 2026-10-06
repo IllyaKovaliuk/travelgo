@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The Field Guide — practical "what do I do if..." guidance organized by
-/// situation. NomadTerminal's whole pitch is a terminal for people going
+/// situation. Nomad's whole pitch is a terminal for people going
 /// somewhere off-grid; this is the part of that promise that isn't a map.
 struct GuideView: View {
     @State private var path: [GuideCategory] = []

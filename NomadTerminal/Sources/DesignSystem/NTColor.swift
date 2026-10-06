@@ -34,7 +34,7 @@ final class ThemeManager {
     }
 }
 
-/// NomadTerminal color tokens.
+/// Nomad color tokens.
 ///
 /// Rebuilt around a monochrome UI shell — real route/landscape photography
 /// is the only place color should come from now, so the chrome (grounds,

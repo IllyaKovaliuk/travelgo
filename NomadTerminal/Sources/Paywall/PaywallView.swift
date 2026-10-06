@@ -1,7 +1,7 @@
 import SwiftUI
 import StoreKit
 
-/// 20 · NomadCompass Pro — paywall. Real StoreKit 2 purchase flow, backed
+/// 20 · Nomad Pro — paywall. Real StoreKit 2 purchase flow, backed
 /// by `SubscriptionManager` and the two products in `Configuration.storekit`
 /// (must be mirrored exactly in App Store Connect before shipping).
 struct PaywallView: View {
@@ -47,7 +47,7 @@ struct PaywallView: View {
                         .foregroundStyle(NTColor.milk)
                         .padding(.top, 18)
 
-                    Text("NomadCompass Pro — the full leg-by-leg itinerary on every route.")
+                    Text("Nomad Pro — the full leg-by-leg itinerary on every route.")
                         .font(NTFont.body(14.5, .light))
                         .foregroundStyle(NTColor.milk(0.62))
                         .padding(.top, 8)
@@ -65,7 +65,7 @@ struct PaywallView: View {
                     VStack(alignment: .leading, spacing: 13) {
                         feature("Real offline maps — the whole route downloaded, not just the data")
                         feature("Full leg-by-leg itinerary with estimated timing on every route")
-                        feature("Supports NomadCompass's development")
+                        feature("Supports Nomad's development")
                     }
                     .padding(.top, 22)
 

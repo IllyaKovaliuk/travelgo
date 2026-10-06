@@ -57,7 +57,7 @@
     {
       "id" : "9F3CF0D4-BDE6-4259-AFC7-BA0E40C1ECB8",
       "localizations" : [],
-      "name" : "NomadTerminal Pro",
+      "name" : "Nomad Pro",
       "subscriptions" : [
         {
           "adHocOffers" : [],
@@ -74,7 +74,7 @@
           "localizations" : [
             {
               "description" : "Everything you need where there's no signal at all.",
-              "displayName" : "NomadTerminal Pro — Monthly",
+              "displayName" : "Nomad Pro — Monthly",
               "locale" : "en_US"
             }
           ],
@@ -99,7 +99,7 @@
           "localizations" : [
             {
               "description" : "Everything you need where there's no signal at all. Best value.",
-              "displayName" : "NomadTerminal Pro — Annual",
+              "displayName" : "Nomad Pro — Annual",
               "locale" : "en_US"
             }
           ],

@@ -1,14 +1,14 @@
-# NomadCompass Privacy Policy
+# Nomad Privacy Policy
 
 **Last updated:** October 2, 2026
 
-This policy describes what NomadCompass ("the app", "we") collects, why, and how it's handled. It's written to match what the app actually does — not a generic template — and should be kept in sync with the code whenever data collection changes.
+This policy describes what Nomad ("the app", "we") collects, why, and how it's handled. It's written to match what the app actually does — not a generic template — and should be kept in sync with the code whenever data collection changes.
 
 ## What we collect
 
 **Account information.** When you create an account, we collect your email address and a username/display name you choose. Authentication is handled by our backend provider, Supabase — we never see or store your password ourselves. If you sign in with Google, Google shares your name, email, and profile photo with us for that purpose.
 
-**Location data.** NomadCompass is a route-logging and navigation app; location is core to what it does, in several distinct ways:
+**Location data.** Nomad is a route-logging and navigation app; location is core to what it does, in several distinct ways:
 - **While recording a route**, we collect a live stream of GPS coordinates (latitude, longitude, altitude) to compute your distance, elevation gain, and the path you traveled. This is stored as part of the route you choose to publish.
 - **While navigating a published route** (Compass's map mode), we read your live position to show it on the map and compute your real-time distance/progress along the route — this is not stored, only used live on your device.
 - **If you use the SOS screen**, your last known position is included in the message it prepares for your emergency contacts.
@@ -25,7 +25,7 @@ This policy describes what NomadCompass ("the app", "we") collects, why, and how
 
 **Device storage.** Routes you've opened are cached locally on your device (the route's own data and its cover photo) so they remain viewable without a network connection; this does not include map tiles, which still require a connection to load. This stays on your device and is not uploaded anywhere beyond the normal publish flow.
 
-**Purchase information.** Subscription purchases (NomadCompass Pro) are processed entirely by Apple through StoreKit. We receive confirmation that you have an active subscription; we do not receive or store your payment details.
+**Purchase information.** Subscription purchases (Nomad Pro) are processed entirely by Apple through StoreKit. We receive confirmation that you have an active subscription; we do not receive or store your payment details.
 
 ## What we don't do
 
@@ -44,12 +44,12 @@ Account, route, and social data is stored with Supabase (Postgres + Auth), our b
 - **Passive visit detection** — off by default; toggle it in Settings at any time. Turning it off stops background location use immediately.
 - **Emergency contacts** — add, edit, or remove them at any time in Settings.
 - **Account deletion** — Settings → Delete account, directly in the app. This permanently removes your profile, routes, photos, comments, likes, saves, follows, emergency contacts, points, referrals, and badges; it can't be undone and takes effect immediately.
-- **Location permission** — controlled via iOS Settings → NomadCompass → Location. Denying it disables route recording, live navigation, and SOS's position-sharing, but the rest of the app still works.
+- **Location permission** — controlled via iOS Settings → Nomad → Location. Denying it disables route recording, live navigation, and SOS's position-sharing, but the rest of the app still works.
 - **Reporting content** — you can report a route, photo, or comment; content that collects enough reports is automatically hidden pending review, and our moderators can review, hide, or remove it directly.
 
 ## Children
 
-NomadCompass is not directed at children under 13, and we don't knowingly collect data from them.
+Nomad is not directed at children under 13, and we don't knowingly collect data from them.
 
 ## Changes to this policy
 

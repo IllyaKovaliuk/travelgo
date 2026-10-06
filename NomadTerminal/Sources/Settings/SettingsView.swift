@@ -82,7 +82,7 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                         divider
-                        valueRow(title: "About NomadCompass", value: "v2.4.0")
+                        valueRow(title: "About Nomad", value: "v2.4.0")
                     }
 
                     // Real now — `profiles.is_admin`, checked here (so the
@@ -340,7 +340,7 @@ struct SettingsView: View {
                 }
                 .frame(width: 38, height: 38)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(subscription.isPro ? "NomadCompass Pro" : "Get NomadCompass Pro").font(NTFont.body(14.5, .semibold))
+                    Text(subscription.isPro ? "Nomad Pro" : "Get Nomad Pro").font(NTFont.body(14.5, .semibold))
                     Text(subscription.isPro ? "Active — manage your plan" : "Full itinerary on every route")
                         .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
                 }

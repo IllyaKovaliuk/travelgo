@@ -90,7 +90,7 @@ struct SOSView: View {
         if let lastKnownCoordinate {
             lines.append("My last known position: https://maps.apple.com/?ll=\(lastKnownCoordinate.latitude),\(lastKnownCoordinate.longitude)")
         }
-        lines.append("Sent from NomadCompass.")
+        lines.append("Sent from Nomad.")
         return lines.joined(separator: "\n")
     }
 

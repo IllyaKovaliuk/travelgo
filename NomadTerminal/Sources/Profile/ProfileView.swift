@@ -523,7 +523,7 @@ struct ProfileView: View {
                     .font(NTFont.mono(20, .semibold)).tracking(3)
                     .foregroundStyle(NTColor.milk)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                ShareLink(item: "Come log real routes with me on NomadCompass — use my code \(code) when you sign up, we both get bonus points.") {
+                ShareLink(item: "Come log real routes with me on Nomad — use my code \(code) when you sign up, we both get bonus points.") {
                     Text("Send invite")
                         .font(NTFont.body(13, .semibold))
                         .foregroundStyle(Color(hex: 0x231007))
