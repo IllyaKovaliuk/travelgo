@@ -96,6 +96,11 @@ struct NewRouteDraft {
 /// Coordinates the whole "log a route" flow — start → record → details →
 /// publish — as pushes on one NavigationStack inside a single modal.
 struct LogRouteFlow: View {
+    /// Set when this flow is opened to land a file shared in from outside
+    /// the app (see `PendingImportCoordinator`) — skips straight past
+    /// `LogRouteStartView` to the import screen, already parsing.
+    var initialImportURL: URL? = nil
+
     @Environment(\.dismiss) private var dismiss
     @State private var path: [Step] = []
     @State private var draft = NewRouteDraft()
@@ -115,7 +120,7 @@ struct LogRouteFlow: View {
                 case .record:
                     RecordTrackView(onFinish: { result in applyResult(result) })
                 case .importFile:
-                    ImportRouteView(onFinish: { result in applyResult(result) })
+                    ImportRouteView(pendingFileURL: initialImportURL, onFinish: { result in applyResult(result) })
                 case .drawMap:
                     DrawRouteView(onFinish: { result in applyResult(result) })
                 case .details:
@@ -127,6 +132,10 @@ struct LogRouteFlow: View {
         }
         .tint(NTColor.milk)
         .preferredColorScheme(ThemeManager.shared.colorScheme)
+        .task {
+            guard initialImportURL != nil, path.isEmpty else { return }
+            path = [.importFile]
+        }
     }
 
     /// Shared by all three "how did you get the line" paths — record,

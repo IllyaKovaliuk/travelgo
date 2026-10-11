@@ -19,6 +19,13 @@ import PhotosUI
 /// "pick a photo, then tap the map to place it" interaction `DrawRouteView`
 /// uses, not a guessed location.
 struct ImportRouteView: View {
+    /// Set when this screen is the landing point for a file shared in from
+    /// outside the app (Files' "Open In"/"Copy to Nomad", or another app's
+    /// Share Sheet — see `PendingImportCoordinator`) rather than reached by
+    /// tapping "Import a file" and picking one here. When set, the file is
+    /// parsed automatically on appear — there's no "Choose file" step to
+    /// skip, the choosing already happened outside this app.
+    var pendingFileURL: URL? = nil
     var onFinish: (RecordResult) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -33,11 +40,13 @@ struct ImportRouteView: View {
     @State private var photoUploadError: String?
     @State private var pendingPhotoUrl: String?
     @State private var previewViewport: Viewport = .styleDefault
+    @State private var hasHandledPendingURL = false
     private let importSessionId = UUID().uuidString
 
     private struct ParsedFile {
         let fileName: String
         let points: [ParsedTrackPoint]
+        let waypoints: [ParsedWaypoint]
         let distanceKM: Double
         let ascentM: Double
         let highPointM: Double
@@ -73,6 +82,11 @@ struct ImportRouteView: View {
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
         .fileImporter(isPresented: $showPicker, allowedContentTypes: allowedTypes, onCompletion: handlePicked)
+        .task {
+            guard let pendingFileURL, !hasHandledPendingURL else { return }
+            hasHandledPendingURL = true
+            handlePicked(.success(pendingFileURL))
+        }
     }
 
     private var header: some View {
@@ -145,6 +159,11 @@ struct ImportRouteView: View {
                 Text("\(parsed.points.count) points read")
                     .font(NTFont.mono(11, .medium)).tracking(0.4)
                     .foregroundStyle(NTColor.milk(0.5))
+                if !parsed.waypoints.isEmpty {
+                    Text("\(parsed.waypoints.count) waypoint\(parsed.waypoints.count == 1 ? "" : "s") → pins")
+                        .font(NTFont.mono(11, .medium)).tracking(0.4)
+                        .foregroundStyle(NTColor.water)
+                }
             }
             .padding(.top, 30)
 
@@ -213,6 +232,15 @@ struct ImportRouteView: View {
                             MapViewAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
                                 photoMarker
                             }
+                        }
+                    }
+                    // Real `<wpt>` pins from the file itself — shown here
+                    // immediately so "waypoints became pins" is visible
+                    // before the user even reaches the next screen, not a
+                    // promise that only turns out true later.
+                    ForEvery(Array(parsed.waypoints.enumerated()), id: \.offset) { _, waypoint in
+                        MapViewAnnotation(coordinate: CLLocationCoordinate2D(latitude: waypoint.lat, longitude: waypoint.lng)) {
+                            POIMapMarker(category: .other)
                         }
                     }
                 }
@@ -338,12 +366,13 @@ struct ImportRouteView: View {
                 let needsSecurityScope = url.startAccessingSecurityScopedResource()
                 defer { if needsSecurityScope { url.stopAccessingSecurityScopedResource() } }
                 do {
-                    let points = try RouteFileParser.parse(fileURL: url)
-                    let coordinates = points.map { CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng) }
-                    let elevations = points.compactMap(\.elevation)
+                    let result = try RouteFileParser.parse(fileURL: url)
+                    let coordinates = result.points.map { CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng) }
+                    let elevations = result.points.compactMap(\.elevation)
                     parsed = ParsedFile(
                         fileName: url.lastPathComponent,
-                        points: points,
+                        points: result.points,
+                        waypoints: result.waypoints,
                         distanceKM: TrackMath.distanceKM(coordinates),
                         ascentM: elevations.isEmpty ? 0 : TrackMath.ascentM(elevations),
                         highPointM: elevations.isEmpty ? 0 : TrackMath.highPointM(elevations)
@@ -357,9 +386,15 @@ struct ImportRouteView: View {
 
     private func finish(_ parsed: ParsedFile) {
         let trackPoints = TrackMath.downsample(parsed.points.map { TrackPoint(lat: $0.lat, lng: $0.lng) })
+        // Real `<wpt>` entries become real pins — the same `DraftPOI` shape
+        // and the same publish pipeline `RecordTrackView`'s live-dropped
+        // pins already use, so nothing downstream needed to change.
+        let waypointPOIs = parsed.waypoints.map { waypoint in
+            DraftPOI(lat: waypoint.lat, lng: waypoint.lng, category: .other, title: waypoint.name ?? "Waypoint")
+        }
         onFinish(RecordResult(
             distanceKM: parsed.distanceKM, ascentM: parsed.ascentM, highPointM: parsed.highPointM,
-            points: trackPoints, pois: [], photos: photos, transport: transport
+            points: trackPoints, pois: waypointPOIs, photos: photos, transport: transport
         ))
     }
 }

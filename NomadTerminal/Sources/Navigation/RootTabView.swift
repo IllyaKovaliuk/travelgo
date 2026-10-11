@@ -13,6 +13,14 @@ struct RootTabView: View {
     /// once here since the tab bar floats over every screen, not just
     /// Profile.
     @State private var profileInitials: String?
+    /// A third, independent trigger for `LogRouteFlow` — Home's and
+    /// Journal's own "+" buttons each own their own `showLogRoute` bool
+    /// and don't need to change. This one fires itself the moment a GPX
+    /// shared in from outside the app (`PendingImportCoordinator`) is
+    /// waiting — including one shared in before sign-in ever finished,
+    /// since this view only exists once that's done, and reads the
+    /// coordinator fresh the moment it does.
+    @State private var pendingImportCoordinator = PendingImportCoordinator.shared
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -33,6 +41,16 @@ struct RootTabView: View {
             if let profile = try? await RouteRepository.shared.fetchMyProfile() {
                 let name = profile.displayName ?? profile.username
                 profileInitials = name.split(separator: " ").prefix(2).compactMap { $0.first }.map(String.init).joined().uppercased()
+            }
+        }
+        // `URL` isn't `Identifiable`, so `isPresented:` + reading the
+        // coordinator inside the closure, not `item:`.
+        .fullScreenCover(isPresented: Binding(
+            get: { pendingImportCoordinator.pendingFileURL != nil },
+            set: { if !$0 { pendingImportCoordinator.pendingFileURL = nil } }
+        )) {
+            if let url = pendingImportCoordinator.pendingFileURL {
+                LogRouteFlow(initialImportURL: url)
             }
         }
     }

@@ -18,6 +18,17 @@ struct NomadTerminalApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                // A GPX shared in from Files' "Open In"/"Copy to Nomad" or
+                // another app's Share Sheet (Strava, Garmin Connect,
+                // Komoot — see `UTImportedTypeDeclarations`/
+                // `CFBundleDocumentTypes` in project.yml) lands here. Just
+                // records it — `RootTabView` is what actually acts on it,
+                // once (if) the signed-in shell is up; see
+                // `PendingImportCoordinator`'s own doc comment for why this
+                // can't act on it directly at this level.
+                .onOpenURL { url in
+                    PendingImportCoordinator.shared.pendingFileURL = url
+                }
         }
     }
 }

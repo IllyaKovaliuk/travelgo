@@ -93,6 +93,32 @@ targets:
           - CFBundleURLSchemes:
               - io.nomadterminal.app
             CFBundleURLName: io.nomadterminal.app.oauth
+        # GPX isn't a system-known UTType, so it has to be declared before
+        # the app can register as a viewer for it below. This is the real
+        # mechanism behind "Поділитись → Nomad" showing up as a "Copy to
+        # Nomad" destination in another app's Share Sheet (Strava, Garmin
+        # Connect, Komoot's own "export GPX"), and behind the Files app's
+        # "Open In Nomad" — no separate Share Extension target needed for
+        # either; both read directly off CFBundleDocumentTypes below. The
+        # file itself is delivered via `.onOpenURL` (see
+        # `NomadTerminalApp.swift`/`PendingImportCoordinator`).
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: io.nomadterminal.app.gpx
+            UTTypeDescription: GPS Exchange Format
+            UTTypeConformsTo:
+              - public.xml
+              - public.data
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - gpx
+              public.mime-type:
+                - application/gpx+xml
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: GPX Track
+            LSItemContentTypes:
+              - io.nomadterminal.app.gpx
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Default
         # Public runtime token (safe to ship client-embedded, same as
         # Supabase's anon key) — the separate secret download token lives
         # only in ~/.netrc for SPM to fetch the SDK, never in the repo.
@@ -136,16 +162,36 @@ targets:
           - es
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+  # Logic-only tests (no UI, no need to run hosted inside the app's own
+  # process) — plain `@testable import NomadTerminal`, linked against the
+  # main target rather than TEST_HOST/BUNDLE_LOADER-hosted in it.
+  NomadTerminalTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Tests/NomadTerminalTests
+    dependencies:
+      - target: NomadTerminal
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app.tests
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   NomadTerminal:
     build:
       targets:
         NomadTerminal: all
+        NomadTerminalTests: [test]
     run:
       config: Debug
       storeKitConfiguration: Configuration.storekit
     test:
       config: Debug
+      targets:
+        - NomadTerminalTests
     profile:
       config: Release
     analyze:
