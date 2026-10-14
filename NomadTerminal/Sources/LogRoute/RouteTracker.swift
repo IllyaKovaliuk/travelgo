@@ -38,7 +38,8 @@ final class RouteTracker: NSObject {
     override init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        manager.distanceFilter = kCLDistanceFilterNone
         manager.activityType = .fitness
         manager.pausesLocationUpdatesAutomatically = false
         // Apple's own UI for "this app is still reading your location in the
@@ -56,6 +57,7 @@ final class RouteTracker: NSObject {
         case .denied, .restricted:
             authorizationDenied = true
         case .authorizedWhenInUse:
+            manager.allowsBackgroundLocationUpdates = true
             // Upgrade contextually, right when a recording actually starts
             // (Apple's recommended pattern) rather than asking for Always
             // upfront during onboarding — this is also what keeps the
@@ -64,7 +66,7 @@ final class RouteTracker: NSObject {
             manager.requestAlwaysAuthorization()
             manager.startUpdatingLocation()
         default:
-            manager.allowsBackgroundLocationUpdates = manager.authorizationStatus == .authorizedAlways
+            manager.allowsBackgroundLocationUpdates = true
             manager.startUpdatingLocation()
         }
     }
@@ -82,14 +84,11 @@ final class RouteTracker: NSObject {
         manager.stopUpdatingLocation()
     }
 
-    /// Downsampled to a sane number of points for storage/rendering — a
-    /// multi-hour recording at 1 sample/sec would otherwise be thousands of
-    /// points for very little visual gain on a phone-sized map.
+    /// Simplified (not uniformly thinned) — keeps every bend of the real
+    /// path so the stored polyline follows streets instead of cutting
+    /// chords across blocks. See `TrackMath.downsample`.
     var storedPoints: [TrackPoint] {
-        let maxPoints = 300
-        guard points.count > maxPoints else { return points }
-        let stride = Double(points.count) / Double(maxPoints)
-        return (0..<maxPoints).map { points[Int(Double($0) * stride)] }
+        TrackMath.downsample(points)
     }
 }
 
@@ -103,7 +102,12 @@ extension RouteTracker: CLLocationManagerDelegate {
                 manager.startUpdatingLocation()
             case .authorizedWhenInUse:
                 self.authorizationDenied = false
-                manager.allowsBackgroundLocationUpdates = false
+                // WhenInUse + the `location` background mode keeps
+                // updates flowing while backgrounded (shows the blue
+                // pill). Setting this to false made recording silently
+                // stop the moment the phone was pocketed, leaving a
+                // huge straight-line gap in the track.
+                manager.allowsBackgroundLocationUpdates = true
                 // The actual bug this fixes: on someone's very first-ever
                 // recording, authorizationStatus starts at .notDetermined,
                 // so `start()`'s own .authorizedWhenInUse branch (which asks
@@ -129,7 +133,7 @@ extension RouteTracker: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         Task { @MainActor in
             for location in locations {
-                guard location.horizontalAccuracy >= 0, location.horizontalAccuracy < 50 else { continue }
+                guard location.horizontalAccuracy >= 0, location.horizontalAccuracy < 65 else { continue }
 
                 if location.verticalAccuracy >= 0, location.altitude > self.highPointM {
                     self.highPointM = location.altitude
