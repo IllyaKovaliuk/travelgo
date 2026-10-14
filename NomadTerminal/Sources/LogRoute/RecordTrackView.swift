@@ -1,5 +1,7 @@
 import SwiftUI
 import PhotosUI
+import MapboxMaps
+import CoreLocation
 
 struct RecordResult {
     let distanceKM: Double
@@ -48,6 +50,7 @@ struct RecordTrackView: View {
     @State private var pausedAccumulated: TimeInterval = 0
     @State private var pauseStartedAt: Date?
     @State private var isPaused = false
+    @State private var viewport: Viewport = .followPuck(zoom: 16, bearing: .heading, pitch: 0)
     /// Wasn't chosen anywhere before this — the details step afterward
     /// (`RouteUploadDetailsView`) picked it up from `NewRouteDraft`'s
     /// silent `.overland` default. Choosing it here for real, before/while
@@ -187,17 +190,41 @@ struct RecordTrackView: View {
         .padding(.horizontal, 22)
     }
 
+    /// Live satellite map: follows the user's puck and draws the path
+    /// recorded so far, so the screen shows what is actually being captured
+    /// instead of a blank backdrop.
     private var terrain: some View {
         ZStack {
             NTColor.pineDeep.ignoresSafeArea()
-            // Flat ground + a faint straight-line contour pattern instead of
-            // the old soft organic blobs — still reads as "terrain," just
-            // without the decorative shapes that don't belong in this
-            // aesthetic anymore.
-            TopoLines(lineCount: 6, spacing: 28)
-                .stroke(NTColor.pineShadow, lineWidth: 1)
-                .opacity(0.6)
-                .ignoresSafeArea()
+            Map(viewport: $viewport) {
+                Puck2D(bearing: .heading)
+                if tracker.points.count > 1 {
+                    let sourceId = "record-live-track"
+                    GeoJSONSource(id: sourceId)
+                        .data(.geometry(.lineString(LineString(tracker.points.map(\.coordinate)))))
+                    LineLayer(id: "\(sourceId)-line", source: sourceId)
+                        .lineColor(UIColor(NTColor.accent))
+                        .lineWidth(6)
+                        .lineCap(.round)
+                        .lineJoin(.round)
+                        .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                        .lineBorderWidth(1.5)
+                }
+                ForEvery(droppedPOIs, id: \.id) { poi in
+                    MapViewAnnotation(coordinate: CLLocationCoordinate2D(latitude: poi.lat, longitude: poi.lng)) {
+                        POIMapMarker(category: poi.category)
+                    }
+                }
+            }
+            .mapStyle(.standardSatellite)
+            .ignoresSafeArea()
+            // Scrim so the header/stats stay readable over bright imagery.
+            LinearGradient(
+                colors: [NTColor.pineDeep.opacity(0.75), .clear, .clear, NTColor.pineDeep.opacity(0.85)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+            .ignoresSafeArea()
         }
     }
 
