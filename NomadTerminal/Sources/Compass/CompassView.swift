@@ -457,7 +457,7 @@ struct CompassView: View {
                     .lineWidth(7)
                     .lineCap(.round)
                     .lineJoin(.round)
-                    .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                    .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
                     .lineBorderWidth(2)
             }
 
@@ -469,8 +469,8 @@ struct CompassView: View {
                 let bcId = "compass-breadcrumb"
                 GeoJSONSource(id: bcId).data(.geometry(.lineString(LineString(breadcrumb))))
                 LineLayer(id: "\(bcId)-line", source: bcId)
-                    .lineColor(UIColor(NTColor.milk))
-                    .lineWidth(4)
+                    .lineColor(UIColor(NTColor.water))
+                    .lineWidth(5)
                     .lineCap(.round)
                     .lineJoin(.round)
                     .lineOpacity(0.9)

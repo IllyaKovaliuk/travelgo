@@ -145,7 +145,7 @@ struct RouteMapHeader: View {
                     .lineWidth(9)
                     .lineCap(.round)
                     .lineJoin(.round)
-                    .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
+                    .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
                     .lineBorderWidth(2)
             }
 

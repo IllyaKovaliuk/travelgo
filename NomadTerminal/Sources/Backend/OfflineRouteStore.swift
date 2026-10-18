@@ -180,7 +180,7 @@ actor OfflineRouteStore {
                 path.stroke()
             }
 
-            let casing = UIColor.black.withAlphaComponent(0.35)
+            let casing = UIColor.white.withAlphaComponent(0.95)
             if stretches.isEmpty {
                 // No segments to color per-transport — same real
                 // simplify-then-smooth pass the live map applies, still

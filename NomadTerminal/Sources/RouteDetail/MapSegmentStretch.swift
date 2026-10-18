@@ -418,13 +418,22 @@ struct RouteSegmentMapContent: MapContent {
             GeoJSONSource(id: sourceId)
                 .data(.geometry(.lineString(LineString(stretch.coordinates))))
 
+            // Soft neon halo under the line so it pops on any map.
+            LineLayer(id: "\(sourceId)-halo", source: sourceId)
+                .lineColor(UIColor(stretch.tint))
+                .lineWidth(20)
+                .lineBlur(9)
+                .lineOpacity(0.55)
+                .lineCap(.round)
+                .lineJoin(.round)
+
             LineLayer(id: "\(sourceId)-line", source: sourceId)
                 .lineColor(UIColor(stretch.tint))
                 .lineOpacity(1)
                 .lineWidth(9)
                 .lineCap(.round)
                 .lineJoin(.round)
-                .lineBorderColor(UIColor.black.withAlphaComponent(0.35))
+                .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
                 .lineBorderWidth(2)
                 .applyingDashArray(SegmentLineStyle.dashArray(for: stretch.transport))
 
