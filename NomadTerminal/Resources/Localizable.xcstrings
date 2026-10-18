@@ -586,6 +586,29 @@
         }
       }
     },
+    "%lld hazard(s) reported on this route" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld hazard(s) reported on this route"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повідомлень про небезпеку на цьому маршруті: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peligros reportados en esta ruta: %lld"
+          }
+        }
+      }
+    },
     "%lld left" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4780,6 +4803,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Небезпека"
+          }
+        }
+      }
+    },
+    "Hazard ahead" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hazard ahead"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Небезпека попереду"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peligro adelante"
           }
         }
       }
