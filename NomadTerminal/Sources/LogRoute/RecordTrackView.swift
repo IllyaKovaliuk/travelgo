@@ -91,6 +91,14 @@ struct RecordTrackView: View {
             VStack {
                 header
                 Spacer()
+                if let alert = hazardStore.proximityAlert {
+                    HazardProximityBanner(
+                        alert: alert,
+                        onTap: { hazardStore.selectedHazard = alert.hazard },
+                        onDismiss: { hazardStore.dismissProximityAlert() }
+                    )
+                    .padding(.horizontal, 22).padding(.bottom, 8)
+                }
                 HStack {
                     Spacer()
                     HazardFAB { showHazardSheet = true }
@@ -133,6 +141,11 @@ struct RecordTrackView: View {
                         try? await Task.sleep(nanoseconds: 2_200_000_000)
                         withAnimation { hazardStore.rewardBurst = nil }
                     }
+            }
+        }
+        .onChange(of: tracker.points.count) { _, _ in
+            if let here = tracker.points.last?.coordinate {
+                withAnimation(NTMotion.spring) { hazardStore.updateProximity(at: here) }
             }
         }
         .sheet(isPresented: $showHazardSheet) {

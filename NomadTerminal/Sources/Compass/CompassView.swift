@@ -178,6 +178,15 @@ struct CompassView: View {
             VStack(spacing: 0) {
                 header
                 if hasRealTrack { banners }
+                if let alert = hazardStore.proximityAlert {
+                    HazardProximityBanner(
+                        alert: alert,
+                        onTap: { hazardStore.selectedHazard = alert.hazard },
+                        onDismiss: { hazardStore.dismissProximityAlert() }
+                    )
+                    .padding(.horizontal, 16).padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
                 Spacer(minLength: 0)
                 if isMapActive {
                     HStack {
@@ -239,6 +248,11 @@ struct CompassView: View {
             .presentationDetents([.large])
         }
         .sheet(isPresented: $showNomadStore) { NomadStoreView() }
+        .onChange(of: tracker.currentLocation?.timestamp) { _, _ in
+            if let here = tracker.currentLocation?.coordinate {
+                withAnimation(NTMotion.spring) { hazardStore.updateProximity(at: here) }
+            }
+        }
         .task(id: tracker.currentLocation != nil) {
             // Load once a fix exists, then keep the layer fresh while open.
             while !Task.isCancelled {

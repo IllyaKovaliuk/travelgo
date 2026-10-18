@@ -19,6 +19,16 @@ final class HazardStore {
     private(set) var isVoting = false
     private var lastCenter: CLLocationCoordinate2D?
 
+    /// Closest not-yet-passed hazard within `alertRadiusM` of the user.
+    struct ProximityAlert: Equatable {
+        let hazard: HazardReport
+        var distanceM: Int
+    }
+    private(set) var proximityAlert: ProximityAlert?
+    private var alertedIds: Set<UUID> = []
+    static let alertRadiusM: Double = 500
+    private static let clearRadiusM: Double = 700
+
     private let repo = CommunityRepository.shared
 
     // Local anti-spam mirror of the server's 5-per-24h limit (the server is
@@ -48,6 +58,40 @@ final class HazardStore {
         if let h = await h { hazards = h }
         if let p = await p { partners = p }
     }
+
+    /// Hazards that sit on (within 150 m of) a published route — for the
+    /// route detail page and full map, so people see problems *before*
+    /// they set out.
+    func loadAlongRoute(_ points: [TrackPoint]) async {
+        guard points.count > 1, let area = HazardGeometry.searchArea(for: points) else { return }
+        guard let nearby = try? await repo.fetchHazards(near: area.center, radiusKM: area.radiusKM) else { return }
+        let line = points.map(\.coordinate)
+        hazards = nearby.filter { HazardGeometry.distance(from: $0.coordinate, toPolyline: line) <= 150 }
+    }
+
+    /// Call on every location update. Fires a warning haptic + banner once
+    /// per hazard as the user comes within 500 m; keeps the distance live
+    /// and clears it once they're past (>700 m) or it's been resolved.
+    func updateProximity(at location: CLLocationCoordinate2D) {
+        if var current = proximityAlert {
+            guard let live = hazards.first(where: { $0.id == current.hazard.id }) else { proximityAlert = nil; return }
+            let d = HazardGeometry.meters(location, live.coordinate)
+            if d > Self.clearRadiusM { proximityAlert = nil } else { current.distanceM = Int(d.rounded()); proximityAlert = current }
+            return
+        }
+        let candidate = hazards
+            .filter { !alertedIds.contains($0.id) }
+            .map { ($0, HazardGeometry.meters(location, $0.coordinate)) }
+            .filter { $0.1 <= Self.alertRadiusM }
+            .min { $0.1 < $1.1 }
+        if let (hazard, d) = candidate {
+            alertedIds.insert(hazard.id)
+            proximityAlert = ProximityAlert(hazard: hazard, distanceM: Int(d.rounded()))
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        }
+    }
+
+    func dismissProximityAlert() { proximityAlert = nil }
 
     /// Returns true on success. Photo upload failure aborts the report so a
     /// hazard never silently loses the picture the user took.

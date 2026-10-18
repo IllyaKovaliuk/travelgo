@@ -79,6 +79,7 @@ struct PartnerMapMarker: View {
 /// Bottom card for a tapped hazard: details, photo, and confirm/dismiss.
 struct HazardDetailCard: View {
     let hazard: HazardReport
+    var showsVoting = true
     let isVoting: Bool
     let onConfirm: () -> Void
     let onDismiss: () -> Void
@@ -105,12 +106,14 @@ struct HazardDetailCard: View {
             }
             Text("\(hazard.confirmations) confirmed · \(hazard.dismissals) say it's gone · \(hazard.createdAt.formatted(.relative(presentation: .named)))")
                 .font(NTFont.mono(10.5, .medium)).foregroundStyle(NTColor.milk(0.5))
+            if showsVoting {
             HStack(spacing: 10) {
                 voteButton("Still there", icon: "checkmark", fill: NTColor.milk, text: NTColor.pine, action: onConfirm)
                 voteButton("It's gone", icon: "xmark", fill: NTColor.milk(0.12), text: NTColor.milk, action: onDismiss)
             }
             Text("Votes only count within 300 m of the hazard.")
                 .font(NTFont.body(10.5, .light)).foregroundStyle(NTColor.milk(0.4))
+            }
         }
         .padding(16)
         .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
@@ -228,5 +231,39 @@ struct CameraPicker: UIViewControllerRepresentable {
             parent.dismiss()
         }
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) { parent.dismiss() }
+    }
+}
+
+/// "Hazard ahead" banner shown when the user nears a reported hazard.
+struct HazardProximityBanner: View {
+    let alert: HazardStore.ProximityAlert
+    let onTap: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: alert.hazard.hazardType.icon)
+                .font(.system(size: 16, weight: .bold)).foregroundStyle(.white)
+                .frame(width: 36, height: 36).background(Circle().fill(NTColor.hard))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Hazard ahead").font(NTFont.mono(10, .semibold)).tracking(0.8).foregroundStyle(NTColor.milk(0.7))
+                HStack(spacing: 6) {
+                    Text(alert.hazard.hazardType.title).font(NTFont.body(14.5, .semibold))
+                    Text("· \(alert.distanceM) m").font(NTFont.mono(12, .medium)).foregroundStyle(NTColor.milk(0.7))
+                }
+            }
+            Spacer()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark").font(.system(size: 12, weight: .semibold)).frame(width: 28, height: 28)
+                    .background(Circle().fill(NTColor.milk(0.12)))
+            }.buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(NTColor.hard.opacity(0.9), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(.white.opacity(0.35), lineWidth: 1))
+        .foregroundStyle(.white)
+        .shadow(color: .black.opacity(0.3), radius: 10, y: 4)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
     }
 }
