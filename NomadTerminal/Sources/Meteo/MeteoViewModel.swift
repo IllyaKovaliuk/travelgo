@@ -22,6 +22,7 @@ final class MeteoViewModel {
     private(set) var stations: [MeteoStation] = []
     private(set) var isLoading = true
     private(set) var failed = false
+    private(set) var lastError: String?
 
     // Radar
     private(set) var radarFrames: [RadarFrame] = []
@@ -76,11 +77,18 @@ final class MeteoViewModel {
         let fractions = (0..<n).map { Double($0) / Double(n - 1) }
         let coords = fractions.compactMap { coordinate(atFraction: $0) }
         async let radar = try? MeteoService.fetchRadar()
-        do {
-            stations = try await MeteoService.fetchStations(coordinates: coords, fractions: fractions)
-            failed = stations.isEmpty
-        } catch {
-            failed = true
+        // One retry: mobile networks drop the first request surprisingly often.
+        for attempt in 1...2 {
+            do {
+                stations = try await MeteoService.fetchStations(coordinates: coords, fractions: fractions)
+                failed = stations.isEmpty
+                lastError = nil
+                break
+            } catch {
+                failed = true
+                lastError = String(describing: error)
+                if attempt == 1 { try? await Task.sleep(nanoseconds: 1_200_000_000) }
+            }
         }
         if let frames = await radar, !frames.isEmpty {
             radarFrames = frames
