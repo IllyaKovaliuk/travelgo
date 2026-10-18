@@ -609,6 +609,29 @@
         }
       }
     },
+    "%lld of %lld reports left today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld reports left today"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сьогодні залишилось звітів: %1$lld з %2$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reportes restantes hoy: %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "%lld points read" : {
       "extractionState" : "manual",
       "localizations" : {

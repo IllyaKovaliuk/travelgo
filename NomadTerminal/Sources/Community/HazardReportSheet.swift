@@ -18,6 +18,8 @@ struct HazardReportSheet: View {
             Text("Report a hazard").font(NTFont.heading(22, .extraBold))
             Text("Help the next person through. +50 NomadPoints per report, up to 5 a day.")
                 .font(NTFont.body(12.5, .light)).foregroundStyle(NTColor.milk(0.6))
+            Text("\(store.reportsLeftToday) of \(HazardStore.dailyLimit) reports left today")
+                .font(NTFont.mono(10.5, .medium)).foregroundStyle(store.reportsLeftToday == 0 ? Color(hex: 0xE58272) : NTColor.sage)
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                 ForEach(HazardType.allCases) { option in
@@ -85,7 +87,7 @@ struct HazardReportSheet: View {
                 .background(Capsule().fill(coordinate == nil ? NTColor.milk(0.4) : NTColor.milk))
             }
             .buttonStyle(.plain)
-            .disabled(coordinate == nil || store.isSubmitting)
+            .disabled(coordinate == nil || store.isSubmitting || store.reportsLeftToday == 0)
         }
         .padding(22)
         .foregroundStyle(NTColor.milk)

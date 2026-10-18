@@ -21,6 +21,26 @@ final class HazardStore {
 
     private let repo = CommunityRepository.shared
 
+    // Local anti-spam mirror of the server's 5-per-24h limit (the server is
+    // still the authority — this just lets the UI say "N left" and stop
+    // early without a round trip).
+    static let dailyLimit = 5
+    private static let submissionsKey = "hazard.submissions.v1"
+    private(set) var submittedInLast24h: [Date] = HazardStore.loadSubmissions()
+
+    var reportsLeftToday: Int { max(0, Self.dailyLimit - submittedInLast24h.count) }
+
+    private static func loadSubmissions() -> [Date] {
+        let cutoff = Date().addingTimeInterval(-86_400)
+        let stored = (UserDefaults.standard.array(forKey: submissionsKey) as? [Double]) ?? []
+        return stored.map { Date(timeIntervalSince1970: $0) }.filter { $0 > cutoff }
+    }
+
+    private func recordSubmission() {
+        submittedInLast24h = Self.loadSubmissions() + [Date()]
+        UserDefaults.standard.set(submittedInLast24h.map(\.timeIntervalSince1970), forKey: Self.submissionsKey)
+    }
+
     func refresh(near center: CLLocationCoordinate2D) async {
         lastCenter = center
         async let h = try? repo.fetchHazards(near: center)
@@ -32,12 +52,18 @@ final class HazardStore {
     /// Returns true on success. Photo upload failure aborts the report so a
     /// hazard never silently loses the picture the user took.
     func submit(type: HazardType, at coordinate: CLLocationCoordinate2D, description: String, photo: UIImage?) async -> Bool {
+        submittedInLast24h = Self.loadSubmissions()
+        guard reportsLeftToday > 0 else {
+            errorMessage = String(localized: "You've reached today's limit of 5 hazard reports.")
+            return false
+        }
         isSubmitting = true
         defer { isSubmitting = false }
         do {
             var imageUrl: String?
             if let photo { imageUrl = try await repo.uploadHazardPhoto(photo) }
             try await repo.submitHazard(type: type, coordinate: coordinate, description: description, imageUrl: imageUrl)
+            recordSubmission()
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             rewardBurst = 50
             await refresh(near: coordinate)
