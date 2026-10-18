@@ -65,7 +65,7 @@ struct DrawRouteView: View {
                     }
                 }
             }
-            .mapStyle(.standardSatellite)
+            .mapStyle(NomadMap.style(satellite: false))
             .onMapTapGesture { context in
                 if let url = pendingPhotoUrl {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)

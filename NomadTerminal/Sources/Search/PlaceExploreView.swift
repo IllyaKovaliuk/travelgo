@@ -128,7 +128,7 @@ struct PlaceExploreView: View {
                 }
             }
         }
-        .mapStyle(.standardSatellite)
+        .mapStyle(NomadMap.style(satellite: false))
         .allowsHitTesting(false)
         .frame(height: 170)
         .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))

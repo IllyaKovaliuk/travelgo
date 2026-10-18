@@ -28,7 +28,7 @@ struct RouteFullMapView: View {
 
     @State private var selectedPOI: RouteDetailInfo.POI?
     @State private var hazardStore = HazardStore()
-    @State private var showSatellite = true
+    @State private var showSatellite = false
     @State private var viewport: Viewport
     @State private var hasFlownIn = false
     @State private var flowStep = 0
@@ -59,7 +59,7 @@ struct RouteFullMapView: View {
     // together here since MapKit is still needed for the Open in Maps deep
     // link — so this must be qualified.
     private var mapStyle: MapboxMaps.MapStyle {
-        showSatellite ? .standardSatellite : .standard
+        NomadMap.style(satellite: showSatellite)
     }
 
     private var trackPoints: [TrackPoint] { route.detail.trackPoints }

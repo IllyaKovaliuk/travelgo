@@ -63,12 +63,14 @@ struct CompassView: View {
     /// and rotate with real device heading regardless; this only changes
     /// the look, same as Waze/Google Maps' own 2D/3D toggle.
     @State private var is3DMap = true
+    /// Bright vector map by default; satellite is an opt-in toggle.
+    @State private var showSatellite = false
 
     private var followViewport: Viewport {
         .followPuck(zoom: 17, bearing: .heading, pitch: is3DMap ? 40 : 0)
     }
     private var mapStyle: MapboxMaps.MapStyle {
-        is3DMap ? .standardSatellite(lightPreset: lightPreset) : .standard(lightPreset: lightPreset)
+        NomadMap.style(satellite: showSatellite)
     }
 
     /// The real recorded track as one `Turf.LineString` — built once in
@@ -656,6 +658,21 @@ struct CompassView: View {
             // versus the tilted 3D satellite "navigator" view, not just the
             // same satellite photo laid flat. Both still follow the puck
             // and rotate with real heading either way.
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showSatellite.toggle()
+            } label: {
+                Image(systemName: showSatellite ? "map.fill" : "globe.europe.africa.fill")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(NTColor.pine)
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(NTColor.milk))
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(showSatellite ? "Switch to map view" : "Switch to satellite view")
+
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 is3DMap.toggle()

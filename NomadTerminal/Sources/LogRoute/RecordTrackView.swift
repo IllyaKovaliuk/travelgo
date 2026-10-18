@@ -239,7 +239,7 @@ struct RecordTrackView: View {
                 .multilineTextAlignment(.center)
         }
         .padding(24)
-        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
+        .background(NTColor.pineDeep.opacity(0.88), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
         .padding(.horizontal, 22)
     }
@@ -276,11 +276,11 @@ struct RecordTrackView: View {
                     }
                 }
             }
-            .mapStyle(.standardSatellite)
+            .mapStyle(NomadMap.style(satellite: false))
             .ignoresSafeArea()
             // Scrim so the header/stats stay readable over bright imagery.
             LinearGradient(
-                colors: [NTColor.pineDeep.opacity(0.75), .clear, .clear, NTColor.pineDeep.opacity(0.85)],
+                colors: [NTColor.pineDeep.opacity(0.45), .clear, .clear, NTColor.pineDeep.opacity(0.55)],
                 startPoint: .top, endPoint: .bottom
             )
             .allowsHitTesting(false)
@@ -294,7 +294,7 @@ struct RecordTrackView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .semibold))
                     .frame(width: 40, height: 40)
-                    .background(Circle().fill(NTColor.milk(0.1)))
+                    .background(Circle().fill(NTColor.pineDeep.opacity(0.8)))
                     .overlay(Circle().stroke(NTColor.milk(0.22), lineWidth: 1))
             }
             .buttonStyle(.plain)
@@ -314,7 +314,7 @@ struct RecordTrackView: View {
                     .font(NTFont.mono(11, .semibold)).tracking(0.8)
             }
             .padding(.horizontal, 16).padding(.vertical, 8)
-            .background(Capsule().fill(Color(hex: 0xB33A2B).opacity(0.25)))
+            .background(Capsule().fill(NTColor.pineDeep.opacity(0.85)))
             .overlay(Capsule().stroke(Color(hex: 0xB33A2B).opacity(0.5), lineWidth: 1))
 
             Spacer()

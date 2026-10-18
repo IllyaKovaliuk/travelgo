@@ -172,7 +172,7 @@ struct RouteMapHeader: View {
                 }
             }
         }
-        .mapStyle(.standardSatellite)
+        .mapStyle(NomadMap.style(satellite: false))
         .allowsHitTesting(false) // header preview only — not for interactive panning inside a ScrollView
         .task {
             // Flyover on first appearance, not a hard cut — starts from
