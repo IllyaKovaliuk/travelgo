@@ -115,13 +115,17 @@ struct RiskTrack: View {
 
 // MARK: - HUD widget
 
-/// Minimal always-on readout: altitude-adjusted temperature, wind, radar sync.
+/// Minimal always-on readout: altitude-adjusted temperature, wind (with
+/// gusts, labelled), and — for Pro — the honest age of the radar data.
 struct MeteoHUDWidget: View {
     let weather: WeatherPoint?
+    let showRadar: Bool
     let radarEnabled: Bool
     let radarFailed: Bool
-    let radarSyncedAt: Date?
-    let radarFrameTime: Date?
+    /// Newest frame's timestamp — the real age of the data.
+    let radarLatest: Date?
+    /// Frame currently replayed in the loop (not the data age).
+    let radarReplayTime: Date?
     let isLoading: Bool
 
     var body: some View {
@@ -131,14 +135,25 @@ struct MeteoHUDWidget: View {
                 Text(weather.map { String(format: "%+.0f°C", $0.temperature) } ?? "--")
                     .font(NTFont.mono(20, .semibold))
             }
-            row("ALT", weather.map { "\(Int($0.elevationM)) m" } ?? "--")
-            row("WIND", weather.map { "\(Int($0.wind.rounded())) km/h" } ?? "--")
-            HStack(spacing: 6) {
-                Circle().fill(statusColor).frame(width: 6, height: 6)
-                Text(statusText).font(NTFont.mono(9, .medium)).tracking(0.6)
-                    .foregroundStyle(NTColor.milk(0.7))
+            row("ALT", weather.map { String(localized: "\(Int($0.elevationM)) m") } ?? "--")
+            row("WIND", weather.map { String(localized: "\(Int($0.wind.rounded())) · G\(Int($0.gust.rounded())) km/h") } ?? "--")
+            if showRadar {
+                TimelineView(.periodic(from: .now, by: 30)) { context in
+                    let status = radarStatus(now: context.date)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Circle().fill(status.color).frame(width: 6, height: 6)
+                            Text(status.text).font(NTFont.mono(9, .medium)).tracking(0.6)
+                                .foregroundStyle(NTColor.milk(0.75))
+                        }
+                        if radarEnabled, !radarFailed, let t = radarReplayTime {
+                            Text("REPLAY \(t.formatted(.dateTime.hour().minute()))")
+                                .font(NTFont.mono(8.5, .medium)).tracking(0.5).foregroundStyle(NTColor.milk(0.4))
+                        }
+                    }
+                }
+                .padding(.top, 2)
             }
-            .padding(.top, 2)
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .foregroundStyle(NTColor.milk)
@@ -147,24 +162,23 @@ struct MeteoHUDWidget: View {
         .shadow(color: .cyan.opacity(0.25), radius: 8)
     }
 
-    private func row(_ k: String, _ v: String) -> some View {
+    private func row(_ k: LocalizedStringKey, _ v: String) -> some View {
         HStack(spacing: 8) {
             Text(k).font(NTFont.mono(9, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.5)).frame(width: 34, alignment: .leading)
             Text(v).font(NTFont.mono(12, .semibold))
         }
     }
 
-    private var statusColor: Color {
-        if isLoading { return NTColor.gold }
-        if !radarEnabled { return NTColor.milk(0.4) }
-        return radarFailed ? NTColor.hard : NTColor.sage
-    }
-    private var statusText: String {
-        if isLoading { return "SYNCING…" }
-        if !radarEnabled { return "RADAR OFF" }
-        if radarFailed { return "RADAR OFFLINE" }
-        if let t = radarFrameTime { return "RADAR LIVE · \(t.formatted(.dateTime.hour().minute()))" }
-        return "RADAR LIVE"
+    /// "LIVE" only while the data is fresh (≤ 30 min); otherwise show its age.
+    private func radarStatus(now: Date) -> (text: LocalizedStringKey, color: Color) {
+        if isLoading { return ("SYNCING…", NTColor.gold) }
+        if !radarEnabled { return ("RADAR OFF", NTColor.milk(0.4)) }
+        if radarFailed { return ("RADAR OFFLINE", NTColor.hard) }
+        guard let latest = radarLatest else { return ("RADAR OFFLINE", NTColor.hard) }
+        let minutes = max(0, Int(now.timeIntervalSince(latest) / 60))
+        if minutes <= 30 { return ("RADAR LIVE · \(minutes) MIN AGO", NTColor.sage) }
+        let age = minutes >= 120 ? String(localized: "\(minutes / 60) H") : String(localized: "\(minutes) MIN")
+        return ("RADAR · DATA \(age) OLD", NTColor.gold)
     }
 }
 
@@ -204,12 +218,12 @@ struct MeteoTimelinePanel: View {
                 Text("Couldn't load the forecast. Check your connection and reopen.")
                     .font(NTFont.body(12.5, .light)).foregroundStyle(Color(hex: 0xE58272)).padding(.vertical, 16)
             } else {
-                // Departure window strip
+                // Departure window strip + one-tap best window
                 VStack(alignment: .leading, spacing: 5) {
                     HStack {
                         Text("DEPART").font(NTFont.mono(9, .medium)).tracking(1).foregroundStyle(NTColor.milk(0.5))
                         Spacer()
-                        Text(model.departureOffsetH == 0 ? "NOW" : model.departure.formatted(.dateTime.weekday(.abbreviated).hour().minute()).uppercased())
+                        Text(model.departureOffsetH == 0 ? String(localized: "NOW") : model.departure.formatted(.dateTime.weekday(.abbreviated).hour().minute()).uppercased())
                             .font(NTFont.mono(11, .semibold))
                     }
                     RiskTrack(
@@ -223,7 +237,7 @@ struct MeteoTimelinePanel: View {
                             if h != model.departureOffsetH { UISelectionFeedbackGenerator().selectionChanged(); model.departureOffsetH = h }
                         }
                     )
-                    Text(windowSummary).font(NTFont.body(10.5, .light)).foregroundStyle(NTColor.milk(0.55))
+                    bestWindowRow
                 }
 
                 // Route scrubber
@@ -235,19 +249,25 @@ struct MeteoTimelinePanel: View {
                             .font(NTFont.mono(11, .semibold))
                     }
                     RiskTrack(risks: model.routeRisks, value: $model.progress)
+                    Text(model.paceNote).font(NTFont.body(10, .light)).foregroundStyle(NTColor.milk(0.45))
                 }
 
                 if let w = model.currentWeather {
                     HStack(spacing: 8) {
-                        readout("TEMP", String(format: "%+.0f°", w.temperature), icon: "thermometer.medium")
-                        readout("GUSTS", "\(Int(w.gust.rounded()))", unit: "km/h", icon: "wind", warn: w.gust >= 45)
-                        readout("RAIN", "\(Int(w.probability.rounded()))%", unit: String(format: "%.1fmm", w.precip), icon: "cloud.rain.fill", warn: w.precip >= 1)
+                        readout("TEMP", String(format: "%+.0f°", w.temperature), unit: " ", icon: "thermometer.medium")
+                        readout("WIND", "\(Int(w.wind.rounded()))", unit: "gusts \(Int(w.gust.rounded())) km/h", icon: "wind", warn: w.gust >= 30)
+                        readout("RAIN", "\(Int(w.probability.rounded()))%", unit: "\(String(format: "%.1f", w.precip)) mm/h", icon: "cloud.rain.fill", warn: w.precip >= 1)
                         readout("ALT", "\(Int(w.elevationM))", unit: "m", icon: "mountain.2.fill")
                     }
-                    HStack(spacing: 6) {
-                        Circle().fill(w.risk.color).frame(width: 7, height: 7)
-                        Text("\(w.risk.label) AT THIS POINT").font(NTFont.mono(10, .semibold)).tracking(0.6).foregroundStyle(w.risk.color)
+                    HStack(alignment: .top, spacing: 6) {
+                        Text(w.risk.emoji)
+                        if w.risk == .clear {
+                            Text("Conditions OK at this point").foregroundStyle(w.risk.color)
+                        } else {
+                            Text(w.reason).foregroundStyle(w.risk.color)
+                        }
                     }
+                    .font(NTFont.mono(11, .semibold))
                 }
             }
         }
@@ -258,26 +278,85 @@ struct MeteoTimelinePanel: View {
         .shadow(color: .cyan.opacity(0.2), radius: 14, y: 4)
     }
 
-    private var windowSummary: String {
-        let r = model.worstRisk
-        switch r {
-        case .clear: return "No storm windows on this route at that departure."
-        case .caution: return "Caution zones on the route — marked amber on the map."
-        case .danger: return "Dangerous weather on the route — marked red. Try a different departure."
+    /// "Leave 07:00–10:00, done by 13:00 — weather turns ~15:00" + apply button.
+    private var bestWindowRow: some View {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
+                if let w = model.bestWindow {
+                    let fmt: (Date) -> String = { $0.formatted(.dateTime.weekday(.abbreviated).hour().minute()) }
+                    switch w.risk {
+                    case .clear:
+                        Text("Leave \(fmt(w.start)) – \(fmt(w.end)), done by \(fmt(w.finishBy))")
+                            .foregroundStyle(StormRisk.clear.color)
+                    case .caution:
+                        Text("No fully clear window in 36 h. Calmest: leave \(fmt(w.start)) (caution)")
+                            .foregroundStyle(StormRisk.caution.color)
+                    case .danger:
+                        Text("No safe window in the next 36 h")
+                            .foregroundStyle(StormRisk.danger.color)
+                    }
+                    if let turns = w.weatherTurnsAt, w.risk == .clear {
+                        Text("Weather turns around \(fmt(turns))").foregroundStyle(NTColor.milk(0.55))
+                    }
+                }
+            }
+            .font(NTFont.body(10.5, .medium))
+            Spacer(minLength: 6)
+            if model.bestWindow != nil {
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    model.applyBestWindow()
+                } label: {
+                    Label("BEST WINDOW", systemImage: "sparkles")
+                        .font(NTFont.mono(9.5, .semibold)).tracking(0.5)
+                        .foregroundStyle(NTColor.pine)
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(Capsule().fill(Color.cyan))
+                }.buttonStyle(.plain)
+            }
         }
     }
 
-    private func readout(_ title: String, _ value: String, unit: String? = nil, icon: String, warn: Bool = false) -> some View {
+    private func readout(_ title: LocalizedStringKey, _ value: String, unit: LocalizedStringKey, icon: String, warn: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.system(size: 9))
                 Text(title).font(NTFont.mono(8.5, .medium)).tracking(0.7)
             }.foregroundStyle(NTColor.milk(0.5))
             Text(value).font(NTFont.mono(16, .semibold)).foregroundStyle(warn ? NTColor.gold : NTColor.milk)
-            Text(unit ?? " ").font(NTFont.mono(9, .medium)).foregroundStyle(NTColor.milk(0.5))
+            Text(unit).font(NTFont.mono(9, .medium)).foregroundStyle(NTColor.milk(0.5)).lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+}
+
+// MARK: - Free-tier teaser
+
+/// Blurred preview of the full terminal with an unlock prompt — the
+/// point-weather HUD stays free, the timeline/radar/colored route are Pro.
+struct MeteoProTeaser: View {
+    let model: MeteoViewModel
+    let onUnlock: () -> Void
+
+    var body: some View {
+        ZStack {
+            MeteoTimelinePanel(model: model, onClose: {})
+                .blur(radius: 7)
+                .allowsHitTesting(false)
+            VStack(spacing: 10) {
+                Image(systemName: "lock.fill").font(.system(size: 20)).foregroundStyle(NTColor.gold)
+                Text("Meteo-Terminal is a Pro feature").font(NTFont.body(14.5, .semibold))
+                Text("Plan the departure, see storm zones on your route and the live radar.")
+                    .font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.7)).multilineTextAlignment(.center)
+                Button(action: onUnlock) {
+                    Text("Unlock with Pro").font(NTFont.body(13.5, .semibold)).foregroundStyle(NTColor.pine)
+                        .padding(.horizontal, 22).frame(height: 40).background(Capsule().fill(NTColor.milk))
+                }.buttonStyle(.plain)
+            }
+            .foregroundStyle(NTColor.milk)
+            .padding(18)
+        }
     }
 }

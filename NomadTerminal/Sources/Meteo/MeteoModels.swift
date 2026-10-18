@@ -17,21 +17,51 @@ enum StormRisk: Int, Comparable {
         case .danger: return Color(hex: 0xFF2D2D)   // hot red
         }
     }
-    var label: String {
+    var emoji: String {
         switch self {
-        case .clear: return "CLEAR"
+        case .clear: return "🟢"
+        case .caution: return "🟡"
+        case .danger: return "🔴"
+        }
+    }
+    var title: LocalizedStringKey {
+        switch self {
+        case .clear: return "OK"
         case .caution: return "CAUTION"
         case .danger: return "DANGER"
         }
     }
 
-    /// Thresholds chosen for people outdoors, not for a weather app:
-    /// gusts ≥ 45 km/h make exposed ridges/water unpleasant, ≥ 70 is
-    /// dangerous; thunderstorms are always danger.
+    /// 🟢 ok · 🟡 caution (steady rain, wind 30+, snow) · 🔴 danger
+    /// (thunderstorm that is actually likely, gusts 50+, downpour, heavy
+    /// snow). Light drizzle and a stray 20% chance are deliberately
+    /// green — crying wolf on every cloud teaches people to ignore the
+    /// app before the real storm. Returns the level and human reasons.
+    static func assess(code: Int, gust: Double, precip: Double, probability: Double) -> (risk: StormRisk, reasons: [String]) {
+        var risk = StormRisk.clear
+        var reasons: [String] = []
+        func add(_ r: StormRisk, _ text: String) { risk = max(risk, r); reasons.append(text) }
+        let pct = Int(probability.rounded())
+
+        if (95...99).contains(code) {
+            if probability >= 40 { add(.danger, String(localized: "Thunderstorm \(pct)%")) }
+            else { add(.caution, String(localized: "Thunderstorm possible")) }
+        }
+        if gust >= 50 { add(.danger, String(localized: "Gusts \(Int(gust.rounded())) km/h")) }
+        else if gust >= 30 { add(.caution, String(localized: "Gusts \(Int(gust.rounded())) km/h")) }
+
+        if precip >= 5 { add(.danger, String(localized: "Downpour \(String(format: "%.1f", precip)) mm/h")) }
+        else if precip >= 1 && probability >= 40 { add(.caution, String(localized: "Rain \(String(format: "%.1f", precip)) mm/h")) }
+
+        if probability >= 40 {
+            if code == 75 || code == 86 { add(.danger, String(localized: "Heavy snow")) }
+            else if [71, 73, 77, 85].contains(code) { add(.caution, String(localized: "Snow")) }
+        }
+        return (risk, reasons)
+    }
+
     static func classify(code: Int, gust: Double, precip: Double, probability: Double) -> StormRisk {
-        if code >= 95 || gust >= 70 || precip >= 5 || (probability >= 70 && precip >= 2.5) || code == 75 || code == 86 { return .danger }
-        if gust >= 45 || (precip >= 1 && probability >= 50) || code == 65 || code == 67 || code == 82 || (71...77).contains(code) { return .caution }
-        return .clear
+        assess(code: code, gust: gust, precip: precip, probability: probability).risk
     }
 }
 
@@ -44,7 +74,12 @@ struct WeatherPoint {
     var precip: Double
     var code: Int
     var elevationM: Double
-    var risk: StormRisk { .classify(code: code, gust: gust, precip: precip, probability: probability) }
+    private var assessment: (risk: StormRisk, reasons: [String]) {
+        StormRisk.assess(code: code, gust: gust, precip: precip, probability: probability)
+    }
+    var risk: StormRisk { assessment.risk }
+    /// e.g. "Thunderstorm 70%, Gusts 55 km/h" — empty when clear.
+    var reason: String { assessment.reasons.joined(separator: ", ") }
 
     var symbol: String {
         switch code {
