@@ -90,7 +90,7 @@ struct RouteFullMapView: View {
                 // While Meteo-Terminal is open the route line itself becomes
                 // the weather-colored line (green / yellow / red), so the
                 // normal per-transport line steps aside.
-                if meteo != nil {
+                if meteo != nil && SubscriptionManager.shared.isPro {
                     // drawn by MeteoMapContent below
                 } else if !segmentStretches.isEmpty {
                     RouteSegmentMapContent(stretches: segmentStretches, flowStep: flowStep)
@@ -125,11 +125,11 @@ struct RouteFullMapView: View {
 
                 if let meteo {
                     MeteoMapContent(
-                        segments: meteo.riskRuns,
+                        segments: SubscriptionManager.shared.isPro ? meteo.riskRuns : [],
                         radarFrames: meteo.radarFrames,
                         radarIndex: meteo.radarIndex,
-                        radarEnabled: meteo.radarEnabled,
-                        scrubCoordinate: meteo.scrubCoordinate,
+                        radarEnabled: meteo.radarEnabled && SubscriptionManager.shared.isPro,
+                        scrubCoordinate: SubscriptionManager.shared.isPro ? meteo.scrubCoordinate : nil,
                         scrubRisk: meteo.currentWeather?.risk ?? .clear
                     )
                 }
@@ -181,7 +181,7 @@ struct RouteFullMapView: View {
             .task { await hazardStore.loadAlongRoute(trackPoints) }
             .task(id: meteo != nil) {
                 // Radar loop: step frames while Meteo-Terminal is open.
-                while meteo != nil && !Task.isCancelled {
+                while meteo != nil && SubscriptionManager.shared.isPro && !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: 800_000_000)
                     meteo?.advanceRadar()
                 }
@@ -197,10 +197,11 @@ struct RouteFullMapView: View {
                     HStack {
                         MeteoHUDWidget(
                             weather: meteo.currentWeather,
+                            showRadar: SubscriptionManager.shared.isPro,
                             radarEnabled: meteo.radarEnabled,
                             radarFailed: meteo.radarFailed,
-                            radarSyncedAt: meteo.radarSyncedAt,
-                            radarFrameTime: meteo.radarFrames.indices.contains(meteo.radarIndex) ? meteo.radarFrames[meteo.radarIndex].time : nil,
+                            radarLatest: meteo.latestRadarTime,
+                            radarReplayTime: meteo.radarFrames.indices.contains(meteo.radarIndex) ? meteo.radarFrames[meteo.radarIndex].time : nil,
                             isLoading: meteo.isLoading
                         )
                         Spacer()
@@ -225,8 +226,14 @@ struct RouteFullMapView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 if let meteo {
-                    MeteoTimelinePanel(model: meteo, onClose: { withAnimation(NTMotion.spring) { self.meteo = nil } })
-                        .padding(.horizontal, 12).padding(.bottom, 8)
+                    Group {
+                        if SubscriptionManager.shared.isPro {
+                            MeteoTimelinePanel(model: meteo, onClose: { withAnimation(NTMotion.spring) { self.meteo = nil } })
+                        } else {
+                            MeteoProTeaser(model: meteo, onUnlock: { showPaywall = true })
+                        }
+                    }
+                    .padding(.horizontal, 12).padding(.bottom, 8)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
@@ -291,18 +298,17 @@ struct RouteFullMapView: View {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     if meteo != nil {
                         withAnimation(NTMotion.spring) { meteo = nil }
-                    } else if SubscriptionManager.shared.isPro {
-                        let model = MeteoViewModel(trackPoints: trackPoints, transport: route.transport)
+                    } else {
+                        // Open for everyone: the point-weather HUD is free;
+                        // timeline, storm zones and radar are Pro (teaser).
+                        let model = MeteoViewModel(trackPoints: trackPoints, transport: route.transport, ascentM: Double(route.detail.ascentM))
                         withAnimation(NTMotion.spring) { meteo = model }
                         Task { await model.load() }
-                    } else {
-                        showPaywall = true
                     }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "cloud.bolt.rain.fill")
                         Text("METEO").font(NTFont.mono(11, .semibold)).tracking(0.6)
-                        if !SubscriptionManager.shared.isPro { Text("PRO").font(NTFont.mono(8, .semibold)).padding(.horizontal, 4).background(Capsule().fill(NTColor.gold)) }
                     }
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(meteo != nil ? NTColor.pine : NTColor.ink)
