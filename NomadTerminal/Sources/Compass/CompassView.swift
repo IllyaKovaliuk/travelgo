@@ -99,6 +99,10 @@ struct CompassView: View {
     @State private var currentUserId: String?
     @State private var selectedPOI: RouteDetailInfo.POI?
     @State private var photoViewerSpot: PhotoSpot?
+    // Community layer: hazard reports + verified partners, FAB, store.
+    @State private var hazardStore = HazardStore()
+    @State private var showHazardSheet = false
+    @State private var showNomadStore = false
     private var photoSpots: [PhotoSpot] { PhotoSpot.cluster(photos) }
 
     private let offTrailThresholdM: Double = 50
@@ -176,7 +180,33 @@ struct CompassView: View {
                 if hasRealTrack { banners }
                 Spacer(minLength: 0)
                 if isMapActive {
+                    HStack {
+                        Spacer()
+                        HazardFAB { showHazardSheet = true }
+                    }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 4)
                     recenterButton
+                    if let hazard = hazardStore.selectedHazard {
+                        HazardDetailCard(
+                            hazard: hazard,
+                            isVoting: hazardStore.isVoting,
+                            onConfirm: { Task { await hazardStore.vote(confirm: true, from: tracker.currentLocation?.coordinate) } },
+                            onDismiss: { Task { await hazardStore.vote(confirm: false, from: tracker.currentLocation?.coordinate) } },
+                            onClose: { withAnimation(NTMotion.spring) { hazardStore.selectedHazard = nil } }
+                        )
+                        .padding(.horizontal, 16).padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                    if let partner = hazardStore.selectedPartner {
+                        PartnerDetailCard(
+                            partner: partner,
+                            onOpenStore: { showNomadStore = true },
+                            onClose: { withAnimation(NTMotion.spring) { hazardStore.selectedPartner = nil } }
+                        )
+                        .padding(.horizontal, 16).padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                     if let selectedPOI {
                         poiCard(selectedPOI)
                             .padding(.horizontal, 16)
@@ -192,6 +222,31 @@ struct CompassView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
+        .overlay {
+            if let points = hazardStore.rewardBurst {
+                PointsBurstOverlay(points: points)
+                    .transition(.scale.combined(with: .opacity))
+                    .task {
+                        try? await Task.sleep(nanoseconds: 2_200_000_000)
+                        withAnimation { hazardStore.rewardBurst = nil }
+                    }
+            }
+        }
+        .sheet(isPresented: $showHazardSheet) {
+            HazardReportSheet(coordinate: tracker.currentLocation?.coordinate, store: hazardStore) {
+                showHazardSheet = false
+            }
+            .presentationDetents([.large])
+        }
+        .sheet(isPresented: $showNomadStore) { NomadStoreView() }
+        .task(id: tracker.currentLocation != nil) {
+            // Load once a fix exists, then keep the layer fresh while open.
+            while !Task.isCancelled {
+                if let here = tracker.currentLocation?.coordinate { await hazardStore.refresh(near: here) }
+                else { try? await Task.sleep(nanoseconds: 2_000_000_000); continue }
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+            }
+        }
         .fullScreenCover(isPresented: $showSOS) {
             SOSView(
                 onClose: { showSOS = false },
@@ -445,6 +500,17 @@ struct CompassView: View {
                     .buttonStyle(.plain)
                 }
             }
+
+            CommunityMapContent(
+                hazards: hazardStore.hazards,
+                partners: hazardStore.partners,
+                onHazard: { hazard in
+                    withAnimation(NTMotion.spring) { hazardStore.selectedPartner = nil; selectedPOI = nil; hazardStore.selectedHazard = hazard }
+                },
+                onPartner: { partner in
+                    withAnimation(NTMotion.spring) { hazardStore.selectedHazard = nil; selectedPOI = nil; hazardStore.selectedPartner = partner }
+                }
+            )
 
             if let currentWaypoint {
                 MapViewAnnotation(coordinate: currentWaypoint.coordinate) {
