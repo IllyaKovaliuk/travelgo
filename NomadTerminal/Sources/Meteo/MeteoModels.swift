@@ -12,9 +12,9 @@ enum StormRisk: Int, Comparable {
 
     var color: Color {
         switch self {
-        case .clear: return NTColor.sage
-        case .caution: return NTColor.gold
-        case .danger: return NTColor.hard
+        case .clear: return Color(hex: 0x00E676)    // vivid green
+        case .caution: return Color(hex: 0xFFD60A)  // bright yellow
+        case .danger: return Color(hex: 0xFF2D2D)   // hot red
         }
     }
     var label: String {

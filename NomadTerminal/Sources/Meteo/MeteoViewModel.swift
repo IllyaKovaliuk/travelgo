@@ -154,7 +154,7 @@ final class MeteoViewModel {
 
     private func recompute() {
         guard !stations.isEmpty else { segments = []; departureRisks = []; return }
-        let count = 24
+        let count = 48
         segments = (0..<count).map { i in
             let f0 = Double(i) / Double(count), f1 = Double(i + 1) / Double(count)
             return RiskSegment(id: i, coordinates: slice(from: f0, to: f1), risk: risk(atFraction: (f0 + f1) / 2, departure: departure))
@@ -168,4 +168,18 @@ final class MeteoViewModel {
 
     /// Per-slice risks along the route for the scrubber's colored track.
     var routeRisks: [StormRisk] { segments.map(\.risk) }
+
+    /// Adjacent slices with the same risk merged into one polyline, so the
+    /// map draws a handful of colored stretches instead of dozens of layers.
+    var riskRuns: [RiskSegment] {
+        var runs: [RiskSegment] = []
+        for seg in segments {
+            if let last = runs.last, last.risk == seg.risk {
+                runs[runs.count - 1] = RiskSegment(id: last.id, coordinates: last.coordinates + seg.coordinates, risk: seg.risk)
+            } else {
+                runs.append(RiskSegment(id: runs.count, coordinates: seg.coordinates, risk: seg.risk))
+            }
+        }
+        return runs
+    }
 }

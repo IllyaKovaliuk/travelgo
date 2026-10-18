@@ -87,7 +87,12 @@ struct RouteFullMapView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             Map(viewport: $viewport) {
-                if !segmentStretches.isEmpty {
+                // While Meteo-Terminal is open the route line itself becomes
+                // the weather-colored line (green / yellow / red), so the
+                // normal per-transport line steps aside.
+                if meteo != nil {
+                    // drawn by MeteoMapContent below
+                } else if !segmentStretches.isEmpty {
                     RouteSegmentMapContent(stretches: segmentStretches, flowStep: flowStep)
                 } else if trackPoints.count > 1 {
                     let sourceId = "route-plain-full"
@@ -120,7 +125,7 @@ struct RouteFullMapView: View {
 
                 if let meteo {
                     MeteoMapContent(
-                        riskySegments: meteo.segments.filter { $0.risk != .clear },
+                        segments: meteo.riskRuns,
                         radarFrames: meteo.radarFrames,
                         radarIndex: meteo.radarIndex,
                         radarEnabled: meteo.radarEnabled,

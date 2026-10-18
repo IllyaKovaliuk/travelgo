@@ -8,7 +8,8 @@ import CoreLocation
 /// frames (one raster layer each, cross-faded by opacity), and the scrub
 /// marker. Takes plain values so SwiftUI re-renders it when they change.
 struct MeteoMapContent: MapContent {
-    let riskySegments: [RiskSegment]
+    /// The whole route as colored runs: green = clear, yellow = caution, red = danger.
+    let segments: [RiskSegment]
     let radarFrames: [RadarFrame]
     let radarIndex: Int
     let radarEnabled: Bool
@@ -35,23 +36,25 @@ struct MeteoMapContent: MapContent {
             }
         }
 
-        ForEvery(riskySegments) { segment in
+        ForEvery(segments) { segment in
             let sourceId = "meteo-risk-\(segment.id)"
             GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(segment.coordinates))))
-            // Outer glow
+            // Outer glow — stronger the worse the weather
             LineLayer(id: "\(sourceId)-glow", source: sourceId)
                 .lineColor(UIColor(segment.risk.color))
-                .lineWidth(20)
+                .lineWidth(segment.risk == .clear ? 18 : 24)
                 .lineBlur(10)
-                .lineOpacity(0.75)
+                .lineOpacity(segment.risk == .clear ? 0.55 : 0.9)
                 .lineCap(.round)
                 .lineJoin(.round)
-            // Hot core
+            // Solid colored line with a white edge so it reads on any map
             LineLayer(id: "\(sourceId)-core", source: sourceId)
                 .lineColor(UIColor(segment.risk.color))
-                .lineWidth(5)
+                .lineWidth(8)
                 .lineCap(.round)
                 .lineJoin(.round)
+                .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
+                .lineBorderWidth(2)
         }
 
         if let scrubCoordinate {
