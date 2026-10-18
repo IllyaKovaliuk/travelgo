@@ -27,6 +27,7 @@ struct RouteFullMapView: View {
     var focusStretchID: MapSegmentStretch.ID? = nil
 
     @State private var selectedPOI: RouteDetailInfo.POI?
+    @State private var hazardStore = HazardStore()
     @State private var showSatellite = true
     @State private var viewport: Viewport
     @State private var hasFlownIn = false
@@ -108,6 +109,12 @@ struct RouteFullMapView: View {
                     MapViewAnnotation(coordinate: only.coordinate) { MapPin(icon: "flag.fill", tint: NTColor.pine, iconColor: NTColor.milk) }
                 }
 
+                CommunityMapContent(
+                    hazards: hazardStore.hazards, partners: [],
+                    onHazard: { h in withAnimation(NTMotion.spring) { selectedPOI = nil; hazardStore.selectedHazard = h } },
+                    onPartner: { _ in }
+                )
+
                 ForEvery(pois) { poi in
                     MapViewAnnotation(coordinate: poi.coordinate) {
                         Button {
@@ -152,6 +159,7 @@ struct RouteFullMapView: View {
                     flowStep += 1
                 }
             }
+            .task { await hazardStore.loadAlongRoute(trackPoints) }
             .task {
                 photos = (try? await RouteRepository.shared.fetchPhotos(routeId: route.id)) ?? []
                 currentUserId = (try? await supabase.auth.session)?.user.id.uuidString
@@ -160,6 +168,15 @@ struct RouteFullMapView: View {
             VStack {
                 topBar
                 Spacer()
+                if let hazard = hazardStore.selectedHazard {
+                    HazardDetailCard(
+                        hazard: hazard, showsVoting: false, isVoting: false,
+                        onConfirm: {}, onDismiss: {},
+                        onClose: { withAnimation(NTMotion.spring) { hazardStore.selectedHazard = nil } }
+                    )
+                    .padding(.horizontal, 16).padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
                 if let selectedPOI {
                     poiCard(selectedPOI)
                         .padding(.horizontal, 16)

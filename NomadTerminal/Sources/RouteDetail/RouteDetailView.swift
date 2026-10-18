@@ -20,6 +20,7 @@ struct RouteDetailView: View {
     @State private var downloadProgress: Double = 0
     @State private var cachedSnapshot: UIImage?
     @State private var showFullMap = false
+    @State private var routeHazards = HazardStore()
     @State private var showEditExtras = false
     @State private var showPaywall = false
     @State private var subscription = SubscriptionManager.shared
@@ -85,6 +86,23 @@ struct RouteDetailView: View {
                             pill(detail.duration, filled: nil)
                         }
                         .padding(.top, 14)
+
+                        if !routeHazards.hazards.isEmpty {
+                            Button { showFullMap = true } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                    Text("\(routeHazards.hazards.count) hazard(s) reported on this route")
+                                        .font(NTFont.body(13, .semibold))
+                                    Spacer()
+                                    Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14).padding(.vertical, 12)
+                                .background(NTColor.hard.opacity(0.9), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 14)
+                        }
 
                         authorRow.padding(.top, 16)
 
@@ -160,6 +178,7 @@ struct RouteDetailView: View {
                 route = updated
             }
         }
+        .task { await routeHazards.loadAlongRoute(detail.trackPoints) }
         .task {
             savedOffline = await RouteRepository.shared.isSaved(routeId: route.id)
             cachedSnapshot = await OfflineRouteStore.shared.snapshotImage(routeId: route.id)
