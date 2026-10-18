@@ -50,6 +50,8 @@ struct RecordTrackView: View {
     @State private var pausedAccumulated: TimeInterval = 0
     @State private var pauseStartedAt: Date?
     @State private var isPaused = false
+    @State private var hazardStore = HazardStore()
+    @State private var showHazardSheet = false
     @State private var viewport: Viewport = .followPuck(zoom: 16, bearing: .heading, pitch: 0)
     /// Wasn't chosen anywhere before this — the details step afterward
     /// (`RouteUploadDetailsView`) picked it up from `NewRouteDraft`'s
@@ -89,6 +91,25 @@ struct RecordTrackView: View {
             VStack {
                 header
                 Spacer()
+                HStack {
+                    Spacer()
+                    HazardFAB { showHazardSheet = true }
+                }
+                .padding(.horizontal, 22).padding(.bottom, 8)
+                if let hazard = hazardStore.selectedHazard {
+                    HazardDetailCard(
+                        hazard: hazard,
+                        isVoting: hazardStore.isVoting,
+                        onConfirm: { Task { await hazardStore.vote(confirm: true, from: tracker.points.last?.coordinate) } },
+                        onDismiss: { Task { await hazardStore.vote(confirm: false, from: tracker.points.last?.coordinate) } },
+                        onClose: { hazardStore.selectedHazard = nil }
+                    )
+                    .padding(.horizontal, 22).padding(.bottom, 8)
+                }
+                if let partner = hazardStore.selectedPartner {
+                    PartnerDetailCard(partner: partner, onOpenStore: {}, onClose: { hazardStore.selectedPartner = nil })
+                        .padding(.horizontal, 22).padding(.bottom, 8)
+                }
                 if tracker.authorizationDenied {
                     locationDeniedCard
                 } else {
@@ -105,6 +126,26 @@ struct RecordTrackView: View {
         }
         .foregroundStyle(NTColor.milk)
         .toolbar(.hidden, for: .navigationBar)
+        .overlay {
+            if let points = hazardStore.rewardBurst {
+                PointsBurstOverlay(points: points)
+                    .task {
+                        try? await Task.sleep(nanoseconds: 2_200_000_000)
+                        withAnimation { hazardStore.rewardBurst = nil }
+                    }
+            }
+        }
+        .sheet(isPresented: $showHazardSheet) {
+            HazardReportSheet(coordinate: tracker.points.last?.coordinate, store: hazardStore) { showHazardSheet = false }
+                .presentationDetents([.large])
+        }
+        .task(id: tracker.points.isEmpty) {
+            while !Task.isCancelled {
+                if let here = tracker.points.last?.coordinate { await hazardStore.refresh(near: here) }
+                else { try? await Task.sleep(nanoseconds: 2_000_000_000); continue }
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+            }
+        }
         .onAppear {
             recordingStartedAt = Date()
             tracker.start()
@@ -210,6 +251,12 @@ struct RecordTrackView: View {
                         .lineBorderColor(UIColor.black.withAlphaComponent(0.4))
                         .lineBorderWidth(1.5)
                 }
+                CommunityMapContent(
+                    hazards: hazardStore.hazards,
+                    partners: hazardStore.partners,
+                    onHazard: { hazardStore.selectedPartner = nil; hazardStore.selectedHazard = $0 },
+                    onPartner: { hazardStore.selectedHazard = nil; hazardStore.selectedPartner = $0 }
+                )
                 ForEvery(droppedPOIs, id: \.id) { poi in
                     MapViewAnnotation(coordinate: CLLocationCoordinate2D(latitude: poi.lat, longitude: poi.lng)) {
                         POIMapMarker(category: poi.category)
