@@ -78,6 +78,7 @@ targets:
         # how the real Pine/Milk theme switch (ThemeManager) actually works.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: "Lets you photograph a trail hazard (fallen tree, broken bridge, deep ford) when you report it, so the next person can see what to expect."
         NSLocationWhenInUseUsageDescription: "Shows your live position on the map and your real track while recording — plus a last-known position for the SOS screen if you ever need it."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and last-known SOS position accurate while the app is in your pocket, and — only if you turn on Passive visit detection in Settings — quietly notices new places you've stopped for your Journal."
         NSSupportsLiveActivities: true
