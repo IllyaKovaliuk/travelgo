@@ -17,12 +17,28 @@ struct RewardsView: View {
     @State private var isLoading = true
     @State private var redeemingKey: String?
     @State private var toast: String?
+    @State private var showStore = false
 
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     balanceCard
+                    Button { showStore = true } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "storefront.fill").foregroundStyle(NTColor.gold)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Nomad Store").font(NTFont.body(14.5, .semibold))
+                                Text("Trade points for partner perks — rentals, hotels, gear").font(NTFont.body(11.5, .light)).foregroundStyle(NTColor.milk(0.55))
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.4))
+                        }
+                        .padding(14)
+                        .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.gold.opacity(0.4), lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
                     aboutCard
                     if !catalog.isEmpty {
                         sectionLabel("REDEEM")
@@ -68,6 +84,7 @@ struct RewardsView: View {
         }
         .preferredColorScheme(ThemeManager.shared.colorScheme)
         .task { await load() }
+        .sheet(isPresented: $showStore, onDismiss: { Task { await load() } }) { NomadStoreView() }
     }
 
     private func load() async {
@@ -107,6 +124,7 @@ struct RewardsView: View {
                 earnLine("Add segments, gear, pins or a cover photo")
                 earnLine("Someone else likes or saves your route")
                 earnLine("Someone new follows you")
+                earnLine("Report or confirm a trail hazard")
             }
             Text("Every point is awarded server-side from real activity — there's no way to fake it from the app. If Nomad ever does a real token, this history is the honest snapshot of who was actually here early.")
                 .font(NTFont.body(11.5, .light))
@@ -219,6 +237,10 @@ struct RewardsView: View {
         case "route_saved": return "Someone saved your route"
         case "route_unsaved": return "Save removed"
         case "route_commented": return "Someone commented on your route"
+        case "hazard_reported": return "Hazard reported"
+        case "hazard_verified": return "Your hazard was verified"
+        case "hazard_validated": return "Hazard check"
+        case "redeemed_partner_reward": return "Partner voucher"
         case "new_follower": return "New follower"
         case "unfollowed": return "Lost a follower"
         default:
