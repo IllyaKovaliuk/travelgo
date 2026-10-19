@@ -8,6 +8,15 @@ options:
 configs:
   Debug: debug
   Release: release
+# One version for the app and its widget extension — App Store Connect
+# rejects an embedded extension whose CFBundleShortVersionString differs
+# from the parent app's. Both targets' Info.plist read these via
+# $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION) (xcodegen otherwise
+# writes a literal 1.0 / 1 and the build settings are silently ignored).
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
@@ -45,8 +54,6 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app
         PRODUCT_NAME: NomadTerminal
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -63,6 +70,8 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: Nomad
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # English (development/base), Ukrainian, Spanish — real
         # translations in Resources/Localizable.xcstrings, not just this
         # declaration. Lets the App Store and iOS's own per-app language
@@ -158,6 +167,8 @@ targets:
       path: Generated/WidgetExtension-Info.plist
       properties:
         CFBundleDisplayName: Nomad
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleLocalizations:
           - en
           - uk
