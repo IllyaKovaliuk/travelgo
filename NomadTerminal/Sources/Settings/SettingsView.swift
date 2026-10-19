@@ -395,7 +395,9 @@ struct SettingsView: View {
         }
     }
 
-    /// Real self-service deletion — calls `delete_my_account()` (see
+    /// Real self-service deletion. First removes the user's uploaded files
+    /// via the Storage API (`deleteMyStoredFiles`), then calls
+    /// `delete_my_account()` (see
     /// `supabase/migrations/20261003000001_account_deletion.sql`), which
     /// deletes the real `profiles` row (cascading through routes/photos/
     /// comments/etc. via real foreign keys) and then the real `auth.users`
@@ -408,6 +410,9 @@ struct SettingsView: View {
         isDeletingAccount = true
         Task {
             do {
+                // Files first, while the session is still valid — the
+                // account RPC ends it. Best effort; never blocks deletion.
+                await RouteRepository.shared.deleteMyStoredFiles()
                 try await supabase.rpc("delete_my_account").execute()
                 try? await supabase.auth.signOut()
                 UserDefaults.standard.removeObject(forKey: "authSessionStartedAt")

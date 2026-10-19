@@ -408,6 +408,34 @@ actor RouteRepository {
         return "\(base)?v=\(Int(Date().timeIntervalSince1970))"
     }
 
+    /// Removes every file the signed-in user uploaded (covers, avatar, route
+    /// photos, hazard photos) through the Storage API — which deletes the
+    /// object itself, not just its metadata row. A direct SQL delete on
+    /// `storage.objects` is blocked by Supabase and would orphan the files
+    /// anyway (see `20261020000002_account_deletion_storage.sql`).
+    ///
+    /// Best effort by design: a failure here must not stop the user from
+    /// deleting their account, so errors are swallowed per bucket/chunk and
+    /// the count of files that could not be removed is returned.
+    @discardableResult
+    func deleteMyStoredFiles() async -> Int {
+        struct Obj: Decodable { let bucket_id: String; let name: String }
+        guard let objects: [Obj] = try? await supabase.rpc("my_storage_objects").execute().value else { return 0 }
+        var failed = 0
+        for (bucket, group) in Dictionary(grouping: objects, by: \.bucket_id) {
+            let names = group.map(\.name)
+            for start in stride(from: 0, to: names.count, by: 100) {
+                let chunk = Array(names[start..<min(start + 100, names.count)])
+                do {
+                    _ = try await supabase.storage.from(bucket).remove(paths: chunk)
+                } catch {
+                    failed += chunk.count
+                }
+            }
+        }
+        return failed
+    }
+
     func updateMyAvatarUrl(_ url: String) async throws {
         let userId = try await ensureSession()
         struct Update: Encodable { let avatar_url: String }
