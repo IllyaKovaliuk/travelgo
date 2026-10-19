@@ -80,6 +80,29 @@ final class MeteoTests: XCTestCase {
         XCTAssertEqual(st.at(zero.addingTimeInterval(99 * 3600)).temperature, 20, accuracy: 0.001)
     }
 
+    /// Late-evening departure: at 23:00 UTC the 00:00-UTC-anchored series has
+    /// already used 23 h, the slider can add 36 h more, and a long route up to
+    /// 24 h on top — ~83 h. A 72 h forecast clamped the tail to hour 71.
+    func testLateEveningDepartureStaysInsideForecastWindow() {
+        let worstCaseHours = 23 + MeteoViewModel.maxDepartureOffsetH + Int(MeteoViewModel.maxDurationHours)
+        XCTAssertGreaterThan(worstCaseHours, 72, "this scenario is the reason 3 days wasn't enough")
+        XCTAssertLessThanOrEqual(worstCaseHours, MeteoService.forecastHours)
+
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        let midnight = utc.startOfDay(for: Date(timeIntervalSince1970: 1_800_000_000))
+        let n = MeteoService.forecastHours
+        // temperature == hour index, so a clamped read is obvious.
+        let st = MeteoStation(fraction: 0, coordinate: .init(latitude: 50, longitude: 28), elevationM: 100, hourZero: midnight,
+                              temperature: (0..<n).map(Double.init), wind: Array(repeating: 5, count: n),
+                              gust: Array(repeating: 10, count: n), probability: Array(repeating: 0, count: n),
+                              precip: Array(repeating: 0, count: n), code: Array(repeating: 0, count: n))
+        let departure = midnight.addingTimeInterval(Double(23 + MeteoViewModel.maxDepartureOffsetH) * 3600)
+        let arrival = departure.addingTimeInterval(MeteoViewModel.maxDurationHours * 3600)
+        XCTAssertEqual(st.at(departure).temperature, 59, accuracy: 0.001)
+        XCTAssertEqual(st.at(arrival).temperature, 83, accuracy: 0.001)   // real hour 83, not clamped to 71
+    }
+
     func testRouteFractionCoordinate() {
         let pts = [TrackPoint(lat: 50, lng: 28), TrackPoint(lat: 50, lng: 28.1), TrackPoint(lat: 50, lng: 28.2)]
         let vm = MeteoViewModel(trackPoints: pts, transport: .foot)

@@ -33,6 +33,8 @@ final class MeteoViewModel {
 
     // Timeline state
     static let maxDepartureOffsetH = 36
+    /// Longest ETA the model will produce (clamp in `init`).
+    static let maxDurationHours = 24.0
     var departureOffsetH = 0 { didSet { recompute() } }
     /// 0…1 — how far along the route the scrubber is.
     var progress: Double = 0
@@ -84,7 +86,7 @@ final class MeteoViewModel {
         case .water: hours = km / 6
         case .paraglide: hours = km / 28
         }
-        durationHours = max(0.25, min(24, hours))
+        durationHours = max(0.25, min(Self.maxDurationHours, hours))
         let avg = km > 0 ? km / durationHours : 0
         let avgText = String(format: "%.1f", avg)
         paceNote = climbs

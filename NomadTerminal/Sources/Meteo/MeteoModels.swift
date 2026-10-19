@@ -132,6 +132,14 @@ struct RadarFrame: Identifiable {
 enum MeteoService {
     enum MeteoError: Error { case badResponse }
 
+    /// Open-Meteo's hourly series starts at 00:00 UTC *today*, not "now".
+    /// Worst case the app has to cover: it's 23:xx UTC (24 h already burned),
+    /// the departure slider is at its far end (`maxDepartureOffsetH`) and the
+    /// route takes the longest duration the ETA allows. 3 days (72 h) fell
+    /// short of that and `MeteoStation.at` silently clamped to the last hour.
+    static let forecastDays = 4
+    static var forecastHours: Int { forecastDays * 24 }
+
     private struct ForecastResponse: Decodable {
         struct Hourly: Decodable {
             let time: [String]
@@ -153,7 +161,7 @@ enum MeteoService {
         let lat = coordinates.map { String(format: "%.4f", $0.latitude) }.joined(separator: ",")
         let lng = coordinates.map { String(format: "%.4f", $0.longitude) }.joined(separator: ",")
         let hourly = "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation_probability,precipitation,weather_code"
-        guard let url = URL(string: "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lng)&hourly=\(hourly)&wind_speed_unit=kmh&timezone=UTC&forecast_days=3") else {
+        guard let url = URL(string: "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lng)&hourly=\(hourly)&wind_speed_unit=kmh&timezone=UTC&forecast_days=\(forecastDays)") else {
             throw MeteoError.badResponse
         }
         let (data, response) = try await URLSession.shared.data(from: url)
