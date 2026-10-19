@@ -398,7 +398,7 @@ struct SettingsView: View {
     /// Real self-service deletion. First removes the user's uploaded files
     /// via the Storage API (`deleteMyStoredFiles`), then calls
     /// `delete_my_account()` (see
-    /// `supabase/migrations/20261003000001_account_deletion.sql`), which
+    /// `backend/supabase/migrations/20261003000001_account_deletion.sql`), which
     /// deletes the real `profiles` row (cascading through routes/photos/
     /// comments/etc. via real foreign keys) and then the real `auth.users`
     /// row itself. The local session's refresh token is dead the instant

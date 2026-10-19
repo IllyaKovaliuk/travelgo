@@ -3,7 +3,7 @@ import CoreLocation
 import SwiftUI
 
 /// Wire models for the hazard-report and partner-marketplace tables (see
-/// `supabase/migrations/20261018000001_hazard_reports_and_marketplace.sql`).
+/// `backend/supabase/migrations/20261018000001_hazard_reports_and_marketplace.sql`).
 /// Plain Codable structs — the app has no SwiftData layer; offline
 /// persistence for the rest of the app is the JSON stores in `Backend/`.
 
