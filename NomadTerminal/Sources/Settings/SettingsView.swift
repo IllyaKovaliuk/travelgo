@@ -88,7 +88,7 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.plain)
                         divider
-                        valueRow(title: "About Nomad", value: "v2.4.0")
+                        valueRow(title: "About Nomad", value: "v\(appVersion)")
                     }
 
                     // Real now — `profiles.is_admin`, checked here (so the
@@ -487,6 +487,11 @@ struct SettingsView: View {
             .padding(.horizontal, 18)
             .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.12), lineWidth: 1))
+    }
+
+    /// Real marketing version from the bundle (was a hardcoded "v2.4.0").
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     }
 
     private var divider: some View {
