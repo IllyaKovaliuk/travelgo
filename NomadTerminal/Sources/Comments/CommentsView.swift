@@ -11,6 +11,9 @@ struct CommentsView: View {
     @State private var isSending = false
     @State private var reportingCommentID: String?
     @State private var reportedIDs: Set<String> = []
+    @State private var myUserId: String?
+    @State private var blockingComment: RouteRepository.Comment?
+    @State private var blockFailed = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -55,6 +58,34 @@ struct CommentsView: View {
                 Button(reason) { report(reason: reason) }
             }
             Button("Cancel", role: .cancel) { reportingCommentID = nil }
+        }
+        .alert("Block this user?", isPresented: Binding(
+            get: { blockingComment != nil },
+            set: { if !$0 { blockingComment = nil } }
+        )) {
+            Button("Block", role: .destructive) { blockCommentAuthor() }
+            Button("Cancel", role: .cancel) { blockingComment = nil }
+        } message: {
+            Text("Their routes, comments and photos will be hidden from you everywhere in Nomad. You can unblock them any time in Settings.")
+        }
+        .alert("Couldn't update the block list", isPresented: $blockFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
+    }
+
+    private func blockCommentAuthor() {
+        guard let comment = blockingComment else { return }
+        blockingComment = nil
+        Task {
+            do {
+                try await RouteRepository.shared.blockUser(comment.authorId)
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                withAnimation(NTMotion.spring) { comments.removeAll { $0.authorId == comment.authorId } }
+            } catch {
+                blockFailed = true
+            }
         }
     }
 
@@ -123,6 +154,11 @@ struct CommentsView: View {
                     Label("Report comment", systemImage: "flag")
                 }
             }
+            if comment.authorId != myUserId {
+                Button(role: .destructive) { blockingComment = comment } label: {
+                    Label("Block user", systemImage: "hand.raised")
+                }
+            }
         }
     }
 
@@ -166,6 +202,7 @@ struct CommentsView: View {
     }
 
     private func load() async {
+        myUserId = (try? await supabase.auth.session)?.user.id.uuidString
         do {
             comments = try await RouteRepository.shared.fetchComments(routeId: route.id)
         } catch {

@@ -2347,6 +2347,121 @@
         }
       }
     },
+    "Block" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблокувати"
+          }
+        }
+      }
+    },
+    "Block someone from their profile or from a comment's menu." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block someone from their profile or from a comment's menu."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquea desde el perfil de alguien o desde el menú de un comentario."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблокувати можна з профілю людини або з меню коментаря."
+          }
+        }
+      }
+    },
+    "Block this user?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block this user?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Bloquear a este usuario?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблокувати цього користувача?"
+          }
+        }
+      }
+    },
+    "Block user" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block user"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquear usuario"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблокувати користувача"
+          }
+        }
+      }
+    },
+    "Blocked users" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocked users"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuarios bloqueados"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблоковані користувачі"
+          }
+        }
+      }
+    },
     "Bogged in mud or sand" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2757,6 +2872,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перевір\nпошту."
+          }
+        }
+      }
+    },
+    "Check your connection and try again." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your connection and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba tu conexión e inténtalo de nuevo."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірте з'єднання та спробуйте ще раз."
           }
         }
       }
@@ -3217,6 +3355,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не вдалося зберегти — перевірте зʼєднання і спробуйте ще раз."
+          }
+        }
+      }
+    },
+    "Couldn't update the block list" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't update the block list"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar la lista de bloqueos"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося оновити список блокувань"
           }
         }
       }
@@ -6768,6 +6929,29 @@
         }
       }
     },
+    "More" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ще"
+          }
+        }
+      }
+    },
     "Most bites happen when people try to move or kill the snake. Stop, back away the way you came, and give it space and time to leave on its own." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8636,6 +8820,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пауза"
+          }
+        }
+      }
+    },
+    "People you block can't appear in your feed, search, routes or comments. They aren't told." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "People you block can't appear in your feed, search, routes or comments. They aren't told."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las personas que bloquees no aparecerán en tu feed, búsqueda, rutas ni comentarios. No se les avisa."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Заблоковані люди не з'являтимуться у вашій стрічці, пошуку, маршрутах чи коментарях. Їм про це не повідомляється."
           }
         }
       }
@@ -11679,6 +11886,29 @@
         }
       }
     },
+    "Their routes, comments and photos will be hidden from you everywhere in Nomad. You can unblock them any time in Settings." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their routes, comments and photos will be hidden from you everywhere in Nomad. You can unblock them any time in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sus rutas, comentarios y fotos se ocultarán en todo Nomad. Puedes desbloquearlo cuando quieras en Ajustes."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Їхні маршрути, коментарі та фото будуть приховані від вас у всьому Nomad. Розблокувати можна будь-коли в Налаштуваннях."
+          }
+        }
+      }
+    },
     "These are the first signs of altitude sickness, not just fatigue. The only real treatment is descending — pushing on \"to acclimatize\" is how mild AMS becomes dangerous. If symptoms include confusion, stumbling, or won't clear with rest, descend immediately." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -12089,6 +12319,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ІМ'Я КОРИСТУВАЧА"
+          }
+        }
+      }
+    },
+    "Unblock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unblock"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розблокувати"
+          }
+        }
+      }
+    },
+    "Unblock user" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unblock user"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear usuario"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розблокувати користувача"
           }
         }
       }
@@ -13243,6 +13519,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не можна голосувати за власний звіт."
+          }
+        }
+      }
+    },
+    "You haven't blocked anyone" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't blocked anyone"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No has bloqueado a nadie"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ви нікого не блокували"
           }
         }
       }

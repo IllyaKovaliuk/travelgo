@@ -626,6 +626,7 @@ actor RouteRepository {
 
     struct Comment: Identifiable {
         let id: String
+        let authorId: String
         let authorName: String
         let authorInitials: String
         let body: String
@@ -634,11 +635,13 @@ actor RouteRepository {
 
     private struct CommentDTO: Decodable {
         let id: UUID
+        let authorId: UUID
         let body: String
         let createdAt: String
         let profiles: ProfileDTO
         enum CodingKeys: String, CodingKey {
             case id, body, profiles
+            case authorId = "author_id"
             case createdAt = "created_at"
         }
     }
@@ -647,7 +650,7 @@ actor RouteRepository {
         guard let routeUUID = UUID(uuidString: routeId) else { return [] }
         let rows: [CommentDTO] = try await supabase
             .from("route_comments")
-            .select("id, body, created_at, profiles!route_comments_author_id_fkey(*)")
+            .select("id, author_id, body, created_at, profiles!route_comments_author_id_fkey(*)")
             .eq("route_id", value: routeUUID.uuidString)
             .order("created_at", ascending: false)
             .execute()
@@ -655,11 +658,80 @@ actor RouteRepository {
         return rows.map {
             Comment(
                 id: $0.id.uuidString,
+                authorId: $0.authorId.uuidString,
                 authorName: $0.profiles.displayName,
                 authorInitials: initials(from: $0.profiles.displayName),
                 body: $0.body,
                 createdAgo: relativeTime(from: $0.createdAt)
             )
+        }
+    }
+
+    // MARK: - Blocking (App Review 1.2)
+    //
+    // Hiding is enforced by Postgres — RESTRICTIVE select policies on
+    // routes / route_comments / route_photos / reports (see
+    // `20261020000001_user_blocks.sql`) — so no query in this file needs a
+    // client-side filter and none can forget one. These calls only manage
+    // the block list itself.
+
+    struct BlockedUser: Identifiable {
+        let id: String
+        let displayName: String
+        let username: String
+        let initials: String
+        let avatarUrl: String?
+    }
+
+    func blockUser(_ userId: String) async throws {
+        let me = try await ensureSession()
+        struct Insert: Encodable { let blocker_id: String; let blocked_id: String }
+        try await supabase.from("user_blocks")
+            .upsert(Insert(blocker_id: me.uuidString, blocked_id: userId),
+                    onConflict: "blocker_id,blocked_id", ignoreDuplicates: true)
+            .execute()
+    }
+
+    func unblockUser(_ userId: String) async throws {
+        let me = try await ensureSession()
+        try await supabase.from("user_blocks")
+            .delete()
+            .eq("blocker_id", value: me.uuidString)
+            .eq("blocked_id", value: userId)
+            .execute()
+    }
+
+    func isBlocked(_ userId: String) async -> Bool {
+        guard let me = try? await ensureSession() else { return false }
+        struct Row: Decodable { let blocked_id: UUID }
+        let rows: [Row]? = try? await supabase.from("user_blocks")
+            .select("blocked_id")
+            .eq("blocker_id", value: me.uuidString)
+            .eq("blocked_id", value: userId)
+            .execute()
+            .value
+        return !(rows ?? []).isEmpty
+    }
+
+    func fetchBlockedUsers() async throws -> [BlockedUser] {
+        struct P: Decodable {
+            let id: UUID
+            let username: String
+            let display_name: String
+            let avatar_url: String?
+        }
+        struct Row: Decodable {
+            let profiles: P
+        }
+        let rows: [Row] = try await supabase.from("user_blocks")
+            .select("created_at, profiles!user_blocks_blocked_id_fkey(id, username, display_name, avatar_url)")
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return rows.map {
+            BlockedUser(id: $0.profiles.id.uuidString, displayName: $0.profiles.display_name,
+                        username: $0.profiles.username, initials: initials(from: $0.profiles.display_name),
+                        avatarUrl: $0.profiles.avatar_url)
         }
     }
 

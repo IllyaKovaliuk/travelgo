@@ -30,6 +30,9 @@ struct AuthorProfileView: View {
     @State private var isFollowing = false
     @State private var isOwnProfile = false
     @State private var followerCount = 0
+    @State private var isBlocked = false
+    @State private var showBlockConfirm = false
+    @State private var blockFailed = false
 
     /// Real sum across their published routes — `fetchUserRoutes` already
     /// embeds each route's real `likes:route_likes(count)`, so this is
@@ -71,6 +74,17 @@ struct AuthorProfileView: View {
             RouteDetailFlow(route: route)
         }
         .task { await load() }
+        .alert("Block this user?", isPresented: $showBlockConfirm) {
+            Button("Block", role: .destructive) { block() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Their routes, comments and photos will be hidden from you everywhere in Nomad. You can unblock them any time in Settings.")
+        }
+        .alert("Couldn't update the block list", isPresented: $blockFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Check your connection and try again.")
+        }
     }
 
     private var topBar: some View {
@@ -84,9 +98,53 @@ struct AuthorProfileView: View {
             }
             .buttonStyle(.plain)
             Spacer()
+            if profile != nil && !isOwnProfile {
+                Menu {
+                    if isBlocked {
+                        Button { unblock() } label: { Label("Unblock user", systemImage: "hand.raised.slash") }
+                    } else {
+                        Button(role: .destructive) { showBlockConfirm = true } label: {
+                            Label("Block user", systemImage: "hand.raised")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 16, weight: .semibold))
+                        .frame(width: 38, height: 38)
+                        .background(Circle().fill(NTColor.milk(0.08)))
+                        .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                }
+                .accessibilityLabel(Text("More"))
+            }
         }
         .padding(.top, 20)
         .padding(.bottom, 10)
+    }
+
+    private func block() {
+        Task {
+            do {
+                try await RouteRepository.shared.blockUser(userId)
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                isBlocked = true
+                onClose()
+            } catch {
+                blockFailed = true
+            }
+        }
+    }
+
+    private func unblock() {
+        Task {
+            do {
+                try await RouteRepository.shared.unblockUser(userId)
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                isBlocked = false
+                await load()
+            } catch {
+                blockFailed = true
+            }
+        }
     }
 
     private func header(_ profile: RouteRepository.PublicProfile) -> some View {
@@ -245,6 +303,8 @@ struct AuthorProfileView: View {
         async let routesResult: [Route] = (try? RouteRepository.shared.fetchUserRoutes(authorId: userId)) ?? []
         async let followingResult: Bool = RouteRepository.shared.isFollowing(authorId: userId)
         async let followerResult: Int = RouteRepository.shared.fetchFollowerCount(userId: userId)
+        async let blockedResult: Bool = RouteRepository.shared.isBlocked(userId)
+        isBlocked = await blockedResult
         profile = await profileResult
         routes = await routesResult
         isFollowing = await followingResult

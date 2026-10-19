@@ -26,6 +26,7 @@ struct SettingsView: View {
     @State private var showAnalytics = false
     @State private var showSuperAdmin = false
     @State private var showEmergencyContacts = false
+    @State private var showBlockedUsers = false
     @State private var isAdmin = false
     @State private var isSuperAdmin = false
     @State private var isSigningOut = false
@@ -79,6 +80,11 @@ struct SettingsView: View {
                                 title: "Emergency contacts",
                                 value: emergencyContactCount > 0 ? "\(emergencyContactCount)" : nil
                             )
+                        }
+                        .buttonStyle(.plain)
+                        divider
+                        Button { showBlockedUsers = true } label: {
+                            valueRow(title: "Blocked users", value: nil)
                         }
                         .buttonStyle(.plain)
                         divider
@@ -185,6 +191,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showModeration) { AdminModerationView() }
             .sheet(isPresented: $showAnalytics) { AdminAnalyticsView() }
             .sheet(isPresented: $showSuperAdmin) { SuperAdminView() }
+            .sheet(isPresented: $showBlockedUsers) { BlockedUsersView() }
             .sheet(isPresented: $showEmergencyContacts, onDismiss: { Task { await loadEmergencyContactCount() } }) {
                 EmergencyContactsView()
             }

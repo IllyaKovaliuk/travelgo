@@ -77,7 +77,7 @@ struct HomeFeedView: View {
         .fullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
-        .fullScreenCover(isPresented: Binding(get: { openAuthor != nil }, set: { if !$0 { openAuthor = nil } })) {
+        .fullScreenCover(isPresented: Binding(get: { openAuthor != nil }, set: { if !$0 { openAuthor = nil } }), onDismiss: { Task { await loadRoutes() } }) {
             if let openAuthor {
                 AuthorProfileView(userId: openAuthor, onClose: { self.openAuthor = nil })
             }
