@@ -258,6 +258,7 @@ struct RecordTrackView: View {
                         .data(.geometry(.lineString(LineString(tracker.points.map(\.coordinate)))))
                     LineLayer(id: "\(sourceId)-line", source: sourceId)
                         .lineColor(UIColor(NTColor.accent))
+                        .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                         .lineWidth(6)
                         .lineCap(.round)
                         .lineJoin(.round)

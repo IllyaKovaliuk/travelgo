@@ -99,6 +99,7 @@ struct RouteFullMapView: View {
                     GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
                     LineLayer(id: "\(sourceId)-line", source: sourceId)
                         .lineColor(UIColor(NTColor.accent))
+                        .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                         .lineWidth(9)
                         .lineCap(.round)
                         .lineJoin(.round)

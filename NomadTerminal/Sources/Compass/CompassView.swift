@@ -454,6 +454,7 @@ struct CompassView: View {
                 GeoJSONSource(id: sourceId).data(.geometry(.lineString(LineString(trackPoints.map(\.coordinate)))))
                 LineLayer(id: "\(sourceId)-line", source: sourceId)
                     .lineColor(UIColor(NTColor.accent))
+                    .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                     .lineWidth(7)
                     .lineCap(.round)
                     .lineJoin(.round)
@@ -470,6 +471,7 @@ struct CompassView: View {
                 GeoJSONSource(id: bcId).data(.geometry(.lineString(LineString(breadcrumb))))
                 LineLayer(id: "\(bcId)-line", source: bcId)
                     .lineColor(UIColor(NTColor.water))
+                    .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                     .lineWidth(5)
                     .lineCap(.round)
                     .lineJoin(.round)
@@ -486,6 +488,7 @@ struct CompassView: View {
                 GeoJSONSource(id: rejoinId).data(.geometry(.lineString(LineString([current, target]))))
                 LineLayer(id: "\(rejoinId)-line", source: rejoinId)
                     .lineColor(UIColor(Color(hex: 0xE58272)))
+                    .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                     .lineWidth(3)
                     .lineDashArray([0, 2])
             }

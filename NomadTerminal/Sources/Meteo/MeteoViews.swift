@@ -42,6 +42,7 @@ struct MeteoMapContent: MapContent {
             // Outer glow — stronger the worse the weather
             LineLayer(id: "\(sourceId)-glow", source: sourceId)
                 .lineColor(UIColor(segment.risk.color))
+                .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                 .lineWidth(segment.risk == .clear ? 18 : 24)
                 .lineBlur(10)
                 .lineOpacity(segment.risk == .clear ? 0.55 : 0.9)
@@ -50,6 +51,7 @@ struct MeteoMapContent: MapContent {
             // Solid colored line with a white edge so it reads on any map
             LineLayer(id: "\(sourceId)-core", source: sourceId)
                 .lineColor(UIColor(segment.risk.color))
+                .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                 .lineWidth(8)
                 .lineCap(.round)
                 .lineJoin(.round)

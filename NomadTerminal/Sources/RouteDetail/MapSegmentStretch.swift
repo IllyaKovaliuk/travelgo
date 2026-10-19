@@ -421,6 +421,7 @@ struct RouteSegmentMapContent: MapContent {
             // Soft neon halo under the line so it pops on any map.
             LineLayer(id: "\(sourceId)-halo", source: sourceId)
                 .lineColor(UIColor(stretch.tint))
+                .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                 .lineWidth(20)
                 .lineBlur(9)
                 .lineOpacity(0.55)
@@ -429,6 +430,7 @@ struct RouteSegmentMapContent: MapContent {
 
             LineLayer(id: "\(sourceId)-line", source: sourceId)
                 .lineColor(UIColor(stretch.tint))
+                .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                 .lineOpacity(1)
                 .lineWidth(9)
                 .lineCap(.round)
@@ -440,6 +442,7 @@ struct RouteSegmentMapContent: MapContent {
             if SegmentLineStyle.hasFlowOverlay(stretch.transport) {
                 LineLayer(id: "\(sourceId)-flow", source: sourceId)
                     .lineColor(.white)
+                    .lineEmissiveStrength(1)  // Standard style's lighting would otherwise darken the line at dusk/night
                     .lineOpacity(0.65)
                     .lineWidth(3.2)
                     .lineCap(.round)

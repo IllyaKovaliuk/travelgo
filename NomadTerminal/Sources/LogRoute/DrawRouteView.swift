@@ -46,11 +46,15 @@ struct DrawRouteView: View {
         ZStack(alignment: .top) {
             Map(viewport: $viewport) {
                 if points.count > 1 {
-                    PolylineAnnotation(lineCoordinates: points)
+                    GeoJSONSource(id: "draw-track").data(.geometry(.lineString(LineString(points))))
+                    LineLayer(id: "draw-track-line", source: "draw-track")
                         .lineColor(UIColor(NTColor.accent))
-                        .lineWidth(4)
+                        .lineEmissiveStrength(1)
+                        .lineWidth(6)
+                        .lineCap(.round)
                         .lineJoin(.round)
-                        .lineOpacity(0.95)
+                        .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
+                        .lineBorderWidth(2)
                 }
                 ForEvery(Array(points.enumerated()), id: \.offset) { index, coordinate in
                     MapViewAnnotation(coordinate: coordinate) {

@@ -222,10 +222,15 @@ struct ImportRouteView: View {
             ZStack {
                 Map(viewport: $previewViewport) {
                     if coordinates.count > 1 {
-                        PolylineAnnotation(lineCoordinates: coordinates)
+                        GeoJSONSource(id: "import-preview-track").data(.geometry(.lineString(LineString(coordinates))))
+                        LineLayer(id: "import-preview-track-line", source: "import-preview-track")
                             .lineColor(UIColor(NTColor.accent))
-                            .lineWidth(3.5)
+                            .lineEmissiveStrength(1)
+                            .lineWidth(6)
+                            .lineCap(.round)
                             .lineJoin(.round)
+                            .lineBorderColor(UIColor.white.withAlphaComponent(0.95))
+                            .lineBorderWidth(2)
                     }
                     ForEvery(photos, id: \.id) { photo in
                         if let lat = photo.lat, let lng = photo.lng {
