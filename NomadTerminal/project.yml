@@ -33,6 +33,7 @@ targets:
       - path: Resources/Fonts
       - path: Resources/Assets.xcassets
       - path: Resources/Localizable.xcstrings
+      - path: Resources/PrivacyInfo.xcprivacy
     dependencies:
       - package: Supabase
         product: Supabase
