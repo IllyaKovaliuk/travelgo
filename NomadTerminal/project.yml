@@ -60,7 +60,7 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: 8FKZYTQB3B
+        DEVELOPMENT_TEAM: ZZ4774U2R5
         # App Group — lets ProfileView hand a small stats snapshot
         # (km/countries/streak/heatmap) to the widget extension process,
         # which has no DB/network access of its own. See Sources/Shared/
@@ -160,7 +160,7 @@ targets:
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: 8FKZYTQB3B
+        DEVELOPMENT_TEAM: ZZ4774U2R5
         SKIP_INSTALL: YES
         CODE_SIGN_ENTITLEMENTS: WidgetExtension.entitlements
     info:
