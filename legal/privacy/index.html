@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Nomad</title>
+<meta name="description" content="How Nomad handles your data.">
+<style>
+:root { --bg:#fafaf8; --fg:#161616; --muted:#5d5d5a; --line:#e3e2dc; --accent:#c2551f; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f0f0e; --fg:#ecebe6; --muted:#a09f98; --line:#2a2a27; --accent:#e8743b; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+main { max-width:720px; margin:0 auto; padding:24px 20px 80px; }
+nav { display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+nav .brand { font-weight:700; letter-spacing:.04em; margin-right:auto; }
+nav a { color:var(--muted); text-decoration:none; font-size:14px; }
+nav a:hover, nav a.on { color:var(--accent); }
+.lang { display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; }
+.lang button { background:none; border:0; color:var(--muted); padding:5px 12px; font:inherit; font-size:13px; cursor:pointer; }
+.lang button.on { background:var(--accent); color:#fff; }
+h1 { font-size:30px; line-height:1.2; margin:28px 0 6px; }
+h2 { font-size:20px; margin:32px 0 6px; }
+p, li { color:var(--fg); } li { margin:4px 0; }
+a { color:var(--accent); }
+.doc[hidden] { display:none; }
+</style>
+</head>
+<body>
+<main>
+<nav>
+  <span class="brand">NOMAD</span>
+  <a href="/privacy/" class="on">Privacy</a><a href="/terms/" >Terms</a><a href="/support/" >Support</a>
+  <span class="lang"><button data-l="en">EN</button><button data-l="uk">УК</button></span>
+</nav>
+<section class="doc" data-l="en"><h1>Nomad Privacy Policy</h1>
+<p><strong>Last updated:</strong> October 20, 2026</p>
+<p>This policy describes what Nomad ("the app", "we") collects, why, who else receives it, and how you control it. It is written to match what the app actually does.</p>
+<h2>What we collect</h2>
+<p><strong>Account information.</strong> When you create an account we collect your email address and a username and display name you choose. Sign-in is handled by our backend provider, Supabase; we never see or store your password. If you sign in with Google or Apple, that provider shares your name and email with us (Apple may give you a private relay address instead of your real email) for that purpose only.</p>
+<p><strong>Location data.</strong> Location is core to what Nomad does:
+- <strong>While recording a route</strong>, we collect a live stream of GPS coordinates (latitude, longitude, altitude) to compute distance, elevation gain and the path you travelled. Recording keeps working while the phone is locked or the app is in the background, and only while a recording is active. The recorded path is stored as part of the route you choose to publish.
+- <strong>While navigating a route or using the map</strong>, your live position is read to show it on the map and compute progress and hazard proximity. This is used on your device and is not stored.
+- <strong>When you report a trail hazard</strong>, the report is stored with the coordinates where you are. To confirm or dispute someone else's hazard report, your device's position is checked against the hazard (within about 300 m) on our server; that position is used for the check and not kept.
+- <strong>If you use SOS</strong>, your last known position is placed in the message prepared for your emergency contacts.
+- <strong>Passive visit detection is optional and off by default.</strong> If you enable it in Settings, the app asks for "Always" location access and uses iOS's Visits API to log places you have stopped at to your private Journal. You can turn it off at any time.
+- The recorded path of a route you publish is visible to whoever can see that route (public, followers-only or private, per your choice).</p>
+<p><strong>Photos.</strong> Photos you choose or take (route covers, route photos, hazard photos, your avatar) are uploaded and stored so they can be shown to you and, depending on the visibility you set, to other users. Camera access is requested only when you photograph a hazard.</p>
+<p><strong>Hazard reports.</strong> A hazard report (type, optional photo, location, time) and other users' confirmations or dismissals of it are visible to other signed-in users near that location. Reports expire automatically after 14 days.</p>
+<p><strong>Emergency contacts.</strong> If you add emergency contacts we store the name, phone number and/or email you enter for each. This is other people's contact information provided by you. It is used only to pre-fill the message SOS opens in your own Messages app, is visible only to your account, and we never contact those people ourselves.</p>
+<p><strong>Content you create.</strong> Routes, segments, requirements, comments, likes, saves and follows are stored to power those features.</p>
+<p><strong>NomadPoints and vouchers.</strong> We keep a ledger of the points you earn (for example for publishing routes or hazard reports) and spend, and the partner vouchers you redeem, so your balance and vouchers are accurate.</p>
+<p><strong>Blocking and reports.</strong> If you block a user, we store that choice so their content stays hidden from you. They are not notified. If you report content, we store the report to review it.</p>
+<p><strong>Usage analytics.</strong> We record a small set of in-app events tied to your account (for example that you signed up, published a route or triggered SOS) to understand how the app is used and to fix problems. These are event names and timestamps, not content. They are not shared or sold.</p>
+<p><strong>Purchases.</strong> Subscriptions (Nomad Pro) are processed entirely by Apple through StoreKit. We learn whether you have an active subscription; we never receive your payment details.</p>
+<p><strong>Device storage.</strong> Routes you open are cached on your device, and you may download offline map regions. This stays on your device.</p>
+<h2>Who else receives data</h2>
+<p>We don't run ads or use third-party advertising or tracking SDKs, and we don't sell your data. The services below process data only to provide the features named here:</p>
+<ul>
+<li><strong>Supabase</strong> (database, authentication, file storage), hosted in the EU. Processes account data, routes, photos, hazard reports, points and the other data described above.</li>
+<li><strong>Mapbox</strong> provides the maps. To draw maps and download offline regions the app sends map requests that include the area being viewed, and Mapbox may receive limited device and usage telemetry under its own privacy policy.</li>
+<li><strong>Open-Meteo</strong> (weather forecasts). The Meteo feature sends a handful of coordinates along the route you are viewing and no account information.</li>
+<li><strong>RainViewer</strong> (weather radar). The Meteo feature downloads radar map tiles for the area you are viewing; no account information is sent.</li>
+<li><strong>Apple and Google</strong>, if you choose Sign in with Apple or Google, and Apple for subscriptions.</li>
+</ul>
+<h2>What we don't do</h2>
+<ul>
+<li>We don't collect background location except during an active recording or, if you turned it on, Passive visit detection.</li>
+<li>SOS does not dispatch any emergency service or notify anyone automatically. It opens a pre-filled message in your own Messages app that you choose to send.</li>
+</ul>
+<h2>Retention and your controls</h2>
+<ul>
+<li><strong>Route visibility</strong>: public, followers-only or private, chosen per route.</li>
+<li><strong>Block users</strong>: from their profile or a comment's menu; manage the list in Settings → Blocked users.</li>
+<li><strong>Passive visit detection</strong>: toggle in Settings at any time.</li>
+<li><strong>Emergency contacts</strong>: add or remove at any time in Settings.</li>
+<li><strong>Location and camera permissions</strong>: controlled in iOS Settings → Nomad. Denying location disables recording, live navigation and SOS position sharing; the rest of the app still works.</li>
+<li><strong>Reporting content</strong>: report a route, photo or comment; content with enough reports is hidden pending review and moderators can remove it.</li>
+<li><strong>Account deletion</strong>: Settings → Delete account. This permanently removes your profile, routes, comments, likes, saves, follows, emergency contacts, points, vouchers, referrals, badges, hazard reports and block list, and deletes the files you uploaded (covers, route photos, hazard photos, avatar). It takes effect immediately and cannot be undone. Anonymous backups at our provider may persist for a short period before being overwritten.</li>
+</ul>
+<h2>Children</h2>
+<p>Nomad is not directed at children under 13 and we don't knowingly collect data from them.</p>
+<h2>Changes to this policy</h2>
+<p>If what we collect changes in a material way, we will update this page and the "Last updated" date.</p>
+<h2>Contact</h2>
+<p>Questions about this policy or a data request: <strong>illyakovaliuk@gmail.com</strong></p></section>
+<section class="doc" data-l="uk" hidden><h1>Політика конфіденційності Nomad</h1>
+<p><strong>Оновлено:</strong> 20 жовтня 2026</p>
+<p>Ця політика описує, що збирає Nomad («застосунок», «ми»), навіщо, хто ще отримує дані та як ви можете ними керувати. Вона написана відповідно до того, що застосунок робить насправді.</p>
+<h2>Що ми збираємо</h2>
+<p><strong>Дані акаунта.</strong> Під час реєстрації ми збираємо вашу електронну пошту, а також імʼя користувача й відображуване імʼя, які ви обираєте. Вхід обробляє наш бекенд-провайдер Supabase; ми ніколи не бачимо і не зберігаємо ваш пароль. Якщо ви входите через Google або Apple, цей провайдер передає нам ваше імʼя та пошту (Apple може дати приховану адресу замість справжньої) лише для цієї мети.</p>
+<p><strong>Геолокація.</strong> Геолокація — основа роботи Nomad:
+- <strong>Під час запису маршруту</strong> ми збираємо потік GPS-координат (широта, довгота, висота), щоб порахувати дистанцію, набір висоти й пройдений шлях. Запис продовжується, коли телефон заблокований або застосунок у фоні, і лише поки триває запис. Записаний шлях зберігається як частина маршруту, який ви вирішите опублікувати.
+- <strong>Під час навігації маршрутом чи роботи з мапою</strong> ваша поточна позиція читається, щоб показати її на мапі, порахувати прогрес і близькість небезпек. Це відбувається на вашому пристрої й не зберігається.
+- <strong>Коли ви повідомляєте про небезпеку на шляху</strong>, звіт зберігається з координатами вашого місцезнаходження. Щоб підтвердити чи заперечити чужий звіт, позиція вашого пристрою перевіряється на нашому сервері відносно небезпеки (приблизно в межах 300 м); її використовують для перевірки й не зберігають.
+- <strong>Якщо ви користуєтеся SOS</strong>, остання відома позиція вставляється в повідомлення для ваших екстрених контактів.
+- <strong>Пасивне визначення візитів — необовʼязкове й вимкнене за замовчуванням.</strong> Якщо ви вмикаєте його в Налаштуваннях, застосунок запитує доступ «Завжди» й через Visits API iOS записує місця, де ви зупинялися, у ваш приватний Журнал. Вимкнути можна будь-коли.
+- Записаний шлях опублікованого маршруту бачать ті, кому дозволяє видимість маршруту (публічно, лише підписникам або приватно — на ваш вибір).</p>
+<p><strong>Фото.</strong> Фото, які ви обираєте або робите (обкладинки, фото маршрутів, фото небезпек, аватар), завантажуються й зберігаються, щоб показувати їх вам і, залежно від видимості, іншим користувачам. Доступ до камери запитується лише тоді, коли ви фотографуєте небезпеку.</p>
+<p><strong>Звіти про небезпеки.</strong> Звіт (тип, необовʼязкове фото, місце, час) і підтвердження чи заперечення інших користувачів бачать інші авторизовані користувачі поблизу. Звіти автоматично втрачають чинність через 14 днів.</p>
+<p><strong>Екстрені контакти.</strong> Якщо ви додаєте екстрені контакти, ми зберігаємо імʼя, телефон та/або пошту, які ви вводите. Це контактні дані інших людей, надані вами. Вони використовуються лише для того, щоб підставити текст повідомлення, яке SOS відкриває у вашому застосунку «Повідомлення», бачите їх лише ви, і ми самі ніколи не звʼязуємося з цими людьми.</p>
+<p><strong>Контент, який ви створюєте.</strong> Маршрути, ділянки, вимоги, коментарі, вподобайки, збереження й підписки зберігаються для роботи цих функцій.</p>
+<p><strong>NomadPoints і ваучери.</strong> Ми ведемо журнал балів, які ви заробляєте (наприклад, за публікацію маршрутів чи звіти про небезпеки) і витрачаєте, та ваучерів партнерів, які ви отримуєте, щоб баланс і ваучери були точними.</p>
+<p><strong>Блокування і скарги.</strong> Якщо ви блокуєте користувача, ми зберігаємо цей вибір, щоб його контент залишався прихованим від вас. Йому про це не повідомляється. Якщо ви скаржитеся на контент, ми зберігаємо скаргу для розгляду.</p>
+<p><strong>Аналітика використання.</strong> Ми записуємо невеликий набір подій у застосунку, повʼязаних з вашим акаунтом (наприклад, реєстрацію, публікацію маршруту, запуск SOS), щоб розуміти, як використовується застосунок, і виправляти помилки. Це назви подій і час, а не вміст. Їх не передають і не продають.</p>
+<p><strong>Покупки.</strong> Підписки (Nomad Pro) повністю обробляє Apple через StoreKit. Ми дізнаємося лише, чи у вас активна підписка; платіжних даних ми ніколи не отримуємо.</p>
+<p><strong>Сховище на пристрої.</strong> Відкриті маршрути кешуються на вашому пристрої, також ви можете завантажувати офлайн-мапи регіонів. Це залишається на пристрої.</p>
+<h2>Хто ще отримує дані</h2>
+<p>Ми не показуємо рекламу, не використовуємо сторонні рекламні чи трекінгові SDK й не продаємо ваші дані. Сервіси нижче обробляють дані лише для функцій, названих тут:</p>
+<ul>
+<li><strong>Supabase</strong> (база даних, автентифікація, сховище файлів), розташований в ЄС. Обробляє дані акаунта, маршрути, фото, звіти про небезпеки, бали й решту описаних даних.</li>
+<li><strong>Mapbox</strong> надає мапи. Щоб малювати мапи й завантажувати офлайн-регіони, застосунок надсилає запити, що містять область перегляду; Mapbox може отримувати обмежену телеметрію пристрою та використання згідно зі своєю політикою конфіденційності.</li>
+<li><strong>Open-Meteo</strong> (прогноз погоди). Функція Meteo надсилає кілька координат уздовж маршруту, який ви переглядаєте, без даних акаунта.</li>
+<li><strong>RainViewer</strong> (радар опадів). Функція Meteo завантажує тайли радара для області, яку ви дивитеся; даних акаунта не надсилається.</li>
+<li><strong>Apple і Google</strong>, якщо ви обираєте вхід через Apple чи Google, а також Apple для підписок.</li>
+</ul>
+<h2>Чого ми не робимо</h2>
+<ul>
+<li>Ми не збираємо фонову геолокацію, окрім активного запису маршруту або, якщо ви ввімкнули, пасивного визначення візитів.</li>
+<li>SOS не викликає жодної екстреної служби й нікого не сповіщає автоматично. Він відкриває готове повідомлення у вашому застосунку «Повідомлення», яке ви надсилаєте самі.</li>
+</ul>
+<h2>Зберігання і ваш контроль</h2>
+<ul>
+<li><strong>Видимість маршруту</strong>: публічно, лише підписникам або приватно — для кожного маршруту.</li>
+<li><strong>Блокування користувачів</strong>: з профілю або з меню коментаря; список — у Налаштування → Заблоковані користувачі.</li>
+<li><strong>Пасивне визначення візитів</strong>: перемикається в Налаштуваннях будь-коли.</li>
+<li><strong>Екстрені контакти</strong>: додавайте чи видаляйте будь-коли в Налаштуваннях.</li>
+<li><strong>Дозволи на геолокацію та камеру</strong>: керуються в iOS Налаштування → Nomad. Заборона геолокації вимикає запис, навігацію наживо та передачу позиції в SOS; решта застосунку працює.</li>
+<li><strong>Скарги на контент</strong>: можна поскаржитися на маршрут, фото чи коментар; контент із достатньою кількістю скарг приховується до перевірки, а модератори можуть його видалити.</li>
+<li><strong>Видалення акаунта</strong>: Налаштування → Видалити акаунт. Остаточно видаляє ваш профіль, маршрути, коментарі, вподобайки, збереження, підписки, екстрені контакти, бали, ваучери, реферали, значки, звіти про небезпеки й список блокувань, а також файли, які ви завантажили (обкладинки, фото маршрутів, фото небезпек, аватар). Діє негайно й незворотно. Резервні копії в нашого провайдера можуть певний час зберігатися, перш ніж бути перезаписаними.</li>
+</ul>
+<h2>Діти</h2>
+<p>Nomad не призначений для дітей до 13 років, і ми свідомо не збираємо їхні дані.</p>
+<h2>Зміни до політики</h2>
+<p>Якщо те, що ми збираємо, суттєво зміниться, ми оновимо цю сторінку й дату «Оновлено».</p>
+<h2>Контакт</h2>
+<p>Питання щодо політики або запит на дані: <strong>illyakovaliuk@gmail.com</strong></p></section>
+</main>
+<script>
+(function () {
+  var l = 'en';
+  try { l = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().indexOf('uk') === 0 ? 'uk' : 'en'); } catch (e) {}
+  function set(x) {
+    document.documentElement.lang = x;
+    document.querySelectorAll('.doc').forEach(function (d) { d.hidden = d.dataset.l !== x; });
+    document.querySelectorAll('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.l === x); });
+    try { localStorage.setItem('lang', x); } catch (e) {}
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { set(b.dataset.l); }; });
+  set(l);
+})();
+</script>
+</body>
+</html>

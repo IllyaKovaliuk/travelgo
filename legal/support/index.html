@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support · Nomad</title>
+<meta name="description" content="Help and contact for Nomad.">
+<style>
+:root { --bg:#fafaf8; --fg:#161616; --muted:#5d5d5a; --line:#e3e2dc; --accent:#c2551f; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f0f0e; --fg:#ecebe6; --muted:#a09f98; --line:#2a2a27; --accent:#e8743b; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+main { max-width:720px; margin:0 auto; padding:24px 20px 80px; }
+nav { display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding-bottom:16px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+nav .brand { font-weight:700; letter-spacing:.04em; margin-right:auto; }
+nav a { color:var(--muted); text-decoration:none; font-size:14px; }
+nav a:hover, nav a.on { color:var(--accent); }
+.lang { display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; }
+.lang button { background:none; border:0; color:var(--muted); padding:5px 12px; font:inherit; font-size:13px; cursor:pointer; }
+.lang button.on { background:var(--accent); color:#fff; }
+h1 { font-size:30px; line-height:1.2; margin:28px 0 6px; }
+h2 { font-size:20px; margin:32px 0 6px; }
+p, li { color:var(--fg); } li { margin:4px 0; }
+a { color:var(--accent); }
+.doc[hidden] { display:none; }
+</style>
+</head>
+<body>
+<main>
+<nav>
+  <span class="brand">NOMAD</span>
+  <a href="/privacy/" >Privacy</a><a href="/terms/" >Terms</a><a href="/support/" class="on">Support</a>
+  <span class="lang"><button data-l="en">EN</button><button data-l="uk">УК</button></span>
+</nav>
+<section class="doc" data-l="en"><h1>Nomad Support</h1>
+<p>Need help with Nomad? Email <strong>illyakovaliuk@gmail.com</strong> and we'll reply as soon as we can.</p>
+<h2>Common questions</h2>
+<p><strong>How do I delete my account?</strong> Settings → Delete account. This permanently removes your profile, routes, photos, comments and points, and the files you uploaded.</p>
+<p><strong>How do I block or report someone?</strong> Open their profile (or press and hold their comment) and choose <em>Block user</em>. To report a route, photo or comment, use its menu. Blocked users are managed in Settings → Blocked users.</p>
+<p><strong>How do I cancel Nomad Pro?</strong> Subscriptions are managed by Apple: Settings → your name → Subscriptions → Nomad. You can also restore purchases on the Nomad Pro screen.</p>
+<p><strong>Route recording stopped or looks wrong.</strong> Make sure location access is set to <em>While Using</em> or <em>Always</em> in iOS Settings → Nomad → Location, and that Precise Location is on.</p>
+<p><strong>SOS.</strong> SOS opens a pre-filled message to your own emergency contacts. It does not call emergency services: in an emergency call your local emergency number.</p>
+<p>Legal: <a href="/privacy/">Privacy Policy</a> · <a href="/terms/">Terms of Service</a></p></section>
+<section class="doc" data-l="uk" hidden><h1>Підтримка Nomad</h1>
+<p>Потрібна допомога з Nomad? Напишіть на <strong>illyakovaliuk@gmail.com</strong>, і ми відповімо щойно зможемо.</p>
+<h2>Часті запитання</h2>
+<p><strong>Як видалити акаунт?</strong> Налаштування → Видалити акаунт. Це остаточно видаляє ваш профіль, маршрути, фото, коментарі та бали, а також файли, які ви завантажили.</p>
+<p><strong>Як заблокувати чи поскаржитися на користувача?</strong> Відкрийте його профіль (або затисніть коментар) і оберіть <em>Заблокувати користувача</em>. Щоб поскаржитися на маршрут, фото чи коментар, скористайтеся його меню. Заблокованими керуйте в Налаштування → Заблоковані користувачі.</p>
+<p><strong>Як скасувати Nomad Pro?</strong> Підписками керує Apple: Налаштування → ваше імʼя → Підписки → Nomad. Також можна відновити покупки на екрані Nomad Pro.</p>
+<p><strong>Запис маршруту зупинився або виглядає неправильно.</strong> Переконайтеся, що доступ до геолокації встановлено на <em>Під час використання</em> або <em>Завжди</em> в iOS Налаштування → Nomad → Геолокація, а «Точна геолокація» ввімкнена.</p>
+<p><strong>SOS.</strong> SOS відкриває готове повідомлення вашим екстреним контактам. Він не телефонує екстреним службам: у разі небезпеки зателефонуйте за місцевим екстреним номером.</p>
+<p>Правове: <a href="/privacy/">Політика конфіденційності</a> · <a href="/terms/">Умови використання</a></p></section>
+</main>
+<script>
+(function () {
+  var l = 'en';
+  try { l = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().indexOf('uk') === 0 ? 'uk' : 'en'); } catch (e) {}
+  function set(x) {
+    document.documentElement.lang = x;
+    document.querySelectorAll('.doc').forEach(function (d) { d.hidden = d.dataset.l !== x; });
+    document.querySelectorAll('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.l === x); });
+    try { localStorage.setItem('lang', x); } catch (e) {}
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { set(b.dataset.l); }; });
+  set(l);
+})();
+</script>
+</body>
+</html>
