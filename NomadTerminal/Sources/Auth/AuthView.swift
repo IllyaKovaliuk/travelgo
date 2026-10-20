@@ -49,8 +49,9 @@ struct AuthView: View {
     /// `handleAppleSignIn`, the whole nonce flow) is untouched and ready —
     /// flip this back to `true` and re-add `com.apple.developer.
     /// applesignin` to `NomadTerminal.entitlements` the moment the $99/yr
-    /// Apple Developer Program is paid for. Nothing else needs to change.
-    private static let appleSignInEnabled = false
+    /// Apple Developer Program is paid for. Done: the paid team is active,
+    /// the entitlement is back and this flag is on.
+    private static let appleSignInEnabled = true
 
     enum Mode { case signIn, signUp }
     @State private var mode: Mode = .signIn

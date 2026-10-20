@@ -6,11 +6,9 @@
 	<array>
 		<string>group.io.nomadterminal.app</string>
 	</array>
-	<!-- com.apple.developer.applesignin removed for now — Personal (free)
-	     Apple Developer teams can't use this capability at all, and that's
-	     what this project is signed with until the $99/year Program is
-	     paid for. Re-add this entitlement (see git history on this file)
-	     the moment that happens — AuthView.swift's real Apple sign-in code
-	     is untouched, just gated off in the UI (see appleSignInEnabled). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>
