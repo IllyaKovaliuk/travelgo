@@ -72,6 +72,7 @@ targets:
         CFBundleDisplayName: Nomad
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         # English (development/base), Ukrainian, Spanish — real
         # translations in Resources/Localizable.xcstrings, not just this
         # declaration. Lets the App Store and iOS's own per-app language
@@ -169,6 +170,7 @@ targets:
         CFBundleDisplayName: Nomad
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         CFBundleLocalizations:
           - en
           - uk
