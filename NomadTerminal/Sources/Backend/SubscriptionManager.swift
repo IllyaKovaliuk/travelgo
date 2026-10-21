@@ -1,6 +1,7 @@
 import Foundation
 import StoreKit
 import Observation
+import Supabase
 
 /// Real StoreKit 2 subscription handling for Nomad Pro. Product
 /// IDs match `Configuration.storekit` (local testing) and must be created
@@ -34,6 +35,34 @@ final class SubscriptionManager {
             await self?.refreshEntitlements()
             await self?.refreshBonusPro()
         }
+        // Pro belongs to the signed-in *app account*, not to whatever Apple
+        // ID happens to be on the phone: re-evaluate on every sign-in /
+        // sign-out so a new account never inherits the previous one's Pro.
+        Task { [weak self] in
+            for await change in supabase.auth.authStateChanges {
+                guard let self else { return }
+                switch change.event {
+                case .signedOut:
+                    self.hasRealSubscription = false
+                    self.bonusProUntil = nil
+                    self.recomputeIsPro()
+                case .signedIn, .userUpdated:
+                    // INITIAL_SESSION is handled by the launch task above.
+                    self.bonusProUntil = nil
+                    self.recomputeIsPro()
+                    await self.refreshEntitlements()
+                    await self.refreshBonusPro()
+                default:
+                    break
+                }
+            }
+        }
+    }
+
+    /// Supabase user id of the signed-in account, used as the StoreKit
+    /// `appAccountToken` so a subscription is tied to this account.
+    private func currentAccountToken() async -> UUID? {
+        (try? await supabase.auth.session)?.user.id
     }
 
     /// Re-reads `profiles.bonus_pro_until` — call after redeeming a points
@@ -67,7 +96,9 @@ final class SubscriptionManager {
     func purchase(_ product: Product) async {
         purchaseError = nil
         do {
-            let result = try await product.purchase()
+            var options: Set<Product.PurchaseOption> = []
+            if let token = await currentAccountToken() { options.insert(.appAccountToken(token)) }
+            let result = try await product.purchase(options: options)
             switch result {
             case .success(let verification):
                 if case .verified(let transaction) = verification {
@@ -99,12 +130,17 @@ final class SubscriptionManager {
         }
     }
 
-    /// Walks current entitlements and flips `isPro` if either subscription is active.
+    /// Walks current entitlements and flips `isPro` if either subscription is
+    /// active *and was bought by the signed-in account* (`appAccountToken`
+    /// matches). Without that check, a subscription on the phone's Apple ID
+    /// unlocked Pro for every account that signed in on the device.
     func refreshEntitlements() async {
+        let token = await currentAccountToken()
         var active = false
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result else { continue }
-            if Self.productIDs.contains(transaction.productID), transaction.revocationDate == nil {
+            if Self.productIDs.contains(transaction.productID), transaction.revocationDate == nil,
+               let token, transaction.appAccountToken == token {
                 active = true
             }
         }
