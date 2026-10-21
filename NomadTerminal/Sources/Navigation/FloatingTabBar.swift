@@ -38,6 +38,11 @@ struct FloatingTabBar: View {
     var profileInitials: String
 
     var body: some View {
+        bar
+            .modifier(GlassBarBackground())
+    }
+
+    private var bar: some View {
         HStack(spacing: 5) {
             ForEach(RootTab.allCases, id: \.self) { tab in
                 Button {
@@ -50,14 +55,14 @@ struct FloatingTabBar: View {
                     ZStack {
                         if selection == tab {
                             Circle()
-                                .fill(tab == .profile ? NTColor.sage : NTColor.accent)
+                                .fill(.clear)
                                 .frame(width: 48, height: 48)
-                                .shadow(color: (tab == .profile ? NTColor.sage : NTColor.accent).opacity(0.5), radius: 10, y: 6)
+                                .modifier(SelectedBubble(tint: tab == .profile ? NTColor.sage : NTColor.accent))
                         }
                         if tab == .profile {
                             Text(profileInitials)
                                 .font(NTFont.mono(12, .semibold))
-                                .foregroundStyle(selection == tab ? Color(hex: 0x0B2716) : NTColor.milk(0.8))
+                                .foregroundStyle(selection == tab ? Color(hex: 0x0B2716) : NTColor.milk(0.85))
                                 .frame(width: 44, height: 44)
                                 .overlay(
                                     Circle().stroke(NTColor.milk(0.3), lineWidth: selection == tab ? 0 : 1)
@@ -65,7 +70,7 @@ struct FloatingTabBar: View {
                         } else {
                             Image(systemName: tab.icon)
                                 .font(.system(size: 19, weight: .medium))
-                                .foregroundStyle(selection == tab ? Color(hex: 0x231007) : NTColor.milk(0.72))
+                                .foregroundStyle(selection == tab ? Color(hex: 0x231007) : NTColor.milk(0.85))
                         }
                     }
                     .frame(width: 48, height: 48)
@@ -74,15 +79,38 @@ struct FloatingTabBar: View {
             }
         }
         .padding(9)
-        .background(
-            Capsule()
-                .fill(.ultraThinMaterial)
-                .environment(\.colorScheme, .dark)
-        )
-        .background(
-            Capsule().fill(NTColor.milk(0.13))
-        )
-        .overlay(Capsule().stroke(NTColor.milk(0.3), lineWidth: 1))
-        .shadow(color: .black.opacity(0.5), radius: 30, y: 18)
+    }
+}
+
+/// Capsule behind the bar: real Liquid Glass on iOS 26+, a see-through
+/// material before that (no opaque fill either way, so content shows through).
+private struct GlassBarBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            GlassEffectContainer(spacing: 8) {
+                content
+            }
+            .glassEffect(.regular.interactive(), in: Capsule())
+            .shadow(color: .black.opacity(0.25), radius: 24, y: 12)
+        } else {
+            content
+                .background(Capsule().fill(.ultraThinMaterial))
+                .overlay(Capsule().stroke(NTColor.milk(0.22), lineWidth: 1))
+                .shadow(color: .black.opacity(0.35), radius: 24, y: 12)
+        }
+    }
+}
+
+/// The "you are here" bubble: tinted glass on iOS 26+, soft solid before.
+private struct SelectedBubble: ViewModifier {
+    let tint: Color
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.tint(tint.opacity(0.9)).interactive(), in: Circle())
+        } else {
+            content
+                .background(Circle().fill(tint.opacity(0.92)))
+                .shadow(color: tint.opacity(0.45), radius: 8, y: 4)
+        }
     }
 }
