@@ -88,17 +88,17 @@ struct RiskTrack: View {
             ZStack(alignment: .leading) {
                 HStack(spacing: 2) {
                     ForEach(Array(risks.enumerated()), id: \.offset) { _, risk in
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(risk.color.opacity(risk == .clear ? 0.28 : 0.95))
+                        RoundedRectangle(cornerRadius: 2.5)
+                            .fill(risk.color.opacity(risk == .clear ? 0.35 : 0.95))
                     }
                 }
-                .frame(height: 12)
-                .shadow(color: .black.opacity(0.3), radius: 2)
+                .frame(height: 10)
 
                 Capsule()
                     .fill(NTColor.milk)
-                    .frame(width: 5, height: 26)
-                    .shadow(color: .cyan.opacity(0.8), radius: 6)
+                    .frame(width: 5, height: 24)
+                    .overlay(Capsule().stroke(NTColor.pineDeep, lineWidth: 1.5))
+                    .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
                     .offset(x: max(0, min(w - 5, value * w - 2.5)))
             }
             .frame(height: 28)
@@ -133,7 +133,7 @@ struct MeteoHUDWidget: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Image(systemName: weather?.symbol ?? "cloud.fill").foregroundStyle(.cyan)
+                Image(systemName: weather?.symbol ?? "cloud.fill").foregroundStyle(NTColor.milk(0.85))
                 Text(weather.map { String(format: "%+.0f°C", $0.temperature) } ?? "--")
                     .font(NTFont.mono(20, .semibold))
             }
@@ -159,9 +159,9 @@ struct MeteoHUDWidget: View {
         }
         .padding(.horizontal, 12).padding(.vertical, 10)
         .foregroundStyle(NTColor.milk)
-        .background(NTColor.pineDeep.opacity(0.9), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.cyan.opacity(0.55), lineWidth: 1))
-        .shadow(color: .cyan.opacity(0.25), radius: 8)
+        .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
     }
 
     private func row(_ k: LocalizedStringKey, _ v: String) -> some View {
@@ -194,8 +194,8 @@ struct MeteoTimelinePanel: View {
         @Bindable var model = model
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("METEO-TERMINAL // ROUTE WX")
-                    .font(NTFont.mono(10.5, .semibold)).tracking(1).foregroundStyle(.cyan)
+                Text("ROUTE WEATHER")
+                    .font(NTFont.mono(10.5, .semibold)).tracking(1.2).foregroundStyle(NTColor.milk(0.55))
                 Spacer()
                 Button {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -203,18 +203,20 @@ struct MeteoTimelinePanel: View {
                 } label: {
                     Label("RADAR", systemImage: "dot.radiowaves.left.and.right")
                         .font(NTFont.mono(9.5, .semibold)).tracking(0.6)
-                        .foregroundStyle(model.radarEnabled ? NTColor.pine : NTColor.milk(0.7))
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .background(Capsule().fill(model.radarEnabled ? Color.cyan : NTColor.milk(0.1)))
+                        .foregroundStyle(model.radarEnabled ? NTColor.pine : NTColor.milk(0.75))
+                        .padding(.horizontal, 11).padding(.vertical, 6)
+                        .background(Capsule().fill(model.radarEnabled ? NTColor.milk : NTColor.milk(0.1)))
+                        .overlay(Capsule().stroke(NTColor.milk(model.radarEnabled ? 0 : 0.18), lineWidth: 1))
                 }.buttonStyle(.plain)
                 Button(action: onClose) {
-                    Image(systemName: "xmark").font(.system(size: 11, weight: .bold)).frame(width: 26, height: 26)
-                        .background(Circle().fill(NTColor.milk(0.12)))
+                    Image(systemName: "xmark").font(.system(size: 12, weight: .semibold)).frame(width: 30, height: 30)
+                        .background(Circle().fill(NTColor.milk(0.1)))
+                        .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
                 }.buttonStyle(.plain)
             }
 
             if model.isLoading {
-                HStack(spacing: 8) { ProgressView().tint(.cyan); Text("Pulling forecast…").font(NTFont.body(12.5, .light)) }
+                HStack(spacing: 8) { ProgressView().tint(NTColor.milk(0.7)); Text("Pulling forecast…").font(NTFont.body(12.5, .light)) }
                     .padding(.vertical, 20)
             } else if model.failed {
                 Text("Couldn't load the forecast. Check your connection and reopen.")
@@ -242,6 +244,8 @@ struct MeteoTimelinePanel: View {
                     bestWindowRow
                 }
 
+                Rectangle().fill(NTColor.milk(0.1)).frame(height: 1)
+
                 // Route scrubber
                 VStack(alignment: .leading, spacing: 5) {
                     HStack {
@@ -261,8 +265,8 @@ struct MeteoTimelinePanel: View {
                         readout("RAIN", "\(Int(w.probability.rounded()))%", unit: "\(String(format: "%.1f", w.precip)) mm/h", icon: "cloud.rain.fill", warn: w.precip >= 1)
                         readout("ALT", "\(Int(w.elevationM))", unit: "m", icon: "mountain.2.fill")
                     }
-                    HStack(alignment: .top, spacing: 6) {
-                        Text(w.risk.emoji)
+                    HStack(alignment: .center, spacing: 8) {
+                        Circle().fill(w.risk.color).frame(width: 8, height: 8)
                         if w.risk == .clear {
                             Text("Conditions OK at this point").foregroundStyle(w.risk.color)
                         } else {
@@ -273,11 +277,11 @@ struct MeteoTimelinePanel: View {
                 }
             }
         }
-        .padding(14)
+        .padding(16)
         .foregroundStyle(NTColor.milk)
-        .background(NTColor.pineDeep.opacity(0.94), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.cyan.opacity(0.5), lineWidth: 1))
-        .shadow(color: .cyan.opacity(0.2), radius: 14, y: 4)
+        .background(NTColor.pineDeep, in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous).stroke(NTColor.milk(0.14), lineWidth: 1))
+        .shadow(color: .black.opacity(0.3), radius: 16, y: 8)
     }
 
     /// "Leave 07:00–10:00, done by 13:00 — weather turns ~15:00" + apply button.
@@ -312,8 +316,8 @@ struct MeteoTimelinePanel: View {
                     Label("BEST WINDOW", systemImage: "sparkles")
                         .font(NTFont.mono(9.5, .semibold)).tracking(0.5)
                         .foregroundStyle(NTColor.pine)
-                        .padding(.horizontal, 10).padding(.vertical, 6)
-                        .background(Capsule().fill(Color.cyan))
+                        .padding(.horizontal, 11).padding(.vertical, 7)
+                        .background(Capsule().fill(NTColor.milk))
                 }.buttonStyle(.plain)
             }
         }
@@ -329,8 +333,9 @@ struct MeteoTimelinePanel: View {
             Text(unit).font(NTFont.mono(9, .medium)).foregroundStyle(NTColor.milk(0.5)).lineLimit(1).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(8)
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(10)
+        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
     }
 }
 

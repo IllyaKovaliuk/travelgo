@@ -14029,6 +14029,29 @@
           }
         }
       }
+    },
+    "ROUTE WEATHER" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ROUTE WEATHER"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLIMA DE LA RUTA"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ПОГОДА НА МАРШРУТІ"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

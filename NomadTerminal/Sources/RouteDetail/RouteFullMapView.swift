@@ -312,9 +312,9 @@ struct RouteFullMapView: View {
                         Text("METEO").font(NTFont.mono(11, .semibold)).tracking(0.6)
                     }
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(meteo != nil ? NTColor.pine : NTColor.ink)
+                    .foregroundStyle(meteo != nil ? Color(hex: 0x231007) : NTColor.ink)
                     .padding(.horizontal, 12).frame(height: 42)
-                    .background(Capsule().fill(meteo != nil ? Color.cyan : .white))
+                    .background(Capsule().fill(meteo != nil ? NTColor.accent : .white))
                     .shadow(color: .black.opacity(0.2), radius: 6, y: 2)
                 }
                 .buttonStyle(.plain)
