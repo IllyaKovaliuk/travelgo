@@ -28,7 +28,6 @@ struct RootTabView: View {
             case .home: HomeFeedView()
             case .search: SearchView()
             case .guide: GuideView()
-            case .activity: NotificationsView()
             case .saved: SavedView()
             case .profile: ProfileView()
             }

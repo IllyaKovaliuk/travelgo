@@ -29,6 +29,7 @@ struct HomeFeedView: View {
     @State private var isLoading = true
     @State private var isOffline = false
     @State private var showLogRoute = false
+    @State private var showActivity = false
     @State private var locationSearcher = PlaceSearcher()
     @State private var loadToken = 0
 
@@ -81,6 +82,9 @@ struct HomeFeedView: View {
             if let openAuthor {
                 AuthorProfileView(userId: openAuthor, onClose: { self.openAuthor = nil })
             }
+        }
+        .fullScreenCover(isPresented: $showActivity) {
+            NotificationsView(onClose: { showActivity = false })
         }
         .fullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
             LogRouteFlow()
@@ -190,6 +194,17 @@ struct HomeFeedView: View {
             HStack {
                 Text("Home").font(NTFont.heading(24, .extraBold)).foregroundStyle(NTColor.milk)
                 Spacer()
+                Button { showActivity = true } label: {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(NTColor.milk)
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(NTColor.milk(0.08)))
+                        .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .ntPressable()
+                .accessibilityLabel(Text("Activity"))
                 Button { showLogRoute = true } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .semibold))
