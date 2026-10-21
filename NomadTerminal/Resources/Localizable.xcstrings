@@ -2531,25 +2531,25 @@
         }
       }
     },
-    "By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)." : {
+    "By continuing you agree to our [Terms](https://nomad-legal.vercel.app/terms/) and [Privacy Policy](https://nomad-legal.vercel.app/privacy/)." : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+            "value" : "By continuing you agree to our [Terms](https://nomad-legal.vercel.app/terms/) and [Privacy Policy](https://nomad-legal.vercel.app/privacy/)."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al continuar, aceptas nuestros [Términos](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) y nuestra [Política de privacidad](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+            "value" : "Al continuar, aceptas nuestros [Términos](https://nomad-legal.vercel.app/terms/) y nuestra [Política de privacidad](https://nomad-legal.vercel.app/privacy/)."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Продовжуючи, ви погоджуєтесь з нашими [Умовами](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) та [Політикою приватності](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd)."
+            "value" : "Продовжуючи, ви погоджуєтесь з нашими [Умовами](https://nomad-legal.vercel.app/terms/) та [Політикою приватності](https://nomad-legal.vercel.app/privacy/)."
           }
         }
       }

@@ -223,7 +223,7 @@ struct AuthView: View {
                     // extraction tool shows), not the resolved URL text,
                     // which would silently break this catalog entry. These
                     // must match `LegalLinks` exactly.
-                    Text("By continuing you agree to our [Terms](https://claude.ai/artifact/NNr9ARH5XQAf7CD3AnDd2z) and [Privacy Policy](https://claude.ai/artifact/KAsoSUfBRMAPHnxdy2oNAd).")
+                    Text("By continuing you agree to our [Terms](https://nomad-legal.vercel.app/terms/) and [Privacy Policy](https://nomad-legal.vercel.app/privacy/).")
                         .font(NTFont.body(11, .medium))
                         .foregroundStyle(NTColor.milk(0.5))
                         .tint(NTColor.milk(0.75))
