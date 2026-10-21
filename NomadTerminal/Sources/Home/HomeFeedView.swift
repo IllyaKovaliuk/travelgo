@@ -56,7 +56,7 @@ struct HomeFeedView: View {
                         }
                     }
                     .padding(.horizontal, 18)
-                    .padding(.top, 118)
+                    .padding(.top, 128)
                     .padding(.bottom, 110)
                 }
                 .transition(.opacity)
@@ -226,12 +226,18 @@ struct HomeFeedView: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
-        .background(
-            LinearGradient(colors: [NTColor.pine, NTColor.pine.opacity(0.94), .clear], startPoint: .top, endPoint: .bottom)
-                .frame(height: 150)
-                .frame(maxHeight: .infinity, alignment: .top)
+        // Solid behind the status bar, title and chips (so cards never show
+        // through above or around them while scrolling), then a short fade.
+        .padding(.bottom, 10)
+        .background(alignment: .top) {
+            NTColor.pine.ignoresSafeArea(edges: .top)
+        }
+        .overlay(alignment: .bottom) {
+            LinearGradient(colors: [NTColor.pine, NTColor.pine.opacity(0)], startPoint: .top, endPoint: .bottom)
+                .frame(height: 18)
+                .offset(y: 18)
                 .allowsHitTesting(false)
-        )
+        }
     }
 
     private func filterChip(_ tab: FeedTab) -> some View {
