@@ -47,7 +47,7 @@ struct PaywallView: View {
                         .foregroundStyle(NTColor.milk)
                         .padding(.top, 18)
 
-                    Text("Nomad Pro — the full leg-by-leg itinerary on every route.")
+                    Text("Nomad Pro — route weather, offline maps and full itineraries.")
                         .font(NTFont.body(14.5, .light))
                         .foregroundStyle(NTColor.milk(0.62))
                         .padding(.top, 8)
@@ -63,6 +63,7 @@ struct PaywallView: View {
                     // app rejected or worse, trusted wrongly in an
                     // emergency.
                     VStack(alignment: .leading, spacing: 13) {
+                        feature("Meteo-Terminal — weather timeline, storm risk on the route, radar and the best time to leave")
                         feature("Real offline maps — the whole route downloaded, not just the data")
                         feature("Full leg-by-leg itinerary with estimated timing on every route")
                         feature("Supports Nomad's development")
@@ -191,7 +192,7 @@ struct PaywallView: View {
             .padding(.top, 30)
 
             Text("You're Pro.").font(NTFont.heading(28, .extraBold))
-            Text("The full itinerary is unlocked on every route.")
+            Text("Route weather, offline maps and full itineraries are unlocked.")
                 .font(NTFont.body(14, .light))
                 .foregroundStyle(NTColor.milk(0.62))
                 .multilineTextAlignment(.center)
