@@ -46,7 +46,9 @@ struct PlaceExploreView: View {
         // view's actual content size and got centered by the tab
         // container. Same failure shape as a flex item with no
         // `flex-grow` next to one that has it.
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // `alignment: .top` matters: without it the taller frame centres the
+        // whole VStack and the search field floats mid-screen.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(NTColor.pine.ignoresSafeArea())
         .foregroundStyle(NTColor.milk)
         .onAppear { searcher.requestLocation() }
@@ -62,7 +64,7 @@ struct PlaceExploreView: View {
     private var searchBar: some View {
         HStack(spacing: 12) {
             Image(systemName: "magnifyingglass").font(.system(size: 17)).foregroundStyle(NTColor.ink)
-            TextField("Search places anywhere…", text: $query)
+            TextField("", text: $query, prompt: Text("Search places anywhere…").foregroundStyle(NTColor.ink.opacity(0.45)))
                 .font(NTFont.body(15.5, .medium))
                 .foregroundStyle(NTColor.ink)
                 .onSubmit { runSearch() }
