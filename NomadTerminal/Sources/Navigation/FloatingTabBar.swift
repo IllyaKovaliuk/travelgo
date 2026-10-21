@@ -58,6 +58,7 @@ struct FloatingTabBar: View {
                                 .fill(.clear)
                                 .frame(width: 48, height: 48)
                                 .modifier(SelectedBubble(tint: tab == .profile ? NTColor.sage : NTColor.accent))
+                                .allowsHitTesting(false)
                         }
                         if tab == .profile {
                             Text(profileInitials)
@@ -84,14 +85,17 @@ struct FloatingTabBar: View {
 
 /// Capsule behind the bar: real Liquid Glass on iOS 26+, a see-through
 /// material before that (no opaque fill either way, so content shows through).
+/// The glass is a *background* shape, never a wrapper or `.interactive()`:
+/// interactive glass on the container swallowed the taps meant for the tab
+/// buttons inside it.
 private struct GlassBarBackground: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            GlassEffectContainer(spacing: 8) {
-                content
-            }
-            .glassEffect(.regular.interactive(), in: Capsule())
-            .shadow(color: .black.opacity(0.25), radius: 24, y: 12)
+            content
+                .background {
+                    Capsule().fill(.clear).glassEffect(.regular, in: Capsule())
+                }
+                .shadow(color: .black.opacity(0.25), radius: 24, y: 12)
         } else {
             content
                 .background(Capsule().fill(.ultraThinMaterial))
@@ -106,7 +110,7 @@ private struct SelectedBubble: ViewModifier {
     let tint: Color
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            content.glassEffect(.regular.tint(tint.opacity(0.9)).interactive(), in: Circle())
+            content.glassEffect(.regular.tint(tint.opacity(0.9)), in: Circle())
         } else {
             content
                 .background(Circle().fill(tint.opacity(0.92)))
