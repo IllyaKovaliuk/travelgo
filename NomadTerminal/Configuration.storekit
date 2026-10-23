@@ -66,15 +66,10 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "70B0633B-68F2-4A8D-8F79-EB0FB2EA9C48",
-          "introductoryOffer" : {
-            "internalID" : "DFEC34B1-C2EC-41D1-B146-59999E380D7D",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
-          },
           "localizations" : [
             {
               "description" : "Everything you need where there's no signal at all.",
-              "displayName" : "Nomad Pro — Monthly",
+              "displayName" : "Nomad Pro \u2014 Monthly",
               "locale" : "en_US"
             }
           ],
@@ -91,15 +86,10 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "606D37A3-DD5C-40E8-BD5D-243920366C31",
-          "introductoryOffer" : {
-            "internalID" : "49EDF510-3AE8-4AF6-A48A-C99F0610EC78",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1W"
-          },
           "localizations" : [
             {
               "description" : "Everything you need where there's no signal at all. Best value.",
-              "displayName" : "Nomad Pro — Annual",
+              "displayName" : "Nomad Pro \u2014 Annual",
               "locale" : "en_US"
             }
           ],
