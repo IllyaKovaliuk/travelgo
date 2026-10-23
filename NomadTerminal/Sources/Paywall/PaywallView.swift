@@ -173,6 +173,18 @@ struct PaywallView: View {
         selectedProduct?.subscription?.introductoryOffer != nil ? "Start 7-day free trial" : "Subscribe"
     }
 
+    /// Real saving of annual vs 12 × monthly, from the live StoreKit prices
+    /// (rounded down so the badge never overpromises). Nil if either product
+    /// is missing or annual isn't actually cheaper.
+    private var annualSavingsPercent: Int? {
+        guard let monthly = manager.products.first(where: { $0.id == SubscriptionManager.monthlyID }),
+              let annual = manager.products.first(where: { $0.id == SubscriptionManager.annualID }),
+              monthly.price > 0 else { return nil }
+        let ratio = (annual.price / (monthly.price * 12) as NSDecimalNumber).doubleValue
+        let percent = Int(((1 - ratio) * 100).rounded(.down))
+        return percent > 0 ? percent : nil
+    }
+
     private var renewalSuffix: String {
         guard let period = selectedProduct?.subscription?.subscriptionPeriod else { return "" }
         switch period.unit {
@@ -212,13 +224,18 @@ struct PaywallView: View {
     }
 
     private func feature(_ text: LocalizedStringKey) -> some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle().fill(NTColor.sage.opacity(0.2))
                 Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Color(hex: 0x8FCBA3))
             }
             .frame(width: 26, height: 26)
-            Text(text).font(NTFont.body(14.5, .medium))
+            Text(text)
+                .font(NTFont.body(14.5, .medium))
+                .multilineTextAlignment(.leading)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -226,8 +243,8 @@ struct PaywallView: View {
         let isAnnual = product.id == SubscriptionManager.annualID
         return Button { selectedProductID = product.id } label: {
             VStack(alignment: .leading, spacing: 8) {
-                if isAnnual {
-                    Text("SAVE 38%")
+                if isAnnual, let percent = annualSavingsPercent {
+                    Text("SAVE \(percent)%")
                         .font(NTFont.mono(9, .semibold)).tracking(0.4)
                         .foregroundStyle(Color(hex: 0x231007))
                         .padding(.horizontal, 9).padding(.vertical, 4)
