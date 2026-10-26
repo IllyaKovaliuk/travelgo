@@ -1,0 +1,8 @@
+cache/
+out/
+previews/
+*.log
+discovery.log
+probe.log
+__pycache__/
+.env

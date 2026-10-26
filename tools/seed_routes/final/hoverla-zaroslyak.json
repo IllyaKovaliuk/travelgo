@@ -1,0 +1,427 @@
+{
+ "slug": "hoverla-zaroslyak",
+ "route": {
+  "title": "Hoverla\nfrom Zaroslyak",
+  "place": "CARPATHIANS, UKRAINE",
+  "difficulty": "moderate",
+  "transport": "foot",
+  "transport_label": "FOOT",
+  "distance_km": 3.77,
+  "ascent_m": 738,
+  "high_point_m": 2061,
+  "duration": "2.5 H",
+  "season": null,
+  "elevation_profile": [
+   0.0,
+   0.005,
+   0.009,
+   0.017,
+   0.023,
+   0.034,
+   0.048,
+   0.067,
+   0.097,
+   0.121,
+   0.15,
+   0.167,
+   0.181,
+   0.187,
+   0.195,
+   0.213,
+   0.233,
+   0.258,
+   0.275,
+   0.287,
+   0.287,
+   0.302,
+   0.316,
+   0.348,
+   0.378,
+   0.43,
+   0.489,
+   0.556,
+   0.603,
+   0.634,
+   0.653,
+   0.68,
+   0.712,
+   0.738,
+   0.77,
+   0.809,
+   0.868,
+   0.933,
+   0.975,
+   1.0
+  ],
+  "elevation_peak_label": "2061 M",
+  "coordinates": "48.1643° N, 24.5358° E",
+  "track_points": [
+   {
+    "lat": 48.164344,
+    "lng": 24.535809
+   },
+   {
+    "lat": 48.165449,
+    "lng": 24.535275
+   },
+   {
+    "lat": 48.165855,
+    "lng": 24.534946
+   },
+   {
+    "lat": 48.166242,
+    "lng": 24.534176
+   },
+   {
+    "lat": 48.166462,
+    "lng": 24.533901
+   },
+   {
+    "lat": 48.166974,
+    "lng": 24.533508
+   },
+   {
+    "lat": 48.167063,
+    "lng": 24.533283
+   },
+   {
+    "lat": 48.167105,
+    "lng": 24.532855
+   },
+   {
+    "lat": 48.167075,
+    "lng": 24.532533
+   },
+   {
+    "lat": 48.166964,
+    "lng": 24.532199
+   },
+   {
+    "lat": 48.16707,
+    "lng": 24.531715
+   },
+   {
+    "lat": 48.167059,
+    "lng": 24.531247
+   },
+   {
+    "lat": 48.167204,
+    "lng": 24.530675
+   },
+   {
+    "lat": 48.167654,
+    "lng": 24.529939
+   },
+   {
+    "lat": 48.167779,
+    "lng": 24.529561
+   },
+   {
+    "lat": 48.168746,
+    "lng": 24.528576
+   },
+   {
+    "lat": 48.169021,
+    "lng": 24.528105
+   },
+   {
+    "lat": 48.169349,
+    "lng": 24.527803
+   },
+   {
+    "lat": 48.169381,
+    "lng": 24.52736
+   },
+   {
+    "lat": 48.169684,
+    "lng": 24.526178
+   },
+   {
+    "lat": 48.170237,
+    "lng": 24.524702
+   },
+   {
+    "lat": 48.170626,
+    "lng": 24.523947
+   },
+   {
+    "lat": 48.170791,
+    "lng": 24.521861
+   },
+   {
+    "lat": 48.170614,
+    "lng": 24.521269
+   },
+   {
+    "lat": 48.170709,
+    "lng": 24.520851
+   },
+   {
+    "lat": 48.170698,
+    "lng": 24.520147
+   },
+   {
+    "lat": 48.170643,
+    "lng": 24.518744
+   },
+   {
+    "lat": 48.170501,
+    "lng": 24.5174
+   },
+   {
+    "lat": 48.170466,
+    "lng": 24.516419
+   },
+   {
+    "lat": 48.170509,
+    "lng": 24.515818
+   },
+   {
+    "lat": 48.171304,
+    "lng": 24.514766
+   },
+   {
+    "lat": 48.170753,
+    "lng": 24.51321
+   },
+   {
+    "lat": 48.170576,
+    "lng": 24.512909
+   },
+   {
+    "lat": 48.170582,
+    "lng": 24.512735
+   },
+   {
+    "lat": 48.17043,
+    "lng": 24.51264
+   },
+   {
+    "lat": 48.170443,
+    "lng": 24.51246
+   },
+   {
+    "lat": 48.170291,
+    "lng": 24.512208
+   },
+   {
+    "lat": 48.170162,
+    "lng": 24.511728
+   },
+   {
+    "lat": 48.17002,
+    "lng": 24.511519
+   },
+   {
+    "lat": 48.170032,
+    "lng": 24.511373
+   },
+   {
+    "lat": 48.169444,
+    "lng": 24.509648
+   },
+   {
+    "lat": 48.169488,
+    "lng": 24.50958
+   },
+   {
+    "lat": 48.169446,
+    "lng": 24.509149
+   },
+   {
+    "lat": 48.16925,
+    "lng": 24.509048
+   },
+   {
+    "lat": 48.169191,
+    "lng": 24.508717
+   },
+   {
+    "lat": 48.168955,
+    "lng": 24.508097
+   },
+   {
+    "lat": 48.168927,
+    "lng": 24.50781
+   },
+   {
+    "lat": 48.169001,
+    "lng": 24.507576
+   },
+   {
+    "lat": 48.168739,
+    "lng": 24.507347
+   },
+   {
+    "lat": 48.168194,
+    "lng": 24.507082
+   },
+   {
+    "lat": 48.167168,
+    "lng": 24.506743
+   },
+   {
+    "lat": 48.166742,
+    "lng": 24.50637
+   },
+   {
+    "lat": 48.165882,
+    "lng": 24.505273
+   },
+   {
+    "lat": 48.164634,
+    "lng": 24.504119
+   },
+   {
+    "lat": 48.164458,
+    "lng": 24.504041
+   },
+   {
+    "lat": 48.164246,
+    "lng": 24.503795
+   },
+   {
+    "lat": 48.164102,
+    "lng": 24.503768
+   },
+   {
+    "lat": 48.163958,
+    "lng": 24.503582
+   },
+   {
+    "lat": 48.163612,
+    "lng": 24.503556
+   },
+   {
+    "lat": 48.163552,
+    "lng": 24.503396
+   },
+   {
+    "lat": 48.163288,
+    "lng": 24.50321
+   },
+   {
+    "lat": 48.162978,
+    "lng": 24.502209
+   },
+   {
+    "lat": 48.162847,
+    "lng": 24.501984
+   },
+   {
+    "lat": 48.162761,
+    "lng": 24.501498
+   },
+   {
+    "lat": 48.162633,
+    "lng": 24.501244
+   },
+   {
+    "lat": 48.162518,
+    "lng": 24.501237
+   },
+   {
+    "lat": 48.162152,
+    "lng": 24.50096
+   },
+   {
+    "lat": 48.162012,
+    "lng": 24.501038
+   },
+   {
+    "lat": 48.161711,
+    "lng": 24.500883
+   },
+   {
+    "lat": 48.161607,
+    "lng": 24.500727
+   },
+   {
+    "lat": 48.160866,
+    "lng": 24.500555
+   },
+   {
+    "lat": 48.160636,
+    "lng": 24.500306
+   },
+   {
+    "lat": 48.160401,
+    "lng": 24.500218
+   },
+   {
+    "lat": 48.160208,
+    "lng": 24.49994
+   }
+  ],
+  "description": "The short way up Ukraine's highest peak. A marked footpath leaves the Zaroslyak trailhead at about 1,290 m and climbs 740 m in 3.8 km — roughly a 20% average gradient — over Mala Hoverla (1,762 m) to the 2,061 m summit. OpenStreetMap rates the path as plain hiking (SAC T1), with no technical sections, but the steepness makes it a real mountain day: allow two to three hours up. Two springs and two camp spots are mapped within 150 m of the track.\n\nRoute data © OpenStreetMap contributors (ODbL). OSM relation/10330801.\nCover photo: Khoroshkov / CC BY-SA 4.0 / Wikimedia Commons.",
+  "visibility": "public",
+  "status": "published"
+ },
+ "segments": [
+  {
+   "icon": "figure.hiking",
+   "name": "Footpath",
+   "distance_km": 3.77,
+   "tint": "#5FA777"
+  }
+ ],
+ "pois": [
+  {
+   "lat": 48.163924,
+   "lng": 24.535612,
+   "category": "water",
+   "title": "Spring",
+   "note": null
+  },
+  {
+   "lat": 48.165422,
+   "lng": 24.535926,
+   "category": "camp",
+   "title": "Campsite",
+   "note": null
+  },
+  {
+   "lat": 48.169907,
+   "lng": 24.518749,
+   "category": "camp",
+   "title": "Campsite",
+   "note": null
+  },
+  {
+   "lat": 48.169344,
+   "lng": 24.509055,
+   "category": "water",
+   "title": "Spring",
+   "note": null
+  },
+  {
+   "lat": 48.1682,
+   "lng": 24.506023,
+   "category": "viewpoint",
+   "title": "Mala Hoverla",
+   "note": "1 762 m"
+  },
+  {
+   "lat": 48.16021,
+   "lng": 24.49994,
+   "category": "viewpoint",
+   "title": "Hoverla",
+   "note": "2 061 m"
+  }
+ ],
+ "requirements": [
+  {
+   "icon": "drop.fill",
+   "title": "Water on route",
+   "subtitle": "2 mapped water point(s) near the track — treat before drinking.",
+   "tint": "#3E92CC"
+  }
+ ],
+ "cover": {
+  "title": "File:Гора Говерла над хмарами.jpg",
+  "author": "Khoroshkov",
+  "license": "CC BY-SA 4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:%D0%93%D0%BE%D1%80%D0%B0_%D0%93%D0%BE%D0%B2%D0%B5%D1%80%D0%BB%D0%B0_%D0%BD%D0%B0%D0%B4_%D1%85%D0%BC%D0%B0%D1%80%D0%B0%D0%BC%D0%B8.jpg",
+  "file": "https://upload.wikimedia.org/wikipedia/commons/5/5d/%D0%93%D0%BE%D1%80%D0%B0_%D0%93%D0%BE%D0%B2%D0%B5%D1%80%D0%BB%D0%B0_%D0%BD%D0%B0%D0%B4_%D1%85%D0%BC%D0%B0%D1%80%D0%B0%D0%BC%D0%B8.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+ }
+}

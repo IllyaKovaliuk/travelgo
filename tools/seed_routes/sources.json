@@ -1,0 +1,631 @@
+{
+ "hoverla-zaroslyak": {
+  "slug": "hoverla-zaroslyak",
+  "osm": [
+   "relation/10330801"
+  ],
+  "osm_relation_names": [
+   "НСБ Заросляк - г. Говерла"
+  ],
+  "pins_osm": [
+   "node/4423794489",
+   "node/6559934686",
+   "node/11244153027",
+   "node/2392358038",
+   "node/6267844972",
+   "node/703286388"
+  ],
+  "difficulty_reason": "max sac_scale=hiking; 3.8 km, +738 m, steep (>120 m/km)",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 3775,
+  "vertices_raw": 113,
+  "vertices_stored": 74,
+  "min_elev": 1291,
+  "cover": {
+   "title": "File:Гора Говерла над хмарами.jpg",
+   "author": "Khoroshkov",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:%D0%93%D0%BE%D1%80%D0%B0_%D0%93%D0%BE%D0%B2%D0%B5%D1%80%D0%BB%D0%B0_%D0%BD%D0%B0%D0%B4_%D1%85%D0%BC%D0%B0%D1%80%D0%B0%D0%BC%D0%B8.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/5/5d/%D0%93%D0%BE%D1%80%D0%B0_%D0%93%D0%BE%D0%B2%D0%B5%D1%80%D0%BB%D0%B0_%D0%BD%D0%B0%D0%B4_%D1%85%D0%BC%D0%B0%D1%80%D0%B0%D0%BC%D0%B8.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/4423794489": "Spring",
+   "node/6559934686": "Campsite",
+   "node/11244153027": "Campsite",
+   "node/2392358038": "Spring",
+   "node/6267844972": "Mala Hoverla",
+   "node/703286388": "Hoverla"
+  },
+  "seg_transports": [
+   "foot"
+  ]
+ },
+ "pip-ivan-shybene": {
+  "slug": "pip-ivan-shybene",
+  "osm": [
+   "relation/10355026"
+  ],
+  "osm_relation_names": [
+   "с. Шибене - г. Піп Іван"
+  ],
+  "pins_osm": [
+   "node/8730286718",
+   "node/6631760286",
+   "node/5121520173",
+   "node/6438290686",
+   "way/141183495",
+   "node/5022827866",
+   "node/262306915"
+  ],
+  "difficulty_reason": "max sac_scale=mountain_hiking; 11.1 km, +1179 m",
+  "warnings": [
+   "reversed to start at the low end (2002 m / 854 m)",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 11089,
+  "vertices_raw": 428,
+  "vertices_stored": 185,
+  "min_elev": 854,
+  "cover": {
+   "title": "File:Crocus heuffelianus near Pip Ivan of Chornohora.jpg",
+   "author": "Tetiana.iefimenko",
+   "license": "CC BY 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Crocus_heuffelianus_near_Pip_Ivan_of_Chornohora.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Crocus_heuffelianus_near_Pip_Ivan_of_Chornohora.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/8730286718": "Campsite",
+   "node/6631760286": "Spring",
+   "node/5121520173": "Стоянка погорілець",
+   "node/6438290686": "Maricheyka",
+   "way/141183495": "Марічейка",
+   "node/5022827866": "Spring",
+   "node/262306915": "Pip Ivan Chornohirskyi"
+  },
+  "seg_transports": [
+   "foot",
+   "foot"
+  ]
+ },
+ "petros-yasinia": {
+  "slug": "petros-yasinia",
+  "osm": [
+   "relation/8613349"
+  ],
+  "osm_relation_names": [
+   "с.Лазещина - г.Петрос - с.Ясіня"
+  ],
+  "pins_osm": [
+   "node/1622025543",
+   "node/5936985285",
+   "way/836021442",
+   "node/4100517689",
+   "node/918903014",
+   "node/1239733982",
+   "node/4349521389",
+   "node/9208127156",
+   "node/14062060001"
+  ],
+  "difficulty_reason": "max sac_scale=alpine_hiking; 33.2 km, +1342 m",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 33249,
+  "vertices_raw": 1251,
+  "vertices_stored": 530,
+  "min_elev": 653,
+  "cover": {
+   "title": "File:\" View of Petros \".jpg",
+   "author": "Володимир Тертишник",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:%22_View_of_Petros_%22.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/d/d6/%22_View_of_Petros_%22.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/1622025543": "mountain refuge",
+   "node/5936985285": "Kozmeshchyk",
+   "way/836021442": "Хата з пічкою",
+   "node/4100517689": "Колиба",
+   "node/918903014": "Petros",
+   "node/1239733982": "Petrosul",
+   "node/4349521389": "Пересихаюче",
+   "node/9208127156": "Kostyrivka",
+   "node/14062060001": "Оглядовий майданчик"
+  },
+  "seg_transports": [
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot"
+  ]
+ },
+ "synevyr-lopushne": {
+  "slug": "synevyr-lopushne",
+  "osm": [
+   "relation/7622529"
+  ],
+  "osm_relation_names": [
+   "Лопушне - Синевир"
+  ],
+  "pins_osm": [
+   "node/4459487513",
+   "node/3036847184",
+   "node/4350047599",
+   "node/4453685089",
+   "node/2379861013"
+  ],
+  "difficulty_reason": "sac_scale untagged in OSM; 14.9 km, +606 m",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 14861,
+  "vertices_raw": 441,
+  "vertices_stored": 217,
+  "min_elev": 594,
+  "cover": {
+   "title": "File:21-224-5054 Synevyr Lake RB 18.jpg",
+   "author": "Rbrechko",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:21-224-5054_Synevyr_Lake_RB_18.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/6/6f/21-224-5054_Synevyr_Lake_RB_18.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/4459487513": "Campsite",
+   "node/3036847184": "Spring",
+   "node/4350047599": "Campsite",
+   "node/4453685089": "Синевирське озеро",
+   "node/2379861013": "Spring"
+  },
+  "seg_transports": [
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot"
+  ]
+ },
+ "rysy-palenica": {
+  "slug": "rysy-palenica",
+  "osm": [
+   "relation/1594931"
+  ],
+  "osm_relation_names": [
+   "Palenica Białczańska - Rysy"
+  ],
+  "pins_osm": [
+   "node/5851135034",
+   "node/13975121101",
+   "way/972614831",
+   "node/4807994047",
+   "way/988954369",
+   "way/300719425",
+   "node/9266872920",
+   "node/3508693152",
+   "node/4366169405"
+  ],
+  "difficulty_reason": "max sac_scale=demanding_alpine_hiking; 12.3 km, +1532 m, steep (>120 m/km)",
+  "warnings": [
+   "reversed to start at the low end (2451 m / 988 m)",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 12301,
+  "vertices_raw": 1398,
+  "vertices_stored": 245,
+  "min_elev": 988,
+  "cover": {
+   "title": "File:Vysoké Tatry, výhled z vrcholu Rysy, září 2011 (31).JPG",
+   "author": "Michal Klajban",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Vysok%C3%A9_Tatry,_v%C3%BDhled_z_vrcholu_Rysy,_z%C3%A1%C5%99%C3%AD_2011_(31).JPG",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Vysok%C3%A9_Tatry%2C_v%C3%BDhled_z_vrcholu_Rysy%2C_z%C3%A1%C5%99%C3%AD_2011_%2831%29.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/5851135034": "Parking · Postój dorożek",
+   "node/13975121101": "Spring",
+   "way/972614831": "Szałasiska",
+   "node/4807994047": "Wrzące Źródło",
+   "way/988954369": "Małe Żabie Oko",
+   "way/300719425": "Stare Schronisko PTTK Morskie Oko",
+   "node/9266872920": "Viewpoint",
+   "node/3508693152": "Bula pod Rysami",
+   "node/4366169405": "Rysy"
+  },
+  "seg_transports": [
+   "foot",
+   "foot",
+   "foot"
+  ]
+ },
+ "odle-munkelweg": {
+  "slug": "odle-munkelweg",
+  "osm": [
+   "relation/2442695"
+  ],
+  "osm_relation_names": [
+   "Adolf Munkel Weg - Via delle Odle"
+  ],
+  "pins_osm": [
+   "node/1938189486",
+   "way/121108557"
+  ],
+  "difficulty_reason": "max sac_scale=mountain_hiking; 6.1 km, +352 m",
+  "warnings": [
+   "reversed to start at the low end (2043 m / 1872 m)",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 6073,
+  "vertices_raw": 535,
+  "vertices_stored": 161,
+  "min_elev": 1860,
+  "cover": {
+   "title": "File:20120716 0457- Geislergruppe von der Brogleshütte.jpg",
+   "author": "Matthias Bethke",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:20120716_0457-_Geislergruppe_von_der_Broglesh%C3%BCtte.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/d/dd/20120716_0457-_Geislergruppe_von_der_Broglesh%C3%BCtte.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/1938189486": "Weißbrunn - Fontana Bianca",
+   "way/121108557": "Brogleshütte - Rifugio Malga Brogles"
+  },
+  "seg_transports": [
+   "foot"
+  ]
+ },
+ "av1-fanes-nuvolau": {
+  "slug": "av1-fanes-nuvolau",
+  "osm": [
+   "relation/177743"
+  ],
+  "osm_relation_names": [
+   "Alta via n. 1 delle Dolomiti - Dolomiten-Höhenweg Nr. 1"
+  ],
+  "pins_osm": [
+   "way/237733853",
+   "way/37855506",
+   "node/2590431774",
+   "node/1453596635",
+   "way/38322023",
+   "node/9195128638",
+   "node/3681756365",
+   "way/200335813",
+   "node/3681756367"
+  ],
+  "difficulty_reason": "max sac_scale=demanding_mountain_hiking; 18.9 km, +1394 m",
+  "warnings": [
+   "clipped between OSM features 'Rifugio Fanes' and 'Rifugio Nuvolau'",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 18915,
+  "vertices_raw": 1424,
+  "vertices_stored": 456,
+  "min_elev": 2057,
+  "cover": {
+   "title": "File:Cinque torri von nuvolau aus.jpg",
+   "author": "Mr. Spock",
+   "license": "CC BY-SA 3.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Cinque_torri_von_nuvolau_aus.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Cinque_torri_von_nuvolau_aus.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "way/237733853": "Rifugio Fanes",
+   "way/37855506": "Lech de Lagació",
+   "node/2590431774": "Ega Scotoni",
+   "node/1453596635": "Berrino Point",
+   "way/38322023": "Lago de Limedes",
+   "node/9195128638": "Punta Dallago",
+   "node/3681756365": "Averau",
+   "way/200335813": "Rifugio Averau",
+   "node/3681756367": "Nuvolau"
+  },
+  "seg_transports": [
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot"
+  ]
+ },
+ "ramon-crater": {
+  "slug": "ramon-crater",
+  "osm": [
+   "relation/6148296"
+  ],
+  "osm_relation_names": [
+   "סובב מכתש רמון"
+  ],
+  "pins_osm": [
+   "node/7559025085",
+   "node/1064257177",
+   "node/12357694032",
+   "node/2242516799"
+  ],
+  "difficulty_reason": "sac_scale untagged in OSM; 10.9 km, +132 m",
+  "warnings": [
+   "clipped between OSM features 'תצפית קרני רמון' and 'מצפור ערוד'",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "Naismith (4.5 km/h + 500 m/h ascent)",
+  "protected": [],
+  "full_len_m": 10927,
+  "vertices_raw": 381,
+  "vertices_stored": 180,
+  "min_elev": 921,
+  "cover": {
+   "title": "File:ISR-2013-Makhtesh Ramon-Near Makhtesh Ramon (looking in).jpg",
+   "author": "Godot13",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:ISR-2013-Makhtesh_Ramon-Near_Makhtesh_Ramon_(looking_in).jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/9/97/ISR-2013-Makhtesh_Ramon-Near_Makhtesh_Ramon_%28looking_in%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/7559025085": "Karne Ramon Lookout",
+   "node/1064257177": "Borot Lots Campsite",
+   "node/12357694032": "Har Ramon",
+   "node/2242516799": "Arod viewpoint"
+  },
+  "seg_transports": [
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot",
+   "foot"
+  ]
+ },
+ "sprengisandur-f26": {
+  "slug": "sprengisandur-f26",
+  "osm": [
+   "way/32281252",
+   "way/32281254",
+   "way/32671455",
+   "way/48321371",
+   "way/48426337",
+   "way/130589327",
+   "way/130589330",
+   "way/130589332",
+   "way/130589334",
+   "way/130589335",
+   "way/319372205",
+   "way/319372206",
+   "way/319372210",
+   "way/319955778",
+   "way/319955779",
+   "way/437356727",
+   "way/437356728",
+   "way/439502874",
+   "way/439502875",
+   "way/1091899527",
+   "way/1091899528",
+   "way/1091899529"
+  ],
+  "osm_relation_names": [],
+  "pins_osm": [
+   "node/1243149915",
+   "node/1437791192"
+  ],
+  "difficulty_reason": "tracktype untagged; 4wd_only; ford present; 154 km",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "25 km/h average",
+  "protected": [],
+  "full_len_m": 153672,
+  "vertices_raw": 4439,
+  "vertices_stored": 660,
+  "min_elev": 251,
+  "cover": {
+   "title": "File:NyidalurFord.jpg",
+   "author": "Andreas Tille",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:NyidalurFord.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/d/d4/NyidalurFord.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/1243149915": "Nyidalur",
+   "node/1437791192": "Versalir"
+  },
+  "seg_transports": [
+   "overland",
+   "overland",
+   "overland"
+  ]
+ },
+ "kjolur-f35": {
+  "slug": "kjolur-f35",
+  "osm": [
+   "way/8095805",
+   "way/69019862",
+   "way/169400626",
+   "way/169400627",
+   "way/169400628",
+   "way/190348351",
+   "way/219775429",
+   "way/449528325",
+   "way/449528327",
+   "way/565131808",
+   "way/565131809",
+   "way/582211653",
+   "way/620383908",
+   "way/620926833",
+   "way/680992248",
+   "way/817142591",
+   "way/967598536",
+   "way/967598537",
+   "way/1497079808"
+  ],
+  "osm_relation_names": [],
+  "pins_osm": [
+   "node/5132648031",
+   "node/5132648030",
+   "node/11188849137"
+  ],
+  "difficulty_reason": "tracktype untagged; 4wd_only; no ford tagged; 111 km",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "25 km/h average",
+  "protected": [],
+  "full_len_m": 110612,
+  "vertices_raw": 2034,
+  "vertices_stored": 692,
+  "min_elev": 212,
+  "cover": {
+   "title": "File:Kjölur 2019 - 06.jpg",
+   "author": "Hornstrandir1",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Kj%C3%B6lur_2019_-_06.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Kj%C3%B6lur_2019_-_06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/5132648031": "Viewpoint",
+   "node/5132648030": "Viewpoint",
+   "node/11188849137": "Emergency Hut"
+  },
+  "seg_transports": [
+   "overland",
+   "overland",
+   "overland",
+   "overland",
+   "overland"
+  ]
+ },
+ "donau-moldau-radweg": {
+  "slug": "donau-moldau-radweg",
+  "osm": [
+   "relation/273702"
+  ],
+  "osm_relation_names": [
+   "Donau-Moldau-Radweg"
+  ],
+  "pins_osm": [
+   "node/9053519417",
+   "way/27542072",
+   "node/12459376375",
+   "node/12459446472",
+   "node/1846801307",
+   "way/253990422"
+  ],
+  "difficulty_reason": "max mtb:scale=0; 64 km, +670 m",
+  "warnings": [
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "15 km/h average",
+  "protected": [],
+  "full_len_m": 63979,
+  "vertices_raw": 2193,
+  "vertices_stored": 675,
+  "min_elev": 294,
+  "cover": null,
+  "pin_osm_names": {
+   "node/9053519417": "Jubilejní vrt",
+   "way/27542072": "Parking",
+   "node/12459376375": "Spring",
+   "node/12459446472": "Spring",
+   "node/1846801307": "Braunberg",
+   "way/253990422": "Jugendzeltdorf am Rannasee"
+  },
+  "seg_transports": [
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike",
+   "bike"
+  ]
+ },
+ "vltava-krumlov": {
+  "slug": "vltava-krumlov",
+  "osm": [
+   "relation/1730536",
+   "way/123694304"
+  ],
+  "osm_relation_names": [
+   "Vltava"
+  ],
+  "pins_osm": [
+   "node/9921288108",
+   "way/1082345705",
+   "way/107755753",
+   "node/5407527021"
+  ],
+  "difficulty_reason": "no rapids/grade tagged; 35 km",
+  "warnings": [
+   "clipped between OSM features 'Vyšší Brod' and 'Český Krumlov'",
+   "protected-area lookup unavailable (Overpass down) — check manually"
+  ],
+  "dem": "Open-Meteo elevation API (Copernicus GLO-90), 100 m sampling, 3-pt smoothing, 8 m hysteresis",
+  "duration_formula": "5 km/h average",
+  "protected": [],
+  "full_len_m": 34514,
+  "vertices_raw": 534,
+  "vertices_stored": 357,
+  "min_elev": 485,
+  "cover": {
+   "title": "File:Český Krumlov, kánoe.jpg",
+   "author": "Palickap",
+   "license": "CC BY-SA 4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:%C4%8Cesk%C3%BD_Krumlov,_k%C3%A1noe.jpg",
+   "file": "https://upload.wikimedia.org/wikipedia/commons/f/fb/%C4%8Cesk%C3%BD_Krumlov%2C_k%C3%A1noe.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original"
+  },
+  "pin_osm_names": {
+   "node/9921288108": "Vyhlídka pana Šalamouna",
+   "way/1082345705": "Minikemp Rožmberk",
+   "way/107755753": "U Nojdy",
+   "node/5407527021": "View point"
+  },
+  "seg_transports": [
+   "water"
+  ]
+ }
+}
