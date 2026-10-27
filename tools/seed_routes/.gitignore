@@ -6,3 +6,4 @@ discovery.log
 probe.log
 __pycache__/
 .env
+covers_out/
