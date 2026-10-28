@@ -9,7 +9,18 @@ struct RouteCoverImage: View {
     var caption: String? = nil
     var tint: Color = NTColor.pineRaised
 
+    /// The photo is an overlay on a clear base, so its intrinsic size never
+    /// leaks into layout: a wide (or tall) cover used to stretch its card
+    /// past the screen edge, because `aspectRatio(.fill)` proposes the
+    /// image's own width to the parent. The caller's frame decides the size.
     var body: some View {
+        Color.clear
+            .overlay { content }
+            .clipped()
+    }
+
+    @ViewBuilder
+    private var content: some View {
         if let url, let imageURL = URL(string: url) {
             AsyncImage(url: imageURL) { phase in
                 switch phase {

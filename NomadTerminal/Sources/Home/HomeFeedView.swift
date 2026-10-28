@@ -273,7 +273,7 @@ struct HomeFeedView: View {
         VStack(alignment: .leading, spacing: 0) {
                 ZStack(alignment: .bottomLeading) {
                     RouteCoverImage(url: route.coverImageUrl, tint: route.transport.color)
-                        .aspectRatio(16 / 10, contentMode: .fill)
+                        .frame(maxWidth: .infinity)
                         .frame(height: 190)
                         .clipped()
 
