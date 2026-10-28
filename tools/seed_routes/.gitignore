@@ -7,3 +7,4 @@ probe.log
 __pycache__/
 .env
 covers_out/
+covers_v2/
