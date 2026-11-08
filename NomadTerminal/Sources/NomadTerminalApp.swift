@@ -27,7 +27,13 @@ struct NomadTerminalApp: App {
                 // `PendingImportCoordinator`'s own doc comment for why this
                 // can't act on it directly at this level.
                 .onOpenURL { url in
-                    PendingImportCoordinator.shared.pendingFileURL = url
+                    // A shared route link (universal link or the custom
+                    // scheme) opens that route; anything else is a file.
+                    if let routeID = RouteLinks.routeID(from: url) {
+                        PendingImportCoordinator.shared.pendingRouteID = routeID
+                    } else {
+                        PendingImportCoordinator.shared.pendingFileURL = url
+                    }
                 }
         }
     }

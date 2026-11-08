@@ -52,5 +52,13 @@ struct RootTabView: View {
                 LogRouteFlow(initialImportURL: url)
             }
         }
+        .fullScreenCover(isPresented: Binding(
+            get: { pendingImportCoordinator.pendingRouteID != nil },
+            set: { if !$0 { pendingImportCoordinator.pendingRouteID = nil } }
+        )) {
+            if let id = pendingImportCoordinator.pendingRouteID {
+                SharedRouteLoader(routeID: id, onClose: { pendingImportCoordinator.pendingRouteID = nil })
+            }
+        }
     }
 }

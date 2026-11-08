@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["ZZ4774U2R5.io.nomadterminal.app"],
+        "components": [
+          { "/": "/route/*" }
+        ]
+      }
+    ]
+  }
+}

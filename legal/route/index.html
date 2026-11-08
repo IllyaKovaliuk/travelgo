@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Route · Nomad</title>
+<meta name="robots" content="noindex">
+<style>
+:root { --bg:#fafaf8; --fg:#161616; --muted:#5d5d5a; --line:#e3e2dc; --accent:#c2551f; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f0f0e; --fg:#ecebe6; --muted:#a09f98; --line:#2a2a27; --accent:#e8743b; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+main { max-width:520px; margin:0 auto; padding:48px 20px; }
+.brand { font-weight:700; letter-spacing:.12em; font-size:13px; color:var(--muted); }
+h1 { font-size:28px; line-height:1.2; margin:18px 0 6px; }
+.meta { color:var(--muted); margin:0 0 28px; }
+a.btn { display:block; text-align:center; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:15px 20px; border-radius:999px; }
+p.note { color:var(--muted); font-size:14px; margin-top:20px; }
+nav { margin-top:48px; padding-top:16px; border-top:1px solid var(--line); font-size:14px; }
+nav a { color:var(--muted); margin-right:16px; text-decoration:none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">NOMAD</div>
+  <h1 id="title">Shared route</h1>
+  <p class="meta" id="meta"></p>
+  <a class="btn" id="open" href="#">Open in Nomad</a>
+  <p class="note">This link opens the route in the Nomad app on iPhone. If it doesn't open, install Nomad and tap the link again.</p>
+  <nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/support/">Support</a></nav>
+</main>
+<script>
+(function () {
+  var id = location.pathname.split("/").filter(Boolean)[1] || "";
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+  document.getElementById("open").href = "io.nomadterminal.app://route/" + id;
+  // Public, read-only: the publishable key is meant to ship client-side and
+  // RLS only returns published, public routes.
+  fetch("https://smdnbjvelqsgjoubognc.supabase.co/rest/v1/routes?id=eq." + id + "&select=title,place,distance_km", {
+    headers: { apikey: "sb_publishable_1b_hZ_62coFAs3OgR7lPCQ_ZjguD4bw" }
+  }).then(function (r) { return r.json(); }).then(function (rows) {
+    var r = rows && rows[0];
+    if (!r) return;
+    document.getElementById("title").textContent = String(r.title).replace(/\n/g, " ");
+    document.title = document.getElementById("title").textContent + " · Nomad";
+    var km = Number(r.distance_km);
+    document.getElementById("meta").textContent = (isFinite(km) ? km.toFixed(1) + " km" : "") + (r.place ? " · " + r.place : "");
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>

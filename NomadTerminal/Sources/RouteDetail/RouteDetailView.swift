@@ -252,7 +252,7 @@ struct RouteDetailView: View {
             }
             .buttonStyle(.plain)
 
-            ShareLink(item: shareText) {
+            ShareLink(item: RouteLinks.url(forRouteID: route.id), subject: Text(route.title.replacingOccurrences(of: "\n", with: " ")), message: Text(shareText)) {
                 Image(systemName: "square.and.arrow.up").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
             }
             .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })

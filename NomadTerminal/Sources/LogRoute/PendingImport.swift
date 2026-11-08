@@ -20,4 +20,7 @@ final class PendingImportCoordinator {
     private init() {}
 
     var pendingFileURL: URL?
+    /// A route opened from a shared link (`RouteLinks`) — same hand-off as
+    /// the file above: recorded here, acted on once `RootTabView` exists.
+    var pendingRouteID: String?
 }
