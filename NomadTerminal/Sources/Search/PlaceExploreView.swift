@@ -209,6 +209,7 @@ struct PlaceExploreView: View {
                 .foregroundStyle(NTColor.milk(0.6))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+            OpenSettingsButton()
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 70)

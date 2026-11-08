@@ -958,6 +958,7 @@ struct CompassView: View {
                     .font(NTFont.mono(11, .medium)).tracking(0.4)
                     .foregroundStyle(NTColor.milk(0.7))
                 Spacer(minLength: 0)
+                if tracker.authorizationDenied { OpenSettingsButton() }
             }
             .padding(.horizontal, 16).padding(.vertical, 13)
             .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))

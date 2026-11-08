@@ -237,6 +237,7 @@ struct RecordTrackView: View {
                 .font(NTFont.body(12.5, .light))
                 .foregroundStyle(NTColor.milk(0.6))
                 .multilineTextAlignment(.center)
+            OpenSettingsButton()
         }
         .padding(24)
         .background(NTColor.pineDeep.opacity(0.88), in: RoundedRectangle(cornerRadius: NTRadius.sheet, style: .continuous))

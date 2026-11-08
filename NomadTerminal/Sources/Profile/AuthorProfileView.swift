@@ -33,6 +33,8 @@ struct AuthorProfileView: View {
     @State private var isBlocked = false
     @State private var showBlockConfirm = false
     @State private var blockFailed = false
+    @State private var showReportDialog = false
+    @State private var userReported = false
 
     /// Real sum across their published routes — `fetchUserRoutes` already
     /// embeds each route's real `likes:route_likes(count)`, so this is
@@ -80,6 +82,16 @@ struct AuthorProfileView: View {
         } message: {
             Text("Their routes, comments and photos will be hidden from you everywhere in Nomad. You can unblock them any time in Settings.")
         }
+        .confirmationDialog("Why are you reporting this user?", isPresented: $showReportDialog, titleVisibility: .visible) {
+            ForEach(["Spam", "Harassment", "Inappropriate content", "Other"], id: \.self) { reason in
+                Button(reason) {
+                    userReported = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    Task { try? await RouteRepository.shared.report(.user, id: userId, reason: reason) }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
         .alert("Couldn't update the block list", isPresented: $blockFailed) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -100,6 +112,10 @@ struct AuthorProfileView: View {
             Spacer()
             if profile != nil && !isOwnProfile {
                 Menu {
+                    Button(role: .destructive) { showReportDialog = true } label: {
+                        Label(userReported ? "Reported" : "Report user", systemImage: "flag")
+                    }
+                    .disabled(userReported)
                     if isBlocked {
                         Button { unblock() } label: { Label("Unblock user", systemImage: "hand.raised.slash") }
                     } else {

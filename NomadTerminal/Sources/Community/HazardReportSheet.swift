@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreLocation
+import AVFoundation
 
 /// Bottom sheet for filing a hazard: category grid, optional note, optional
 /// camera photo. Location is the user's current position.
@@ -12,6 +13,7 @@ struct HazardReportSheet: View {
     @State private var note = ""
     @State private var photo: UIImage?
     @State private var showCamera = false
+    @State private var cameraDenied = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -50,7 +52,7 @@ struct HazardReportSheet: View {
                 .background(NTColor.milk(0.08), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
 
             HStack(spacing: 12) {
-                Button { showCamera = true } label: {
+                Button { openCamera() } label: {
                     HStack(spacing: 8) {
                         Image(systemName: photo == nil ? "camera.fill" : "checkmark.circle.fill")
                         Text(photo == nil ? "Add photo" : "Photo added")
@@ -95,6 +97,34 @@ struct HazardReportSheet: View {
         .onAppear { store.errorMessage = nil }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { photo = $0 }.ignoresSafeArea()
+        }
+        // The photo is optional — a denied camera must never trap or crash
+        // the report flow; explain and offer Settings, then carry on.
+        .alert("Camera access is off", isPresented: $cameraDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("You can still send this report without a photo, or allow camera access in Settings to add one.")
+        }
+    }
+
+    private func openCamera() {
+        // No camera hardware (simulator) -> CameraPicker falls back to the
+        // photo library, which needs no permission.
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else { showCamera = true; return }
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .denied, .restricted:
+            cameraDenied = true
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted { showCamera = true } else { cameraDenied = true }
+                }
+            }
+        default:
+            showCamera = true
         }
     }
 }

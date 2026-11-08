@@ -413,6 +413,9 @@ struct SettingsView: View {
                 // Files first, while the session is still valid — the
                 // account RPC ends it. Best effort; never blocks deletion.
                 await RouteRepository.shared.deleteMyStoredFiles()
+                // Sign in with Apple accounts: revoke Apple's token while the
+                // session is still valid (no-op for everyone else).
+                await AppleTokenRevoker.revoke()
                 try await supabase.rpc("delete_my_account").execute()
                 try? await supabase.auth.signOut()
                 UserDefaults.standard.removeObject(forKey: "authSessionStartedAt")

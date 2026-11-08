@@ -462,6 +462,13 @@ struct AuthView: View {
                     .compactMap { $0 }
                     .joined(separator: " ")
                     .trimmingCharacters(in: .whitespaces)
+                // The one-time authorizationCode is exchanged server-side for
+                // a refresh token so deleting the account can revoke Apple's
+                // token (5.1.1(v)). Best effort — never blocks sign-in.
+                if let codeData = credential.authorizationCode,
+                   let code = String(data: codeData, encoding: .utf8) {
+                    await AppleTokenRevoker.store(authorizationCode: code)
+                }
                 await finishSocialSignIn(candidateName: fullName.isEmpty ? nil : fullName)
             } catch {
                 errorMessage = friendlyMessage(error)

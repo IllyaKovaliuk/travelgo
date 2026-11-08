@@ -11,6 +11,10 @@ struct PermissionCard: View {
     let doneLabel: LocalizedStringKey
     let isDone: Bool
     let action: () -> Void
+    /// Always-visible way to decline (App Review 5.1.1(iv)): dismisses the
+    /// explanation without triggering the system prompt.
+    var secondaryLabel: LocalizedStringKey? = nil
+    var secondaryAction: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -55,6 +59,18 @@ struct PermissionCard: View {
             .ntPressable(haptic: isDone ? nil : .medium)
             .disabled(isDone)
             .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isDone)
+
+            if let secondaryLabel, !isDone {
+                Button(action: secondaryAction) {
+                    Text(secondaryLabel)
+                        .font(NTFont.body(14.5, .semibold))
+                        .foregroundStyle(NTColor.ink.opacity(0.7))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 6)
+            }
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 26)

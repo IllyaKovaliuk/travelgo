@@ -28,10 +28,12 @@ struct PermissionsView: View {
                             iconTint: NTColor.water,
                             title: "Precise location",
                             description: "Live position on the map and your real track while recording — plus a last-known position to send if you ever use SOS.",
-                            buttonLabel: "Allow while using",
+                            buttonLabel: "Continue",
                             doneLabel: "Allowed",
                             isDone: location.isGranted,
-                            action: location.request
+                            action: location.request,
+                            secondaryLabel: "Not Now",
+                            secondaryAction: onFinished
                         )
                         .revealOnAppear(delay: 0.14, distance: 20)
                     }
@@ -49,7 +51,7 @@ struct PermissionsView: View {
                         Image(systemName: "info.circle")
                             .font(.system(size: 15))
                             .foregroundStyle(NTColor.milk(0.6))
-                        Text("You can skip this — live position, recording, and SOS messaging just won't work without it.")
+                        Text("You can tap Not Now — live position, recording, and SOS position just won't work without it. The rest of the app does, and you can change this later in Settings.")
                             .font(NTFont.body(13, .light))
                             .foregroundStyle(NTColor.milk(0.62))
                             .fixedSize(horizontal: false, vertical: true)
@@ -65,23 +67,20 @@ struct PermissionsView: View {
                     .padding(.top, 26)
                     .revealOnAppear(delay: 0.3)
 
-                    NTGhostButton(title: "Skip for now", action: onFinished)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 6)
-                        .revealOnAppear(delay: 0.34)
                 }
                 .padding(.horizontal, 30)
                 .padding(.top, 24)
                 .padding(.bottom, 20)
             }
         }
-        .onChange(of: location.isGranted) { _, granted in
-            if granted { advanceIfReady() }
+        // Any answer to the system prompt (allow OR deny) moves on — a deny
+        // used to leave this screen sitting with a button that did nothing.
+        .onChange(of: location.status) { _, status in
+            if status != .notDetermined { advance() }
         }
     }
 
-    private func advanceIfReady() {
-        guard location.isGranted else { return }
+    private func advance() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             onFinished()
         }

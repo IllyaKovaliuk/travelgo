@@ -119,9 +119,11 @@ struct PaywallView: View {
                         .padding(.top, 18)
 
                         if let selectedProduct {
-                            Text("Cancel anytime. Renews at \(selectedProduct.displayPrice)\(renewalSuffix).")
+                            Text(renewalDisclosure(for: selectedProduct))
                                 .font(NTFont.mono(10.5, .medium)).tracking(0.3)
-                                .foregroundStyle(NTColor.milk(0.45))
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .foregroundStyle(NTColor.milk(0.62))
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 12)
                         }
@@ -183,6 +185,36 @@ struct PaywallView: View {
         let ratio = (annual.price / (monthly.price * 12) as NSDecimalNumber).doubleValue
         let percent = Int(((1 - ratio) * 100).rounded(.down))
         return percent > 0 ? percent : nil
+    }
+
+    /// Guideline 3.1.2: length of the subscription, price, trial terms and
+    /// auto-renewal/cancellation, all from the live StoreKit product so it
+    /// can't drift from what Apple actually charges.
+    private func renewalDisclosure(for product: Product) -> String {
+        let price = "\(product.displayPrice)\(renewalSuffix)"
+        let length: String
+        switch product.subscription?.subscriptionPeriod.unit {
+        case .month: length = String(localized: "1 month")
+        case .year: length = String(localized: "1 year")
+        default: length = ""
+        }
+        var parts: [String] = []
+        if let offer = product.subscription?.introductoryOffer, offer.paymentMode == .freeTrial {
+            let days: Int
+            switch offer.period.unit {
+            case .day: days = offer.period.value
+            case .week: days = offer.period.value * 7
+            case .month: days = offer.period.value * 30
+            case .year: days = offer.period.value * 365
+            @unknown default: days = offer.period.value
+            }
+            parts.append(String(localized: "\(days)-day free trial, then \(price)."))
+        } else {
+            parts.append(String(localized: "\(price)."))
+        }
+        if !length.isEmpty { parts.append(String(localized: "Subscription length: \(length).")) }
+        parts.append(String(localized: "Auto-renews until cancelled. Cancel any time in your Apple ID settings, at least 24 hours before the period ends. Payment is charged to your Apple ID at confirmation of purchase."))
+        return parts.joined(separator: " ")
     }
 
     private var renewalSuffix: String {

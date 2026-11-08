@@ -42,6 +42,8 @@ struct RouteDetailView: View {
     @State private var showComments = false
     @State private var downloadToast: String?
     @State private var showAuthorProfile = false
+    @State private var showReportDialog = false
+    @State private var routeReported = false
 
     private var detail: RouteDetailInfo { route.detail }
     /// A computed property, not something cached once — `route` is
@@ -255,7 +257,30 @@ struct RouteDetailView: View {
             }
             .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
 
+            // Guideline 1.2: any user-generated route can be flagged. Not
+            // shown on your own route.
+            if !isOwner {
+                Button {
+                    showReportDialog = true
+                } label: {
+                    Image(systemName: routeReported ? "flag.fill" : "flag").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
+                }
+                .buttonStyle(.plain)
+                .disabled(routeReported)
+                .accessibilityLabel(Text("Report route"))
+            }
+
             Spacer()
+        }
+        .confirmationDialog("Why are you reporting this route?", isPresented: $showReportDialog, titleVisibility: .visible) {
+            ForEach(["Spam", "Harassment", "Inappropriate content", "Other"], id: \.self) { reason in
+                Button(reason) {
+                    routeReported = true
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    Task { try? await RouteRepository.shared.report(.route, id: route.id, reason: reason) }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
         }
     }
 

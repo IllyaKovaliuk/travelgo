@@ -68,7 +68,6 @@ struct SearchView: View {
                             rangeRows
                         }
                         regionRow
-                        comingSoonRow(title: "Requirements")
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -474,21 +473,6 @@ struct SearchView: View {
             }
             .buttonStyle(.plain)
         }
-    }
-
-    /// Honest placeholder — no chevron, no fake tap target. Use the search
-    /// bar's free-text match against title/place for region filtering in
-    /// the meantime; a real requirements-based filter needs a join query
-    /// this screen doesn't build yet.
-    private func comingSoonRow(title: LocalizedStringKey) -> some View {
-        HStack(spacing: 12) {
-            Text(title).font(NTFont.heading(17, .bold)).foregroundStyle(NTColor.milk(0.5))
-            Spacer()
-            Text("COMING SOON").font(NTFont.mono(10, .semibold)).tracking(0.6).foregroundStyle(NTColor.milk(0.4))
-        }
-        .padding(20)
-        .background(NTColor.milk(0.04), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.08), lineWidth: 1))
     }
 
     private var resultsBar: some View {

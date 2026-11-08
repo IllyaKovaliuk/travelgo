@@ -1115,7 +1115,7 @@ actor RouteRepository {
 
     // MARK: - Moderation
 
-    enum ReportTarget: String { case route, comment, photo }
+    enum ReportTarget: String { case route, comment, photo, user }
 
     /// Files a report — the DB auto-hides content once it collects reports
     /// from 3 distinct people (see the `content_reports` trigger). Silently
