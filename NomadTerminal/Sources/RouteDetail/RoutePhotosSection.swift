@@ -66,10 +66,10 @@ struct RoutePhotosSection: View {
             guard let newItem else { return }
             Task { await upload(newItem) }
         }
-        .fullScreenCover(item: Binding(
+        .ntFullScreenCover(item: Binding(
             get: { viewerIndex.map { PhotoViewerIndex(index: $0) } },
             set: { viewerIndex = $0?.index }
-        )) { wrapped in
+        ), readable: false) { wrapped in
             PhotoViewerView(
                 photos: photos, startIndex: wrapped.index, currentUserId: currentUserId,
                 onDelete: { photo in

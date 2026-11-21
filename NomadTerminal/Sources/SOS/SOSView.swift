@@ -108,6 +108,7 @@ struct SOSView: View {
                 cancelButton
             }
             .padding(.bottom, 14)
+            .scrollsWhenShort()
         }
         .foregroundStyle(NTColor.milk)
         .task {

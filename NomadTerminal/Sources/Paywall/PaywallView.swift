@@ -32,6 +32,13 @@ struct PaywallView: View {
                     .buttonStyle(.plain)
                 }
 
+                // Everything under the close button scrolls: on iPad (iPhone
+                // app in a short compatibility window) and with large Dynamic
+                // Type this content is taller than the screen, which pushed
+                // Restore / Terms / Privacy off-screen with no way to reach
+                // them (App Review 4, iPad Air).
+                ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
                 if manager.isPro {
                     proActiveState
                 } else {
@@ -159,12 +166,18 @@ struct PaywallView: View {
                         .padding(.top, 14)
                     }
                 }
+                }
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
+                }
+                .scrollBounceBehavior(.basedOnSize)
             }
             .padding(.horizontal, 28)
             .padding(.top, 16)
             .padding(.bottom, 20)
         }
         .foregroundStyle(NTColor.milk)
+        .readableColumn(maxWidth: 560)
         .task {
             await manager.loadProducts()
             if selectedProduct == nil { selectedProductID = manager.products.first?.id ?? SubscriptionManager.annualID }

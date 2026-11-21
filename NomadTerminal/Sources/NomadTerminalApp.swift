@@ -70,6 +70,7 @@ struct RootView: View {
                 RootTabView()
             } else {
                 OnboardingContainer(onFinished: { finishedOnboarding = true })
+                    .readableColumn(maxWidth: 560)
             }
         }
         // Applied once, at the single root every screen in the app

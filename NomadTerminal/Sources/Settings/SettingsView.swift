@@ -185,8 +185,8 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
             .toolbarColorScheme(themeManager.colorScheme, for: .navigationBar)
-            .fullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
-            .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
+            .ntFullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
+            .ntFullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; dismiss() }) }
             .sheet(isPresented: $showRewards) { RewardsView() }
             .sheet(isPresented: $showModeration) { AdminModerationView() }
             .sheet(isPresented: $showAnalytics) { AdminAnalyticsView() }

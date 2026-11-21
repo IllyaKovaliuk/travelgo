@@ -7,6 +7,7 @@ import SwiftUI
 /// onX all use this same list-of-cards pattern for that reason). Following/
 /// Nearby/Wild are filter chips now, not full-screen tabs.
 struct HomeFeedView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
     enum FeedTab: String, CaseIterable {
         case following = "Following", nearby = "Nearby", wild = "Wild"
 
@@ -41,7 +42,7 @@ struct HomeFeedView: View {
                 emptyTabState.padding(.top, 130)
             } else {
                 ScrollView(showsIndicators: false) {
-                    LazyVStack(spacing: 14) {
+                    LazyVGrid(columns: AdaptiveColumns.grid(compact: 1, regular: 2, spacing: 14, sizeClass: sizeClass), spacing: 14) {
                         ForEach(routes) { route in
                             routeRow(route)
                                 .scrollTransition { content, phase in
@@ -75,18 +76,18 @@ struct HomeFeedView: View {
                     .allowsHitTesting(false)
             }
         }
-        .fullScreenCover(item: $openRoute) { route in
+        .ntFullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
-        .fullScreenCover(isPresented: Binding(get: { openAuthor != nil }, set: { if !$0 { openAuthor = nil } }), onDismiss: { Task { await loadRoutes() } }) {
+        .ntFullScreenCover(isPresented: Binding(get: { openAuthor != nil }, set: { if !$0 { openAuthor = nil } }), onDismiss: { Task { await loadRoutes() } }) {
             if let openAuthor {
                 AuthorProfileView(userId: openAuthor, onClose: { self.openAuthor = nil })
             }
         }
-        .fullScreenCover(isPresented: $showActivity) {
+        .ntFullScreenCover(isPresented: $showActivity) {
             NotificationsView(onClose: { showActivity = false })
         }
-        .fullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
+        .ntFullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
             LogRouteFlow()
         }
         .task { await loadRoutes() }

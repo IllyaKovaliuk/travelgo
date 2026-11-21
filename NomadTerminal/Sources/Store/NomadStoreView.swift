@@ -3,6 +3,8 @@ import CoreImage.CIFilterBuiltins
 
 /// Nomad Store & Rewards — partner perks bought with NomadPoints.
 struct NomadStoreView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @Environment(\.dismiss) private var dismiss
     @State private var model = NomadStoreViewModel()
     @State private var confirming: Reward?
@@ -28,7 +30,7 @@ struct NomadStoreView: View {
                         Text("No partner offers near you yet — check back soon.")
                             .font(NTFont.body(13, .light)).foregroundStyle(NTColor.milk(0.5))
                     }
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                    LazyVGrid(columns: AdaptiveColumns.grid(spacing: 12, sizeClass: sizeClass), spacing: 12) {
                         ForEach(model.rewards) { rewardCard($0) }
                     }
                 }

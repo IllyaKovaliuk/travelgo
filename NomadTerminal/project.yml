@@ -16,7 +16,7 @@ configs:
 settings:
   base:
     MARKETING_VERSION: "1.0.0"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
 packages:
   Supabase:
     url: https://github.com/supabase/supabase-swift
@@ -55,7 +55,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app
         PRODUCT_NAME: NomadTerminal
         SWIFT_VERSION: "5.0"
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
@@ -89,6 +89,14 @@ targets:
         # how the real Pine/Milk theme switch (ThemeManager) actually works.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # iPad: all four, required for Split View / Slide Over (and what
+        # App Review expects of a universal app). Layouts key off size
+        # classes, not orientation.
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         NSCameraUsageDescription: "Lets you photograph a trail hazard (fallen tree, broken bridge, deep ford) when you report it, so the next person can see what to expect."
         NSLocationWhenInUseUsageDescription: "Shows your live position on the map and your real track while recording — plus a last-known position for the SOS screen if you ever need it."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Background location keeps your live track and last-known SOS position accurate while the app is in your pocket, and — only if you turn on Passive visit detection in Settings — quietly notices new places you've stopped for your Journal."
@@ -159,7 +167,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: io.nomadterminal.app.widgets
         PRODUCT_NAME: NomadTerminalWidgets
         SWIFT_VERSION: "5.0"
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ZZ4774U2R5
         SKIP_INSTALL: YES

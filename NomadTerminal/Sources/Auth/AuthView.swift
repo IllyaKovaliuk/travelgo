@@ -92,13 +92,17 @@ struct AuthView: View {
         ZStack {
             NTColor.pine.ignoresSafeArea()
 
-            if needsNameCapture {
-                nameCaptureView
-            } else if confirmEmailSent {
-                confirmEmailView
-            } else {
-                formView
+            Group {
+                if needsNameCapture {
+                    nameCaptureView
+                } else if confirmEmailSent {
+                    confirmEmailView
+                } else {
+                    formView
+                }
             }
+            .scrollsWhenShort()
+            .readableColumn(maxWidth: 560)
         }
         .foregroundStyle(NTColor.milk)
     }

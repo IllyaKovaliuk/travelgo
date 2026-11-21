@@ -3,6 +3,8 @@ import SwiftUI
 /// 09 · Saved / offline — reads real saves back from Supabase; this is
 /// where the Save button on the Feed and Route Detail actually lands.
 struct SavedView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     enum Lib: String { case saved = "Saved", downloaded = "Downloaded" }
     @State private var lib: Lib = .saved
     @State private var saves: [RouteRepository.SavedRoute] = []
@@ -38,7 +40,7 @@ struct SavedView: View {
                             )
                             .padding(.top, 60)
                         } else {
-                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
+                            LazyVGrid(columns: AdaptiveColumns.grid(spacing: 14, sizeClass: sizeClass), spacing: 14) {
                                 ForEach(saves, id: \.route.id) { item in
                                     savedTile(item: item)
                                         .onTapGesture { openRoute = item.route }
@@ -55,7 +57,7 @@ struct SavedView: View {
                             )
                             .padding(.top, 60)
                         } else {
-                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
+                            LazyVGrid(columns: AdaptiveColumns.grid(spacing: 14, sizeClass: sizeClass), spacing: 14) {
                                 ForEach(downloadedSaves, id: \.route.id) { item in
                                     savedTile(item: item)
                                         .onTapGesture { openRoute = item.route }
@@ -71,7 +73,7 @@ struct SavedView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .fullScreenCover(item: $openRoute) { route in
+        .ntFullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
         .task { await load() }

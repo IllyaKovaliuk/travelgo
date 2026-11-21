@@ -263,7 +263,7 @@ struct CompassView: View {
                 try? await Task.sleep(nanoseconds: 60_000_000_000)
             }
         }
-        .fullScreenCover(isPresented: $showSOS) {
+        .ntFullScreenCover(isPresented: $showSOS) {
             SOSView(
                 onClose: { showSOS = false },
                 lastKnownCoordinate: tracker.currentLocation?.coordinate,
@@ -307,7 +307,7 @@ struct CompassView: View {
             photos = (try? await RouteRepository.shared.fetchPhotos(routeId: routeId)) ?? []
             currentUserId = (try? await supabase.auth.session)?.user.id.uuidString
         }
-        .fullScreenCover(item: $photoViewerSpot) { spot in
+        .ntFullScreenCover(item: $photoViewerSpot, readable: false) { spot in
             PhotoViewerView(
                 photos: photos,
                 startIndex: photos.firstIndex(where: { $0.id == spot.photos.first?.id }) ?? 0,

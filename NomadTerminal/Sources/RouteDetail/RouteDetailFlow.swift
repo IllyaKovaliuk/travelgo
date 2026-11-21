@@ -9,7 +9,7 @@ struct RouteDetailFlow: View {
 
     var body: some View {
         RouteDetailView(route: route, onNavigate: { showCompass = true })
-            .fullScreenCover(isPresented: $showCompass) {
+            .ntFullScreenCover(isPresented: $showCompass, readable: false) {
                 CompassView(
                     routeId: route.id,
                     routeName: route.title,

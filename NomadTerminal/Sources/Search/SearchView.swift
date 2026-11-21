@@ -93,7 +93,7 @@ struct SearchView: View {
         .onChange(of: minAscentM) { _, _ in runSearch(debounced: true) }
         .onChange(of: maxAscentM) { _, _ in runSearch(debounced: true) }
         .onChange(of: selectedRegion) { _, _ in runSearch(debounced: false) }
-        .fullScreenCover(isPresented: $showResults) {
+        .ntFullScreenCover(isPresented: $showResults) {
             SearchResultsView(routes: results) { showResults = false }
         }
         .sheet(isPresented: $showRegionMap) {
@@ -101,7 +101,7 @@ struct SearchView: View {
                 selectedRegion = picked
             }
         }
-        .fullScreenCover(item: $openRoute) { route in
+        .ntFullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
     }

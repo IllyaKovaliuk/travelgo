@@ -240,8 +240,8 @@ struct RouteFullMapView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .fullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
-        .fullScreenCover(item: $photoViewerSpot) { spot in
+        .ntFullScreenCover(isPresented: $showPaywall) { PaywallView(onClose: { showPaywall = false }) }
+        .ntFullScreenCover(item: $photoViewerSpot, readable: false) { spot in
             // Reuses the exact same viewer `RoutePhotosSection` presents —
             // one real swipeable photo screen, not a second one built for
             // the map specifically. Starts at the tapped spot's first

@@ -127,7 +127,7 @@ struct ProfileView: View {
         }
         .foregroundStyle(NTColor.milk)
         .sheet(isPresented: $showSettings, onDismiss: { Task { await load() } }) { SettingsView() }
-        .fullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; Task { await load() } }) }
+        .ntFullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; Task { await load() } }) }
         .sheet(isPresented: $showEditProfile) {
             if let profile {
                 EditProfileView(current: profile, onSaved: { Task { await load() } })

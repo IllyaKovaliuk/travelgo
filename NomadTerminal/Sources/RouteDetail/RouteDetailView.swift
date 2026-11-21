@@ -161,16 +161,16 @@ struct RouteDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .fullScreenCover(isPresented: $showFullMap) {
+        .ntFullScreenCover(isPresented: $showFullMap, readable: false) {
             RouteFullMapView(route: route, onClose: { showFullMap = false })
         }
-        .fullScreenCover(isPresented: $showPaywall) {
+        .ntFullScreenCover(isPresented: $showPaywall) {
             PaywallView(onClose: { showPaywall = false })
         }
-        .fullScreenCover(isPresented: $showAuthorProfile) {
+        .ntFullScreenCover(isPresented: $showAuthorProfile) {
             AuthorProfileView(userId: route.author.id, onClose: { showAuthorProfile = false })
         }
-        .fullScreenCover(isPresented: $showComments, onDismiss: {
+        .ntFullScreenCover(isPresented: $showComments, onDismiss: {
             Task { commentCount = (try? await RouteRepository.shared.fetchComments(routeId: route.id).count) ?? commentCount }
         }) {
             CommentsView(route: route)

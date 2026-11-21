@@ -72,7 +72,7 @@ struct AuthorProfileView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .fullScreenCover(item: $openRoute, onDismiss: { Task { await load() } }) { route in
+        .ntFullScreenCover(item: $openRoute, onDismiss: { Task { await load() } }) { route in
             RouteDetailFlow(route: route)
         }
         .task { await load() }

@@ -31,9 +31,7 @@ struct PermissionsView: View {
                             buttonLabel: "Continue",
                             doneLabel: "Allowed",
                             isDone: location.isGranted,
-                            action: location.request,
-                            secondaryLabel: "Not Now",
-                            secondaryAction: onFinished
+                            action: location.request
                         )
                         .revealOnAppear(delay: 0.14, distance: 20)
                     }
@@ -51,7 +49,7 @@ struct PermissionsView: View {
                         Image(systemName: "info.circle")
                             .font(.system(size: 15))
                             .foregroundStyle(NTColor.milk(0.6))
-                        Text("You can tap Not Now — live position, recording, and SOS position just won't work without it. The rest of the app does, and you can change this later in Settings.")
+                        Text("You choose in the next step. If you don't allow it, live position, recording, and SOS position won't work, but the rest of the app does — and you can change this later in Settings.")
                             .font(NTFont.body(13, .light))
                             .foregroundStyle(NTColor.milk(0.62))
                             .fixedSize(horizontal: false, vertical: true)

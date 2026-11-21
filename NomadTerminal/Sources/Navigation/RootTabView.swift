@@ -22,18 +22,36 @@ struct RootTabView: View {
     /// coordinator fresh the moment it does.
     @State private var pendingImportCoordinator = PendingImportCoordinator.shared
 
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            switch tab {
-            case .home: HomeFeedView()
-            case .search: SearchView()
-            case .guide: GuideView()
-            case .saved: SavedView()
-            case .profile: ProfileView()
-            }
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
-            FloatingTabBar(selection: $tab, profileInitials: profileInitials ?? "?")
-                .padding(.bottom, 12)
+    @ViewBuilder private var tabContent: some View {
+        switch tab {
+        case .home: HomeFeedView()
+        case .search: SearchView()
+        case .guide: GuideView()
+        case .saved: SavedView()
+        case .profile: ProfileView()
+        }
+    }
+
+    var body: some View {
+        Group {
+            if sizeClass == .regular {
+                // iPad / Duo inner display: sidebar + a readable column.
+                HStack(spacing: 0) {
+                    SidebarTabBar(selection: $tab, profileInitials: profileInitials ?? "?")
+                    tabContent
+                        .readableColumn(maxWidth: 880)
+                }
+                .background(NTColor.pine.ignoresSafeArea())
+            } else {
+                ZStack(alignment: .bottom) {
+                    tabContent
+
+                    FloatingTabBar(selection: $tab, profileInitials: profileInitials ?? "?")
+                        .padding(.bottom, 12)
+                }
+            }
         }
         .preferredColorScheme(ThemeManager.shared.colorScheme)
         .task {
@@ -44,7 +62,7 @@ struct RootTabView: View {
         }
         // `URL` isn't `Identifiable`, so `isPresented:` + reading the
         // coordinator inside the closure, not `item:`.
-        .fullScreenCover(isPresented: Binding(
+        .ntFullScreenCover(isPresented: Binding(
             get: { pendingImportCoordinator.pendingFileURL != nil },
             set: { if !$0 { pendingImportCoordinator.pendingFileURL = nil } }
         )) {
@@ -52,7 +70,7 @@ struct RootTabView: View {
                 LogRouteFlow(initialImportURL: url)
             }
         }
-        .fullScreenCover(isPresented: Binding(
+        .ntFullScreenCover(isPresented: Binding(
             get: { pendingImportCoordinator.pendingRouteID != nil },
             set: { if !$0 { pendingImportCoordinator.pendingRouteID = nil } }
         )) {

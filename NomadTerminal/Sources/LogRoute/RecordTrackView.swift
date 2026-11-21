@@ -190,7 +190,7 @@ struct RecordTrackView: View {
         .onReceive(NotificationCenter.default.publisher(for: .nomadIslandFinish)) { _ in
             finishRecording()
         }
-        .fullScreenCover(isPresented: $showSOS) {
+        .ntFullScreenCover(isPresented: $showSOS) {
             SOSView(
                 onClose: { showSOS = false },
                 lastKnownCoordinate: tracker.points.last?.coordinate,

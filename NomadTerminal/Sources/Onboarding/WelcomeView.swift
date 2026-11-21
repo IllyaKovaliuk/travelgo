@@ -53,6 +53,7 @@ struct WelcomeView: View {
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 30)
+                .scrollsWhenShort()
             }
         }
         .background(NTColor.pine)

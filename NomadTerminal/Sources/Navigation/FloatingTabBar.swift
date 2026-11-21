@@ -23,6 +23,73 @@ enum RootTab: Int, CaseIterable {
         case .profile: return ""
         }
     }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .home: return "Home"
+        case .search: return "Places"
+        case .guide: return "Guide"
+        case .saved: return "Saved"
+        case .profile: return "Profile"
+        }
+    }
+}
+
+/// Wide-screen (iPad, the Duo's inner display) counterpart of the floating
+/// pill: the same five destinations as a vertical rail down the leading
+/// edge, with labels, since a bottom pill floating mid-screen on a 13" panel
+/// is hard to reach and wastes the room a sidebar is made for.
+struct SidebarTabBar: View {
+    @Binding var selection: RootTab
+    var profileInitials: String
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ForEach(RootTab.allCases, id: \.self) { tab in
+                Button {
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    withAnimation(NTMotion.spring) { selection = tab }
+                } label: {
+                    VStack(spacing: 5) {
+                        ZStack {
+                            if selection == tab {
+                                Circle()
+                                    .fill(tab == .profile ? NTColor.sage : NTColor.accent)
+                                    .frame(width: 44, height: 44)
+                            }
+                            if tab == .profile {
+                                Text(profileInitials)
+                                    .font(NTFont.mono(12, .semibold))
+                                    .foregroundStyle(selection == tab ? Color(hex: 0x0B2716) : NTColor.milk(0.8))
+                            } else {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 19, weight: .medium))
+                                    .foregroundStyle(selection == tab ? Color(hex: 0x231007) : NTColor.milk(0.72))
+                            }
+                        }
+                        .frame(width: 44, height: 44)
+
+                        Text(tab.title)
+                            .font(NTFont.mono(10, .medium))
+                            .foregroundStyle(selection == tab ? NTColor.milk : NTColor.milk(0.6))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+        .padding(.top, 24)
+        .padding(.horizontal, 8)
+        .frame(width: 92)
+        .frame(maxHeight: .infinity)
+        .background(NTColor.milk(0.05).ignoresSafeArea())
+        .overlay(alignment: .trailing) {
+            Rectangle().fill(NTColor.milk(0.1)).frame(width: 1).ignoresSafeArea()
+        }
+    }
 }
 
 /// The glass pill bottom bar that floats over every primary screen —

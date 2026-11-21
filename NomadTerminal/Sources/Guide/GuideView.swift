@@ -4,6 +4,8 @@ import SwiftUI
 /// situation. Nomad's whole pitch is a terminal for people going
 /// somewhere off-grid; this is the part of that promise that isn't a map.
 struct GuideView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @State private var path: [GuideCategory] = []
 
     var body: some View {
@@ -13,7 +15,7 @@ struct GuideView: View {
                     header
                     disclaimerBanner
 
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: AdaptiveColumns.grid(spacing: 12, sizeClass: sizeClass), spacing: 12) {
                         ForEach(GuideCategory.all) { category in
                             categoryCard(category)
                                 .onTapGesture { path.append(category) }

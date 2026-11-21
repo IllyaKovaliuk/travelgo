@@ -3,6 +3,8 @@ import SwiftUI
 /// Real results for the current filter set — presented from Search's
 /// "Show results" button.
 struct SearchResultsView: View {
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     let routes: [Route]
     var onClose: () -> Void
 
@@ -30,7 +32,7 @@ struct SearchResultsView: View {
                     if routes.isEmpty {
                         emptyState.padding(.top, 70)
                     } else {
-                        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible())], spacing: 14) {
+                        LazyVGrid(columns: AdaptiveColumns.grid(spacing: 14, sizeClass: sizeClass), spacing: 14) {
                             ForEach(routes) { route in
                                 // Plain `.onTapGesture`, not a `Button` at
                                 // all (tried `Button` + a custom
@@ -66,7 +68,7 @@ struct SearchResultsView: View {
             }
         }
         .foregroundStyle(NTColor.milk)
-        .fullScreenCover(item: $openRoute) { route in
+        .ntFullScreenCover(item: $openRoute) { route in
             RouteDetailFlow(route: route)
         }
     }
