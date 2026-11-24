@@ -172,4 +172,40 @@ struct ExpeditionItinerary {
                 stops: stops.filter { $0.dayIndex == key }.sorted { $0.position < $1.position })
         }
     }
+
+    // MARK: Reordering (presentation arithmetic only — the server stores it)
+
+    /// Moves a route up (-1) or down (+1) among the routes of its own day.
+    mutating func moveRoute(_ id: UUID, by delta: Int) {
+        guard let item = routes.first(where: { $0.id == id }) else { return }
+        let ids = routes.filter { $0.dayIndex == item.dayIndex }.sorted { $0.position < $1.position }.map(\.id)
+        guard let i = ids.firstIndex(of: id), ids.indices.contains(i + delta) else { return }
+        var order = ids
+        order.swapAt(i, i + delta)
+        for (n, rid) in order.enumerated() { if let k = routes.firstIndex(where: { $0.id == rid }) { routes[k].position = n } }
+    }
+
+    mutating func moveStop(_ id: UUID, by delta: Int) {
+        guard let item = stops.first(where: { $0.id == id }) else { return }
+        let ids = stops.filter { $0.dayIndex == item.dayIndex }.sorted { $0.position < $1.position }.map(\.id)
+        guard let i = ids.firstIndex(of: id), ids.indices.contains(i + delta) else { return }
+        var order = ids
+        order.swapAt(i, i + delta)
+        for (n, sid) in order.enumerated() { if let k = stops.firstIndex(where: { $0.id == sid }) { stops[k].position = n } }
+    }
+
+    /// Moves an item to another day (nil = unscheduled), appended at the end.
+    mutating func setDay(routeID id: UUID, day: Int?) {
+        guard let k = routes.firstIndex(where: { $0.id == id }) else { return }
+        let last = routes.filter { $0.dayIndex == day }.map(\.position).max() ?? -1
+        routes[k].dayIndex = day
+        routes[k].position = last + 1
+    }
+
+    mutating func setDay(stopID id: UUID, day: Int?) {
+        guard let k = stops.firstIndex(where: { $0.id == id }) else { return }
+        let last = stops.filter { $0.dayIndex == day }.map(\.position).max() ?? -1
+        stops[k].dayIndex = day
+        stops[k].position = last + 1
+    }
 }

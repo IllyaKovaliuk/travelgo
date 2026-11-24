@@ -43,6 +43,7 @@ struct RouteDetailView: View {
     @State private var downloadToast: String?
     @State private var showAuthorProfile = false
     @State private var showReportDialog = false
+    @State private var showAddToTrip = false
     @State private var routeReported = false
 
     private var detail: RouteDetailInfo { route.detail }
@@ -256,6 +257,16 @@ struct RouteDetailView: View {
                 Image(systemName: "square.and.arrow.up").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
             }
             .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+
+            // Plan a trip around this route: pick one of my open trips.
+            if let routeUUID = UUID(uuidString: route.id) {
+                Button { showAddToTrip = true } label: {
+                    Image(systemName: "calendar.badge.plus").font(.system(size: 16)).foregroundStyle(NTColor.milk(0.8))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Add to trip"))
+                .sheet(isPresented: $showAddToTrip) { AddToTripSheet(routeId: routeUUID) }
+            }
 
             // Guideline 1.2: any user-generated route can be flagged. Not
             // shown on your own route.

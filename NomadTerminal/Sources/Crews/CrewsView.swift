@@ -8,6 +8,9 @@ struct CrewsView: View {
     @State private var loadFailed = false
     @State private var showCreate = false
     @State private var openCrew: CrewListItem?
+    @State private var adHocTrips: [Expedition] = []
+    @State private var showNewTrip = false
+    @State private var openTrip: Expedition?
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -24,6 +27,16 @@ struct CrewsView: View {
                     } else {
                         ForEach(items) { item in
                             Button { openCrew = item } label: { crewCard(item) }
+                                .buttonStyle(NTCardPressStyle())
+                        }
+                    }
+
+                    if !adHocTrips.isEmpty {
+                        Text("MY TRIPS")
+                            .font(NTFont.mono(11, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.55))
+                            .padding(.top, 8)
+                        ForEach(adHocTrips) { trip in
+                            Button { openTrip = trip } label: { tripCard(trip) }
                                 .buttonStyle(NTCardPressStyle())
                         }
                     }
@@ -44,8 +57,19 @@ struct CrewsView: View {
                 }
             }
         }
+        .sheet(isPresented: $showNewTrip) {
+            CreateExpeditionView(crewId: nil) { id in
+                Task {
+                    await load()
+                    openTrip = adHocTrips.first { $0.id == id }
+                }
+            }
+        }
         .ntFullScreenCover(item: $openCrew, onDismiss: { Task { await load() } }) { item in
             CrewDetailView(crewId: item.crew.id, onClose: { openCrew = nil })
+        }
+        .ntFullScreenCover(item: $openTrip, onDismiss: { Task { await load() } }) { trip in
+            ExpeditionDetailView(expeditionId: trip.id, onClose: { openTrip = nil })
         }
     }
 
@@ -54,15 +78,17 @@ struct CrewsView: View {
             Text("Crews")
                 .font(NTFont.heading(30, .extraBold))
             Spacer()
-            Button { showCreate = true } label: {
+            Menu {
+                Button { showCreate = true } label: { Label("New crew", systemImage: "person.3") }
+                Button { showNewTrip = true } label: { Label("New trip", systemImage: "map") }
+            } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(width: 38, height: 38)
                     .background(Circle().fill(NTColor.milk(0.1)))
                     .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Create a crew")
+            .accessibilityLabel("Create")
         }
     }
 
@@ -111,6 +137,25 @@ struct CrewsView: View {
         .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
     }
 
+    private func tripCard(_ trip: Expedition) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: trip.tripType.icon)
+                .font(.system(size: 18))
+                .frame(width: 48, height: 48)
+                .background(Circle().fill(NTColor.milk(0.08)))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(trip.name).font(NTFont.heading(16, .bold)).lineLimit(1)
+                Text(trip.tripType.title)
+                    .font(NTFont.mono(10.5, .medium)).tracking(0.3).foregroundStyle(NTColor.milk(0.55))
+            }
+            Spacer()
+            Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(NTColor.milk(0.35))
+        }
+        .padding(14)
+        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
+    }
+
     private func load() async {
         do {
             items = try await CrewRepository.shared.fetchMyCrews()
@@ -118,6 +163,8 @@ struct CrewsView: View {
         } catch {
             loadFailed = true
         }
+        // Trips that belong to a crew are listed on that crew; only ad-hoc ones here.
+        adHocTrips = ((try? await CrewRepository.shared.fetchMyExpeditions()) ?? []).filter { $0.crewId == nil }
         isLoading = false
     }
 }
