@@ -76,7 +76,7 @@ struct RootTabView: View {
             set: { if !$0 { pendingImportCoordinator.pendingInviteCode = nil } }
         )) {
             if let code = pendingImportCoordinator.pendingInviteCode {
-                JoinCrewView(code: code, onClose: { joined in
+                JoinCrewView(code: code, source: pendingImportCoordinator.pendingInviteSource, onClose: { joined in
                     pendingImportCoordinator.pendingInviteCode = nil
                     if joined { withAnimation(NTMotion.spring) { tab = .crews } }
                 })

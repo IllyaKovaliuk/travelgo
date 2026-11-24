@@ -31,6 +31,7 @@ struct NomadTerminalApp: App {
                     // A shared route link (universal link or the custom
                     // scheme) opens that route; anything else is a file.
                     if let code = CrewLinks.inviteCode(from: url) {
+                        PendingImportCoordinator.shared.pendingInviteSource = "link"
                         PendingImportCoordinator.shared.pendingInviteCode = code
                     } else if let routeID = RouteLinks.routeID(from: url) {
                         PendingImportCoordinator.shared.pendingRouteID = routeID

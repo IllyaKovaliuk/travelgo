@@ -60,6 +60,7 @@ struct CrewsView: View {
         }
         .sheet(isPresented: $showJoinCode) {
             JoinCodeSheet { code in
+                PendingImportCoordinator.shared.pendingInviteSource = "code"
                 PendingImportCoordinator.shared.pendingInviteCode = code
             }
         }

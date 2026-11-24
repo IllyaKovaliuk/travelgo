@@ -6,6 +6,8 @@ import SwiftUI
 /// from before sign-up — `RootTabView` only mounts this once there's a session.
 struct JoinCrewView: View {
     let code: String
+    /// 'link' or 'code' — only for the analytics events.
+    var source = "link"
     /// `true` when the person ended up in the crew (joined now or already was).
     var onClose: (Bool) -> Void
 
@@ -85,6 +87,13 @@ struct JoinCrewView: View {
     private func load() async {
         preview = try? await CrewRepository.shared.previewInvite(code: code)
         isLoading = false
+        // Funnel step 2: the invite was actually opened (valid or not).
+        RouteRepository.shared.logEvent("crew_invite_opened", metadata: [
+            "source": source,
+            "valid": preview == nil ? "false" : "true",
+            "already_member": preview?.alreadyMember == true ? "true" : "false",
+            "crew_id": preview?.crewId.uuidString ?? "",
+        ])
     }
 
     private func join() {
@@ -92,7 +101,9 @@ struct JoinCrewView: View {
         errorMessage = nil
         Task {
             do {
-                try await CrewRepository.shared.joinCrew(code: code)
+                let crewId = try await CrewRepository.shared.joinCrew(code: code)
+                // Funnel step 3: a person actually joined.
+                RouteRepository.shared.logEvent("crew_join", metadata: ["source": source, "crew_id": crewId.uuidString])
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
                 onClose(true)
             } catch {

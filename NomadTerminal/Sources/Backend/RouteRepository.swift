@@ -1085,6 +1085,22 @@ actor RouteRepository {
         let wau: Int
         let sosTriggers7d: Int
         let topEvents7d: [TopEvent]
+        /// Optional so the admin screen still loads against a backend that
+        /// hasn't had the funnel migration applied yet.
+        let crewFunnel: CrewFunnel?
+
+        struct CrewFunnel: Decodable {
+            let crewsTotal: Int
+            let invitesSent7d: Int
+            let invitesOpened7d: Int
+            let joins7d: Int
+            let invitersSent7d: Int
+            let invitesPerInviter7d: Double
+            enum CodingKeys: String, CodingKey {
+                case crewsTotal = "crews_total", invitesSent7d = "invites_sent_7d", invitesOpened7d = "invites_opened_7d"
+                case joins7d = "joins_7d", invitersSent7d = "inviters_7d", invitesPerInviter7d = "invites_per_inviter_7d"
+            }
+        }
 
         struct TopEvent: Decodable, Identifiable {
             let eventName: String
@@ -1101,6 +1117,7 @@ actor RouteRepository {
             case dau, wau
             case sosTriggers7d = "sos_triggers_7d"
             case topEvents7d = "top_events_7d"
+            case crewFunnel = "crew_funnel"
         }
     }
 
