@@ -11,6 +11,7 @@ struct CrewsView: View {
     @State private var adHocTrips: [Expedition] = []
     @State private var showNewTrip = false
     @State private var openTrip: Expedition?
+    @State private var showJoinCode = false
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -57,6 +58,11 @@ struct CrewsView: View {
                 }
             }
         }
+        .sheet(isPresented: $showJoinCode) {
+            JoinCodeSheet { code in
+                PendingImportCoordinator.shared.pendingInviteCode = code
+            }
+        }
         .sheet(isPresented: $showNewTrip) {
             CreateExpeditionView(crewId: nil) { id in
                 Task {
@@ -81,6 +87,7 @@ struct CrewsView: View {
             Menu {
                 Button { showCreate = true } label: { Label("New crew", systemImage: "person.3") }
                 Button { showNewTrip = true } label: { Label("New trip", systemImage: "map") }
+                Button { showJoinCode = true } label: { Label("Join with a code", systemImage: "link") }
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 15, weight: .semibold))

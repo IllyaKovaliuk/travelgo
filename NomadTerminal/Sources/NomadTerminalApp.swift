@@ -18,6 +18,7 @@ struct NomadTerminalApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .onAppear { PendingImportCoordinator.shared.restorePendingInvite() }
                 // A GPX shared in from Files' "Open In"/"Copy to Nomad" or
                 // another app's Share Sheet (Strava, Garmin Connect,
                 // Komoot — see `UTImportedTypeDeclarations`/
@@ -29,7 +30,9 @@ struct NomadTerminalApp: App {
                 .onOpenURL { url in
                     // A shared route link (universal link or the custom
                     // scheme) opens that route; anything else is a file.
-                    if let routeID = RouteLinks.routeID(from: url) {
+                    if let code = CrewLinks.inviteCode(from: url) {
+                        PendingImportCoordinator.shared.pendingInviteCode = code
+                    } else if let routeID = RouteLinks.routeID(from: url) {
                         PendingImportCoordinator.shared.pendingRouteID = routeID
                     } else {
                         PendingImportCoordinator.shared.pendingFileURL = url

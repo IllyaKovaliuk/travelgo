@@ -70,6 +70,18 @@ struct RootTabView: View {
                 LogRouteFlow(initialImportURL: url)
             }
         }
+        // A crew invite (link, or one saved from before sign-up): preview, then join.
+        .ntFullScreenCover(isPresented: Binding(
+            get: { pendingImportCoordinator.pendingInviteCode != nil },
+            set: { if !$0 { pendingImportCoordinator.pendingInviteCode = nil } }
+        )) {
+            if let code = pendingImportCoordinator.pendingInviteCode {
+                JoinCrewView(code: code, onClose: { joined in
+                    pendingImportCoordinator.pendingInviteCode = nil
+                    if joined { withAnimation(NTMotion.spring) { tab = .crews } }
+                })
+            }
+        }
         .ntFullScreenCover(isPresented: Binding(
             get: { pendingImportCoordinator.pendingRouteID != nil },
             set: { if !$0 { pendingImportCoordinator.pendingRouteID = nil } }
