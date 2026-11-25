@@ -40,7 +40,8 @@ struct CrewDetailView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     if let crew {
                         hero(crew)
-                        if isManager {
+                        // Any member can invite — the invite loop is how a crew grows.
+                        if myRole != nil {
                             NTAccentButton(title: isMakingInvite ? "Creating link…" : "Invite friends", icon: "person.badge.plus") { invite() }
                                 .disabled(isMakingInvite)
                         }
