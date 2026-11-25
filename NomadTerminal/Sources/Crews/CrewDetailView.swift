@@ -27,6 +27,8 @@ struct CrewDetailView: View {
     @State private var removeUser: CrewPerson?
     @State private var transferUser: CrewPerson?
     @State private var errorMessage: String?
+    @State private var showNewTrip = false
+    @State private var openExpedition: Expedition?
 
     private var myRole: CrewRole? { members.first { $0.person.id == myId }?.role }
     private var isManager: Bool { myRole?.isManager ?? false }
@@ -67,6 +69,17 @@ struct CrewDetailView: View {
         .task { await load() }
         .sheet(isPresented: Binding(get: { inviteURL != nil }, set: { if !$0 { inviteURL = nil } })) {
             if let inviteURL { ActivityView(items: [shareMessage(inviteURL)]).presentationDetents([.medium, .large]) }
+        }
+        .sheet(isPresented: $showNewTrip) {
+            CreateExpeditionView(crewId: crewId) { id in
+                Task {
+                    await load()
+                    openExpedition = expeditions.first { $0.id == id }
+                }
+            }
+        }
+        .ntFullScreenCover(item: $openExpedition, onDismiss: { Task { await load() } }) { e in
+            ExpeditionDetailView(expeditionId: e.id, onClose: { openExpedition = nil })
         }
         .alert("Rename crew", isPresented: $showRename) {
             TextField("Crew name", text: $renameText)
@@ -227,13 +240,26 @@ struct CrewDetailView: View {
 
     private var expeditionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Expeditions")
+            HStack {
+                sectionTitle("Expeditions")
+                Spacer()
+                Button { showNewTrip = true } label: {
+                    Label("New trip", systemImage: "plus")
+                        .font(NTFont.body(12.5, .semibold))
+                        .padding(.horizontal, 12).frame(height: 32)
+                        .background(Capsule().fill(NTColor.milk(0.1)))
+                }
+                .buttonStyle(.plain)
+            }
             if expeditions.isEmpty {
                 Text("No trips yet.")
                     .font(NTFont.body(13.5, .light)).foregroundStyle(NTColor.milk(0.55))
             } else {
                 VStack(spacing: 8) {
-                    ForEach(expeditions) { expeditionRow($0) }
+                    ForEach(expeditions) { e in
+                        Button { openExpedition = e } label: { expeditionRow(e) }
+                            .buttonStyle(NTCardPressStyle())
+                    }
                 }
             }
         }
@@ -250,6 +276,7 @@ struct CrewDetailView: View {
                 Text(dateRange(e)).font(NTFont.mono(10.5, .medium)).foregroundStyle(NTColor.milk(0.5))
             }
             Spacer()
+            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.35))
         }
         .padding(12)
         .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
