@@ -31,6 +31,8 @@ final class PendingImportCoordinator {
     var pendingInviteCode: String? {
         didSet { UserDefaults.standard.set(pendingInviteCode, forKey: Self.inviteKey) }
     }
+    /// How the invite arrived ('link' or 'code') — analytics only.
+    var pendingInviteSource = "link"
     private static let inviteKey = "io.nomadterminal.pendingCrewInvite"
 
     /// Called once at launch so an invite saved by a previous run is picked up.

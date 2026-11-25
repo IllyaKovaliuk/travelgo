@@ -64,6 +64,12 @@ struct AdminAnalyticsView: View {
             stat("\(s.totalRoutesPublished)", "ROUTES PUBLISHED")
             stat("\(s.routesPublished7d)", "PUBLISHED 7D")
             stat("\(s.sosTriggers7d)", "SOS TRIGGERS 7D")
+            if let f = s.crewFunnel {
+                stat("\(f.invitesSent7d)", "CREW INVITES SENT 7D")
+                stat("\(f.invitesOpened7d)", "INVITES OPENED 7D")
+                stat("\(f.joins7d)", "CREW JOINS 7D")
+                stat(String(format: "%.1f", f.invitesPerInviter7d), "INVITES / INVITER")
+            }
         }
     }
 

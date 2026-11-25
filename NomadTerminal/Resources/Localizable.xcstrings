@@ -5917,6 +5917,98 @@
         }
       }
     },
+    "CREW INVITES SENT 7D" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CREW INVITES SENT 7D"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INVITACIONES ENVIADAS 7D"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "НАДІСЛАНО ЗАПРОШЕНЬ 7Д"
+          }
+        }
+      }
+    },
+    "INVITES OPENED 7D" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INVITES OPENED 7D"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INVITACIONES ABIERTAS 7D"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ВІДКРИТО ЗАПРОШЕНЬ 7Д"
+          }
+        }
+      }
+    },
+    "CREW JOINS 7D" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CREW JOINS 7D"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UNIONES A EQUIPOS 7D"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ПРИЄДНАНЬ ДО КОМАНД 7Д"
+          }
+        }
+      }
+    },
+    "INVITES / INVITER" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INVITES / INVITER"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INVITACIONES POR INVITADOR"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ЗАПРОШЕНЬ НА ЗАПРОШУВАЧА"
+          }
+        }
+      }
+    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {

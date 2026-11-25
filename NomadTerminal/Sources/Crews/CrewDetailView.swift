@@ -68,7 +68,16 @@ struct CrewDetailView: View {
         .foregroundStyle(NTColor.milk)
         .task { await load() }
         .sheet(isPresented: Binding(get: { inviteURL != nil }, set: { if !$0 { inviteURL = nil } })) {
-            if let inviteURL { ActivityView(items: [shareMessage(inviteURL)]).presentationDetents([.medium, .large]) }
+            if let inviteURL {
+                // Funnel step 1: counted only when something was really shared.
+                ActivityView(items: [shareMessage(inviteURL)]) { completed, activity in
+                    guard completed else { return }
+                    RouteRepository.shared.logEvent("crew_invite_sent", metadata: [
+                        "crew_id": crewId.uuidString, "channel": activity ?? "unknown",
+                    ])
+                }
+                .presentationDetents([.medium, .large])
+            }
         }
         .sheet(isPresented: $showNewTrip) {
             CreateExpeditionView(crewId: crewId) { id in
