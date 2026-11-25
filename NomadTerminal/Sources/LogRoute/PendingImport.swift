@@ -23,4 +23,20 @@ final class PendingImportCoordinator {
     /// A route opened from a shared link (`RouteLinks`) — same hand-off as
     /// the file above: recorded here, acted on once `RootTabView` exists.
     var pendingRouteID: String?
+
+    /// A crew invite code from a link or the "Join with a code" field.
+    /// Kept in UserDefaults too: someone who taps an invite before they have
+    /// an account goes through onboarding + sign-up first, and quitting the
+    /// app in the middle shouldn't lose the invitation.
+    var pendingInviteCode: String? {
+        didSet { UserDefaults.standard.set(pendingInviteCode, forKey: Self.inviteKey) }
+    }
+    private static let inviteKey = "io.nomadterminal.pendingCrewInvite"
+
+    /// Called once at launch so an invite saved by a previous run is picked up.
+    func restorePendingInvite() {
+        if pendingInviteCode == nil, let saved = UserDefaults.standard.string(forKey: Self.inviteKey), CrewLinks.isValidCode(saved) {
+            pendingInviteCode = saved
+        }
+    }
 }
