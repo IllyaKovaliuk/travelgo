@@ -23,18 +23,24 @@ struct CreateExpeditionView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
+                    if crewId != nil || editing?.crewId != nil {
+                        Label("In your crew", systemImage: "person.3")
+                            .font(NTFont.mono(10.5, .medium)).foregroundStyle(NTColor.milk(0.6))
+                            .padding(.horizontal, 12).frame(height: 32)
+                            .overlay(Capsule().stroke(NTColor.pineLine, lineWidth: 1))
+                    }
                     VStack(alignment: .leading, spacing: 8) {
-                        label("NAME")
+                        label("Name")
                         TextField("Carpathians, December", text: $name)
                             .font(NTFont.body(16, .medium))
                             .padding(.horizontal, 16)
                             .frame(height: 54)
-                            .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                            .crewCard(radius: 16)
                             .onChange(of: name) { _, new in if new.count > 80 { name = String(new.prefix(80)) } }
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        label("TRIP TYPE")
+                        label("Trip type")
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 8)], spacing: 8) {
                             ForEach(TripType.allCases) { type in
                                 Button { tripType = type } label: {
@@ -45,8 +51,10 @@ struct CreateExpeditionView: View {
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 64)
                                     .foregroundStyle(tripType == type ? NTColor.pine : NTColor.milk(0.8))
-                                    .background(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous)
-                                        .fill(tripType == type ? NTColor.milk : NTColor.milk(0.07)))
+                                    .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(tripType == type ? NTColor.milk : NTColor.pineRaised))
+                                    .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .stroke(tripType == type ? Color.clear : NTColor.pineLine, lineWidth: 1))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -63,11 +71,11 @@ struct CreateExpeditionView: View {
                         }
                     }
                     .padding(16)
-                    .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                    .crewCard(radius: 16)
 
                     if editing != nil {
                         VStack(alignment: .leading, spacing: 8) {
-                            label("STATUS")
+                            label("Status")
                             Picker("Status", selection: $status) {
                                 Text("Planning").tag(ExpeditionStatus.planning)
                                 Text("Active").tag(ExpeditionStatus.active)
@@ -86,7 +94,7 @@ struct CreateExpeditionView: View {
                         .opacity(trimmed.isEmpty || isSaving ? 0.5 : 1)
                         .disabled(trimmed.isEmpty || isSaving)
                 }
-                .padding(.horizontal, 22)
+                .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 40)
             }
@@ -107,7 +115,7 @@ struct CreateExpeditionView: View {
     }
 
     private func label(_ key: LocalizedStringKey) -> some View {
-        Text(key).font(NTFont.mono(10.5, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.5))
+        MonoLabel(key)
     }
 
     private func save() {

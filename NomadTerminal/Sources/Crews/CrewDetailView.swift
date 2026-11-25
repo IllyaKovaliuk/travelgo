@@ -1,21 +1,24 @@
 import SwiftUI
 
-/// One crew: header, roster with roles, its expeditions, invite and
-/// leave / manage actions. Every change is an RPC; Report and Block are on the
-/// crew itself and on each member (App Review Guideline 1.2).
+/// One crew: cover header, Upcoming / Past expeditions, and a bottom bar with
+/// "New expedition" and "Invite". Roster and roles live in a sheet. Every
+/// change is an RPC; Report and Block are on the crew itself and on each
+/// member (App Review Guideline 1.2).
 struct CrewDetailView: View {
     let crewId: UUID
     var onClose: () -> Void
+
+    enum Segment: Hashable { case upcoming, past }
 
     @State private var crew: Crew?
     @State private var members: [CrewMember] = []
     @State private var expeditions: [Expedition] = []
     @State private var myId: UUID?
     @State private var isLoading = true
+    @State private var segment: Segment = .upcoming
 
-    @State private var inviteURL: URL?
-    @State private var isMakingInvite = false
-
+    @State private var showInvite = false
+    @State private var showMembers = false
     @State private var showRename = false
     @State private var renameText = ""
     @State private var showLeaveConfirm = false
@@ -33,51 +36,49 @@ struct CrewDetailView: View {
     private var myRole: CrewRole? { members.first { $0.person.id == myId }?.role }
     private var isManager: Bool { myRole?.isManager ?? false }
     private var isOwner: Bool { myRole == .owner }
+    private var upcoming: [Expedition] { expeditions.filter { !$0.isPast } }
+    private var past: [Expedition] { expeditions.filter(\.isPast) }
 
     var body: some View {
-        ZStack(alignment: .top) {
+        ZStack(alignment: .bottom) {
             NTColor.pine.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 0) {
                     if let crew {
                         hero(crew)
-                        // Any member can invite — the invite loop is how a crew grows.
-                        if myRole != nil {
-                            NTAccentButton(title: isMakingInvite ? "Creating link…" : "Invite friends", icon: "person.badge.plus") { invite() }
-                                .disabled(isMakingInvite)
+                        VStack(alignment: .leading, spacing: 16) {
+                            CrewSegments(items: [
+                                (Segment.upcoming, String(localized: "Upcoming") + (upcoming.isEmpty ? "" : " · \(upcoming.count)")),
+                                (Segment.past, String(localized: "Past")),
+                            ], selection: $segment)
+                            expeditionsList
                         }
-                        membersSection
-                        expeditionsSection
+                        .padding(.horizontal, 16).padding(.top, 20).padding(.bottom, 130)
                     } else if isLoading {
-                        ProgressView().tint(NTColor.milk).frame(maxWidth: .infinity).padding(.top, 120)
+                        ProgressView().tint(NTColor.milk).frame(maxWidth: .infinity).padding(.top, 160)
                     } else {
                         Text("This crew isn't available.")
                             .font(NTFont.body(14, .medium)).foregroundStyle(NTColor.milk(0.6))
-                            .frame(maxWidth: .infinity).padding(.top, 120)
+                            .frame(maxWidth: .infinity).padding(.top, 160)
                     }
                 }
-                .padding(.horizontal, 22)
-                .padding(.top, 70)
-                .padding(.bottom, 60)
             }
+            .ignoresSafeArea(edges: .top)
             .refreshable { await load() }
 
-            topBar
+            if crew != nil { bottomBar }
+            VStack { topBar; Spacer() }
         }
         .foregroundStyle(NTColor.milk)
         .task { await load() }
-        .sheet(isPresented: Binding(get: { inviteURL != nil }, set: { if !$0 { inviteURL = nil } })) {
-            if let inviteURL {
-                // Funnel step 1: counted only when something was really shared.
-                ActivityView(items: [shareMessage(inviteURL)]) { completed, activity in
-                    guard completed else { return }
-                    RouteRepository.shared.logEvent("crew_invite_sent", metadata: [
-                        "crew_id": crewId.uuidString, "channel": activity ?? "unknown",
-                    ])
-                }
-                .presentationDetents([.medium, .large])
-            }
+        .sheet(isPresented: $showInvite) {
+            InviteSheet(crewId: crewId, crewName: crew?.name ?? "") { showInvite = false }
+                .presentationDetents([.large])
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $showMembers) {
+            membersSheet.presentationDetents([.large]).presentationCornerRadius(32)
         }
         .sheet(isPresented: $showNewTrip) {
             CreateExpeditionView(crewId: crewId) { id in
@@ -150,17 +151,11 @@ struct CrewDetailView: View {
 
     private var topBar: some View {
         HStack {
-            Button(action: onClose) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .frame(width: 38, height: 38)
-                    .background(Circle().fill(NTColor.milk(0.08)))
-                    .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
-            }
-            .buttonStyle(.plain)
+            CircleIconButton(icon: "chevron.left", label: "Back", action: onClose)
             Spacer()
             if crew != nil {
                 Menu {
+                    Button { showMembers = true } label: { Label("Members & roles", systemImage: "person.2") }
                     if isManager {
                         Button { renameText = crew?.name ?? ""; showRename = true } label: { Label("Rename crew", systemImage: "pencil") }
                     }
@@ -174,36 +169,78 @@ struct CrewDetailView: View {
                         Button(role: .destructive) { showLeaveConfirm = true } label: { Label("Leave crew", systemImage: "rectangle.portrait.and.arrow.right") }
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 16, weight: .semibold))
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(NTColor.milk(0.08)))
-                        .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                    CircleIconButton(icon: "ellipsis", label: "More") {}.glyph
                 }
+                .accessibilityLabel("More")
             }
         }
-        .padding(.horizontal, 22)
-        .padding(.top, 20)
+        .padding(.horizontal, 16).padding(.top, 8)
     }
 
     private func hero(_ crew: Crew) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            RouteCoverImage(url: crew.coverImageUrl, tint: NTColor.pineRaised)
-                .frame(height: 170)
-                .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-            Text(crew.name).font(NTFont.heading(28, .extraBold))
-            Text("\(members.count) members")
-                .font(NTFont.mono(11, .medium)).tracking(0.4).foregroundStyle(NTColor.milk(0.55))
+        ZStack(alignment: .bottomLeading) {
+            CrewCover(id: crew.id, url: crew.coverImageUrl)
+                .frame(height: 300)
+                .overlay(LinearGradient(colors: [.clear, NTColor.pine], startPoint: .init(x: 0.5, y: 0.35), endPoint: .bottom))
+            VStack(alignment: .leading, spacing: 14) {
+                StatusChip(text: String(localized: "Private"), icon: "lock", filled: true)
+                Text(crew.name).font(NTFont.heading(36, .extraBold)).tracking(-1).lineLimit(3)
+                Button { showMembers = true } label: {
+                    HStack(spacing: 12) {
+                        AvatarStack(people: members.map(\.person), size: 34, maxShown: 5, ring: NTColor.pine)
+                        Text("\(members.count) members").font(NTFont.body(15, .semibold))
+                        Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.55))
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 16)
         }
     }
 
-    private var membersSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("Members")
-            VStack(spacing: 8) {
-                ForEach(members) { member in memberRow(member) }
+    private var bottomBar: some View {
+        HStack(spacing: 12) {
+            Button { showNewTrip = true } label: {
+                Label("New expedition", systemImage: "plus")
+                    .font(NTFont.body(16, .semibold)).foregroundStyle(Color(hex: 0x231007))
+                    .frame(maxWidth: .infinity).frame(height: 60)
+                    .background(NTColor.accent, in: Capsule())
+                    .shadow(color: NTColor.accent.opacity(0.5), radius: 18, y: 10)
+            }
+            .buttonStyle(.plain).ntPressable()
+            if myRole != nil {
+                // Any member can invite — the invite loop is how a crew grows.
+                Button { showInvite = true } label: {
+                    Label("Invite", systemImage: "person.badge.plus")
+                        .font(NTFont.body(16, .semibold)).foregroundStyle(NTColor.pine)
+                        .padding(.horizontal, 22).frame(height: 60)
+                        .background(NTColor.milk, in: Capsule())
+                }
+                .buttonStyle(.plain).ntPressable()
             }
         }
+        .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 8)
+        .background(
+            NTColor.pine.opacity(0.96)
+                .overlay(alignment: .top) { Rectangle().fill(NTColor.pineLine).frame(height: 1) }
+                .ignoresSafeArea()
+        )
+    }
+
+    private var membersSheet: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Members").font(NTFont.heading(24, .extraBold))
+                Spacer()
+                CircleIconButton(icon: "xmark", label: "Close", filled: true) { showMembers = false }
+            }
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 8) { ForEach(members) { memberRow($0) } }
+            }
+        }
+        .padding(.horizontal, 16).padding(.top, 22)
+        .background(NTColor.pineElevated.ignoresSafeArea())
+        .foregroundStyle(NTColor.milk)
     }
 
     private func memberRow(_ member: CrewMember) -> some View {
@@ -214,14 +251,15 @@ struct CrewDetailView: View {
                 Text("@\(member.person.username)").font(NTFont.mono(10.5, .medium)).foregroundStyle(NTColor.milk(0.5))
             }
             Spacer()
-            Text(roleTitle(member.role))
+            Text(roleTitle(member.role).uppercased())
                 .font(NTFont.mono(9.5, .semibold)).tracking(0.4)
+                .foregroundStyle(member.role == .owner ? NTColor.accent : NTColor.milk(0.6))
                 .padding(.horizontal, 9).padding(.vertical, 5)
-                .background(Capsule().fill(member.role == .member ? NTColor.milk(0.08) : NTColor.accent.opacity(0.25)))
+                .overlay(Capsule().stroke(member.role == .owner ? NTColor.accent : NTColor.pineLine, lineWidth: 1))
             if member.person.id != myId { memberMenu(member) }
         }
         .padding(12)
-        .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+        .crewCard(radius: 14)
     }
 
     private func memberMenu(_ member: CrewMember) -> some View {
@@ -243,70 +281,57 @@ struct CrewDetailView: View {
             Image(systemName: "ellipsis")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(NTColor.milk(0.6))
-                .frame(width: 32, height: 32)
+                .frame(width: 44, height: 44)
         }
+        .accessibilityLabel("More")
     }
 
-    private var expeditionsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                sectionTitle("Expeditions")
-                Spacer()
-                Button { showNewTrip = true } label: {
-                    Label("New trip", systemImage: "plus")
-                        .font(NTFont.body(12.5, .semibold))
-                        .padding(.horizontal, 12).frame(height: 32)
-                        .background(Capsule().fill(NTColor.milk(0.1)))
-                }
-                .buttonStyle(.plain)
+    @ViewBuilder
+    private var expeditionsList: some View {
+        let list = segment == .upcoming ? upcoming : past
+        if list.isEmpty {
+            VStack(spacing: 8) {
+                Text(segment == .upcoming ? "No trips planned yet" : "No past trips")
+                    .font(NTFont.heading(18, .bold))
+                Text(segment == .upcoming
+                     ? "Start an expedition and your crew can build the plan together."
+                     : "Finished expeditions land here.")
+                    .font(NTFont.body(13.5, .light)).foregroundStyle(NTColor.milk(0.6)).multilineTextAlignment(.center)
             }
-            if expeditions.isEmpty {
-                Text("No trips yet.")
-                    .font(NTFont.body(13.5, .light)).foregroundStyle(NTColor.milk(0.55))
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(expeditions) { e in
-                        Button { openExpedition = e } label: { expeditionRow(e) }
-                            .buttonStyle(NTCardPressStyle())
-                    }
+            .frame(maxWidth: .infinity).padding(.vertical, 40)
+        } else {
+            VStack(spacing: 12) {
+                ForEach(list) { e in
+                    Button { openExpedition = e } label: { expeditionRow(e) }
+                        .buttonStyle(NTCardPressStyle())
                 }
             }
         }
     }
 
     private func expeditionRow(_ e: Expedition) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: e.tripType.icon)
-                .font(.system(size: 16))
-                .frame(width: 42, height: 42)
-                .background(Circle().fill(NTColor.milk(0.08)))
-            VStack(alignment: .leading, spacing: 3) {
-                Text(e.name).font(NTFont.body(14.5, .semibold)).lineLimit(1)
-                Text(dateRange(e)).font(NTFont.mono(10.5, .medium)).foregroundStyle(NTColor.milk(0.5))
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(e.shortRange + (e.dayCount.map { " · \($0) DAYS" } ?? ""))
+                    .font(NTFont.mono(11, .medium)).foregroundStyle(NTColor.milk(0.55))
+                Spacer()
+                switch e.status {
+                case .planning: StatusChip(text: String(localized: "Planning"), color: NTColor.gold)
+                case .active: StatusChip(text: String(localized: "Active"), color: NTColor.sage)
+                case .completed: StatusChip(text: String(localized: "Done"), color: NTColor.milk(0.6))
+                case .cancelled: StatusChip(text: String(localized: "Cancelled"), color: NTColor.hard)
+                }
             }
-            Spacer()
-            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.35))
+            Text(e.name).font(NTFont.heading(21, .bold)).tracking(-0.4).multilineTextAlignment(.leading).lineLimit(2)
+            HStack(spacing: 6) {
+                Image(systemName: e.tripType.icon).font(.system(size: 12))
+                Text(e.tripType.title).font(NTFont.body(13.5))
+            }
+            .foregroundStyle(NTColor.milk(0.6))
         }
-        .padding(12)
-        .background(NTColor.milk(0.05), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-    }
-
-    private func sectionTitle(_ key: LocalizedStringKey) -> some View {
-        Text(key).font(NTFont.mono(11, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.55)).textCase(.uppercase)
-    }
-
-    private func dateRange(_ e: Expedition) -> String {
-        guard let start = e.startDate else { return e.tripType.title }
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        f.timeZone = TimeZone(identifier: "UTC")
-        if let end = e.endDate, end != start { return "\(f.string(from: start)) – \(f.string(from: end))" }
-        return f.string(from: start)
-    }
-
-    private func shareMessage(_ url: URL) -> String {
-        String(localized: "Join my crew on Nomad: \(url.absoluteString)")
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .crewCard()
     }
 
     // MARK: Actions
@@ -332,19 +357,6 @@ struct CrewDetailView: View {
             } catch {
                 errorMessage = error.localizedDescription
             }
-        }
-    }
-
-    private func invite() {
-        isMakingInvite = true
-        Task {
-            do {
-                let code = try await CrewRepository.shared.createInvite(crewId: crewId)
-                inviteURL = CrewLinks.url(forInviteCode: code)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-            isMakingInvite = false
         }
     }
 
