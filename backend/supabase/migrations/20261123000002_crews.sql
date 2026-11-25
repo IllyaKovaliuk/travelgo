@@ -253,7 +253,8 @@ begin
 end;
 $$;
 
--- Random URL-safe code; a crew manager makes it, anyone with it can join.
+-- Random URL-safe code; any crew member can make one (the invite loop is how a
+-- crew grows, so it isn't limited to managers), anyone with it can join.
 create or replace function public.create_crew_invite(
   p_crew_id uuid, p_max_uses integer default null, p_ttl_days integer default 14)
 returns text language plpgsql security definer set search_path = public as $$
@@ -261,7 +262,7 @@ declare
   v_code text;
 begin
   if auth.uid() is null then raise exception 'not authenticated'; end if;
-  if not is_crew_manager(p_crew_id) then raise exception 'not allowed'; end if;
+  if not is_crew_member(p_crew_id) then raise exception 'not allowed'; end if;
   loop
     -- gen_random_uuid() is core Postgres (pgcrypto's gen_random_bytes lives in
     -- the `extensions` schema on Supabase, outside our search_path).

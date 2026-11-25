@@ -39,12 +39,13 @@ select name, member_count, already_member from preview_crew_by_code((select v fr
 select join_crew_by_code((select v from ctx where k='code')) is not null as b_joined;
 select count(*) as b_sees_crews_EXPECT_1 from crews;
 select count(*) as b_sees_roster_EXPECT_2 from crew_members;
-select create_crew_invite((select v::uuid from ctx where k='crew'));
+select length(create_crew_invite((select v::uuid from ctx where k='crew'))) as member_can_invite_EXPECT_16;
 update crews set name='pwn' where true;
 select name as name_still from crews;
 reset role;
 select set_config('request.jwt.claim.sub', :'c', false); set role authenticated;
 select count(*) as c_sees_crews_EXPECT_0 from crews;
+select create_crew_invite((select v::uuid from ctx where k='crew'));  -- non-member: expect 'not allowed'
 select join_crew_by_code('nonsense');
 select count(*) as c_preview_bad_code_EXPECT_0 from preview_crew_by_code('nonsense');
 reset role;
