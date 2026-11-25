@@ -12,14 +12,14 @@ enum RootTab: Int, CaseIterable {
     // its right. Activity (the social/notification feed) is the bell on
     // Home's top bar rather than a tab: a sixth slot would push the Guide
     // off-centre.
-    case home, search, guide, saved, profile
+    case home, search, guide, crews, profile
 
     var icon: String {
         switch self {
         case .home: return "house.fill"
         case .search: return "magnifyingglass"
         case .guide: return "book.closed.fill"
-        case .saved: return "bookmark.fill"
+        case .crews: return "person.3.fill"
         case .profile: return ""
         }
     }
@@ -29,7 +29,7 @@ enum RootTab: Int, CaseIterable {
         case .home: return "Home"
         case .search: return "Places"
         case .guide: return "Guide"
-        case .saved: return "Saved"
+        case .crews: return "Crews"
         case .profile: return "Profile"
         }
     }
