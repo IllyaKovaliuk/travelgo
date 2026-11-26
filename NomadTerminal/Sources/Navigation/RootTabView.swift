@@ -28,8 +28,8 @@ struct RootTabView: View {
         switch tab {
         case .home: HomeFeedView()
         case .search: SearchView()
-        case .guide: GuideView()
         case .crews: CrewsView()
+        case .expeditions: ExpeditionsView()
         case .profile: ProfileView()
         }
     }

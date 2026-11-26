@@ -6952,6 +6952,38 @@
         }
       }
     },
+    "Field guide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Field guide" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Guía de campo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Польовий посібник" } }
+      }
+    },
+    "What to do when something goes wrong" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "What to do when something goes wrong" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Qué hacer cuando algo sale mal" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Що робити, коли щось пішло не так" } }
+      }
+    },
+    "Trips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trips" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Viajes" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Поїздки" } }
+      }
+    },
+    "Couldn't load your trips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn't load your trips" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudieron cargar tus viajes" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Не вдалося завантажити поїздки" } }
+      }
+    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {
