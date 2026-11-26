@@ -6,6 +6,7 @@ struct CreateExpeditionView: View {
     @Environment(\.dismiss) private var dismiss
     var crewId: UUID?
     var editing: Expedition?
+    var prefillName: String? = nil
     var onSaved: (UUID) -> Void
 
     @State private var name = ""
@@ -108,6 +109,7 @@ struct CreateExpeditionView: View {
         }
         .preferredColorScheme(ThemeManager.shared.colorScheme)
         .onAppear {
+            if editing == nil, name.isEmpty, let prefillName { name = prefillName }
             guard let e = editing else { return }
             name = e.name; tripType = e.tripType; status = e.status
             if let s = e.startDate { hasDates = true; start = s; end = e.endDate ?? s }

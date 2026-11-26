@@ -32,6 +32,12 @@ struct CrewDetailView: View {
     @State private var errorMessage: String?
     @State private var showNewTrip = false
     @State private var openExpedition: Expedition?
+    @State private var polls: [Poll] = []
+    @State private var openPoll: Poll?
+    @State private var showNewPoll = false
+    @State private var tripPrefill: String?
+
+    private var people: [UUID: CrewPerson] { Dictionary(uniqueKeysWithValues: members.map { ($0.person.id, $0.person) }) }
 
     private var myRole: CrewRole? { members.first { $0.person.id == myId }?.role }
     private var isManager: Bool { myRole?.isManager ?? false }
@@ -48,6 +54,7 @@ struct CrewDetailView: View {
                     if let crew {
                         hero(crew)
                         VStack(alignment: .leading, spacing: 16) {
+                            decisions
                             CrewSegments(items: [
                                 (Segment.upcoming, String(localized: "Upcoming") + (upcoming.isEmpty ? "" : " · \(upcoming.count)")),
                                 (Segment.past, String(localized: "Past")),
@@ -80,8 +87,21 @@ struct CrewDetailView: View {
         .sheet(isPresented: $showMembers) {
             membersSheet.presentationDetents([.large]).presentationCornerRadius(32)
         }
-        .sheet(isPresented: $showNewTrip) {
-            CreateExpeditionView(crewId: crewId) { id in
+        .sheet(isPresented: $showNewPoll) {
+            CreatePollView(crewId: crewId, crewName: crew?.name ?? "") { Task { await load() } }
+        }
+        .ntFullScreenCover(item: $openPoll, onDismiss: { Task { await load() } }) { poll in
+            PollDetailView(pollId: poll.id, crewId: crewId, expeditionId: nil, crewName: crew?.name ?? "",
+                           people: people, myId: myId, canManage: isManager || poll.createdBy == myId,
+                           onPlanWinner: { option in
+                               tripPrefill = option.label
+                               openPoll = nil
+                               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { showNewTrip = true }
+                           },
+                           onChanged: { Task { await load() } }, onClose: { openPoll = nil })
+        }
+        .sheet(isPresented: $showNewTrip, onDismiss: { tripPrefill = nil }) {
+            CreateExpeditionView(crewId: crewId, prefillName: tripPrefill) { id in
                 Task {
                     await load()
                     openExpedition = expeditions.first { $0.id == id }
@@ -156,6 +176,9 @@ struct CrewDetailView: View {
             if crew != nil {
                 Menu {
                     Button { showMembers = true } label: { Label("Members & roles", systemImage: "person.2") }
+                    if myRole != nil {
+                        Button { showNewPoll = true } label: { Label("New poll", systemImage: "chart.bar") }
+                    }
                     if isManager {
                         Button { renameText = crew?.name ?? ""; showRename = true } label: { Label("Rename crew", systemImage: "pencil") }
                     }
@@ -287,6 +310,19 @@ struct CrewDetailView: View {
     }
 
     @ViewBuilder
+    private var decisions: some View {
+        if !polls.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                MonoLabel("Decisions")
+                ForEach(polls.prefix(4)) { poll in
+                    Button { openPoll = poll } label: { PollSummaryCard(poll: poll, electorate: members.count) }
+                        .buttonStyle(NTCardPressStyle())
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
     private var expeditionsList: some View {
         let list = segment == .upcoming ? upcoming : past
         if list.isEmpty {
@@ -309,8 +345,22 @@ struct CrewDetailView: View {
         }
     }
 
+    /// Trip day: a planned trip whose first day is today (or earlier), or one already running.
+    private func tripDayState(_ e: Expedition) -> String? {
+        if e.status == .active { return String(localized: "LIVE NOW") }
+        if e.status == .planning, let s = e.startDate, s <= Date(), !e.isPast { return String(localized: "STARTS TODAY") }
+        return nil
+    }
+
     private func expeditionRow(_ e: Expedition) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let live = tripDayState(e)
+        return VStack(alignment: .leading, spacing: 10) {
+            if let live {
+                HStack(spacing: 6) {
+                    Circle().fill(e.status == .active ? NTColor.sage : NTColor.accent).frame(width: 8, height: 8)
+                    Text(live).font(NTFont.mono(10.5, .semibold)).foregroundStyle(e.status == .active ? NTColor.sage : NTColor.accent)
+                }
+            }
             HStack {
                 Text(e.shortRange + (e.dayCount.map { " · \($0) DAYS" } ?? ""))
                     .font(NTFont.mono(11, .medium)).foregroundStyle(NTColor.milk(0.55))
@@ -328,10 +378,17 @@ struct CrewDetailView: View {
                 Text(e.tripType.title).font(NTFont.body(13.5))
             }
             .foregroundStyle(NTColor.milk(0.6))
+            if live != nil {
+                Text(e.status == .active ? "Open live map" : "Start expedition")
+                    .font(NTFont.body(15, .semibold)).foregroundStyle(Color(hex: 0x231007))
+                    .frame(maxWidth: .infinity).frame(height: 46).background(Capsule().fill(NTColor.accent))
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .crewCard()
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(live == nil ? .clear : NTColor.accent.opacity(0.8), lineWidth: 1.5))
     }
 
     // MARK: Actions
@@ -345,6 +402,8 @@ struct CrewDetailView: View {
         crew = crewResult
         members = memberResult ?? members
         expeditions = expeditionResult ?? expeditions
+        polls = ((try? await CrewLiveRepository.shared.fetchPolls(crewId: crewId, expeditionId: nil)) ?? polls)
+            .sorted { ($0.isClosed ? 1 : 0, $0.id.uuidString) < ($1.isClosed ? 1 : 0, $1.id.uuidString) }
         isLoading = false
     }
 

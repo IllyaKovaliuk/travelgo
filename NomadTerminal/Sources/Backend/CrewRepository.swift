@@ -44,7 +44,7 @@ final class CrewRepository {
 
     // MARK: Date parsing (timestamps and `date` columns arrive as strings)
 
-    nonisolated private static func parse(_ s: String) -> Date? {
+    nonisolated static func parse(_ s: String) -> Date? {
         let full = ISO8601DateFormatter()
         full.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         if let d = full.date(from: s) { return d }
@@ -94,8 +94,11 @@ final class CrewRepository {
         let status: ExpeditionStatus
         let organizerId: UUID
         let createdAt: String
+        let startedAt: String?
+        let startMode: String?
         enum CodingKeys: String, CodingKey {
             case id, name, status
+            case startedAt = "started_at", startMode = "start_mode"
             case crewId = "crew_id", coverImageUrl = "cover_image_url", tripType = "trip_type"
             case startDate = "start_date", endDate = "end_date", organizerId = "organizer_id", createdAt = "created_at"
         }
@@ -103,7 +106,8 @@ final class CrewRepository {
         var model: Expedition {
             Expedition(id: id, crewId: crewId, name: name, coverImageUrl: coverImageUrl, tripType: tripType,
                        startDate: startDate.flatMap(CrewRepository.parse), endDate: endDate.flatMap(CrewRepository.parse),
-                       status: status, organizerId: organizerId, createdAt: CrewRepository.parse(createdAt) ?? Date())
+                       status: status, organizerId: organizerId, createdAt: CrewRepository.parse(createdAt) ?? Date(),
+                       startedAt: startedAt.flatMap(CrewRepository.parse), startMode: startMode)
         }
     }
 
@@ -283,14 +287,22 @@ final class CrewRepository {
     func fetchExpeditionMembers(expeditionId: UUID) async throws -> [ExpeditionMember] {
         struct Row: Decodable {
             let role: ExpeditionRole
+            let awarenessRole: String?
+            let carDriverId: UUID?
             let profiles: CrewPerson
+            enum CodingKeys: String, CodingKey {
+                case role, profiles, awarenessRole = "awareness_role", carDriverId = "car_driver_id"
+            }
         }
         let rows: [Row] = try await supabase.from("expedition_members")
-            .select("role, profiles!expedition_members_user_id_fkey(id, username, display_name, avatar_url)")
+            .select("role, awareness_role, car_driver_id, profiles!expedition_members_user_id_fkey(id, username, display_name, avatar_url)")
             .eq("expedition_id", value: expeditionId.uuidString)
             .order("joined_at")
             .execute().value
-        return rows.map { ExpeditionMember(person: $0.profiles, role: $0.role) }
+        return rows.map {
+            ExpeditionMember(person: $0.profiles, role: $0.role,
+                             awarenessRole: $0.awarenessRole.flatMap(AwarenessRole.init(rawValue:)), carDriverId: $0.carDriverId)
+        }
     }
 
     func fetchItinerary(expeditionId: UUID) async throws -> ExpeditionItinerary {
