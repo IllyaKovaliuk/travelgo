@@ -135,6 +135,8 @@ struct ExpeditionRouteItem: Identifiable, Hashable {
     let place: String
     let coverImageUrl: String?
     let distanceKm: Double
+    var ascentM: Int = 0
+    var difficulty: Route.Difficulty? = nil
     var dayIndex: Int?
     var position: Int
 }

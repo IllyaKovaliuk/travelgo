@@ -12,13 +12,19 @@ struct CrewsView: View {
     @State private var showNewTrip = false
     @State private var openTrip: Expedition?
     @State private var showJoinCode = false
+    @State private var rosters: [UUID: [CrewMember]] = [:]
+    @State private var trips: [UUID: [Expedition]] = [:]
+
+    private var tripsAhead: Int {
+        trips.values.flatMap { $0 }.filter { !$0.isPast }.count + adHocTrips.filter { !$0.isPast }.count
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
             NTColor.pine.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 18) {
                     header
 
                     if isLoading && items.isEmpty {
@@ -42,8 +48,8 @@ struct CrewsView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 22)
-                .padding(.top, 70)
+                .padding(.horizontal, 16)
+                .padding(.top, 58)
                 .padding(.bottom, 110)
             }
             .refreshable { await load() }
@@ -81,20 +87,21 @@ struct CrewsView: View {
     }
 
     private var header: some View {
-        HStack {
-            Text("Crews")
-                .font(NTFont.heading(30, .extraBold))
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(items.isEmpty
+                     ? "NO CREWS YET"
+                     : "\(items.count) CREWS · \(tripsAhead) TRIPS AHEAD")
+                    .font(NTFont.mono(11, .medium)).foregroundStyle(NTColor.milk(0.55))
+                Text("Crews").font(NTFont.heading(36, .extraBold)).tracking(-0.9)
+            }
             Spacer()
             Menu {
                 Button { showCreate = true } label: { Label("New crew", systemImage: "person.3") }
                 Button { showNewTrip = true } label: { Label("New trip", systemImage: "map") }
                 Button { showJoinCode = true } label: { Label("Join with a code", systemImage: "link") }
             } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 15, weight: .semibold))
-                    .frame(width: 38, height: 38)
-                    .background(Circle().fill(NTColor.milk(0.1)))
-                    .overlay(Circle().stroke(NTColor.milk(0.18), lineWidth: 1))
+                CircleIconButton(icon: "plus", label: "Create", filled: true) {}.glyph
             }
             .accessibilityLabel("Create")
         }
@@ -102,47 +109,90 @@ struct CrewsView: View {
 
     private var emptyState: some View {
         VStack(spacing: 14) {
-            Image(systemName: "person.3.fill")
-                .font(.system(size: 34))
-                .foregroundStyle(NTColor.milk(0.3))
-            Text(loadFailed ? "Couldn't load your crews" : "Travel better together")
-                .font(NTFont.heading(20, .bold))
+            ZStack {
+                ContourLines(seed: 3).stroke(NTColor.milk(0.1), lineWidth: 1)
+                CompassMark(size: 54)
+            }
+            .frame(height: 170)
+            .padding(.top, 20)
+            Text(loadFailed ? "Couldn't load your crews" : "Nobody climbs\nalone out here.")
+                .font(NTFont.heading(28, .extraBold)).tracking(-0.7).multilineTextAlignment(.center)
             Text(loadFailed
                  ? "Check your connection and pull to refresh."
-                 : "A crew is a private group of friends you plan trips with. Start one and invite your people.")
-                .font(NTFont.body(14, .light))
-                .foregroundStyle(NTColor.milk(0.6))
+                 : "A crew is a private circle for planning trips with your people. Shared routes, shared plan, offline for everyone.")
+                .font(NTFont.body(15, .light))
+                .foregroundStyle(NTColor.milk(0.62))
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 6)
             if !loadFailed {
-                NTAccentButton(title: "Create a crew", icon: "plus") { showCreate = true }
+                NTAccentButton(title: "Create crew", icon: "plus") { showCreate = true }
                     .padding(.top, 8)
+                HStack(spacing: 4) {
+                    Text("Have an invite code?").foregroundStyle(NTColor.milk(0.8))
+                    Button("Join a crew") { showJoinCode = true }.foregroundStyle(NTColor.accent)
+                }
+                .font(NTFont.body(14, .medium))
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 50)
     }
 
     private func crewCard(_ item: CrewListItem) -> some View {
-        HStack(spacing: 14) {
-            RouteCoverImage(url: item.crew.coverImageUrl, tint: NTColor.pineRaised)
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-            VStack(alignment: .leading, spacing: 5) {
-                Text(item.crew.name)
-                    .font(NTFont.heading(17, .bold))
-                    .lineLimit(1)
-                Text("\(item.memberCount) members · \(roleTitle(item.myRole))")
-                    .font(NTFont.mono(10.5, .medium)).tracking(0.3)
-                    .foregroundStyle(NTColor.milk(0.55))
+        let roster = rosters[item.id] ?? []
+        let next = (trips[item.id] ?? []).first { !$0.isPast }
+        return VStack(spacing: 0) {
+            CrewCover(id: item.crew.id, url: item.crew.coverImageUrl)
+                .frame(height: 112)
+                .overlay(alignment: .topTrailing) {
+                    StatusChip(text: String(localized: "Private"), icon: nil, filled: true).padding(12)
+                }
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text(item.crew.name).font(NTFont.heading(21, .bold)).tracking(-0.5).lineLimit(1)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundStyle(NTColor.milk(0.55))
+                }
+                HStack(spacing: 10) {
+                    AvatarStack(people: roster.map(\.person), total: item.memberCount, size: 28)
+                    Text("\(item.memberCount) members").font(NTFont.body(13)).foregroundStyle(NTColor.milk(0.6))
+                }
+                if let next {
+                    Rectangle().fill(NTColor.pineLine).frame(height: 1)
+                    HStack(spacing: 12) {
+                        DateTile(date: next.startDate)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(next.name).font(NTFont.body(14, .medium)).lineLimit(1)
+                            Text(nextMeta(next)).font(NTFont.mono(11, .medium)).foregroundStyle(NTColor.milk(0.55)).lineLimit(1)
+                        }
+                        Spacer()
+                        Circle().fill(tripColor(next.tripType)).frame(width: 8, height: 8)
+                    }
+                }
             }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(NTColor.milk(0.35))
+            .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 16)
         }
-        .padding(14)
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
+        .crewCard()
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func nextMeta(_ e: Expedition) -> String {
+        var parts: [String] = []
+        if let d = e.dayCount { parts.append("\(d) DAYS") }
+        if let s = e.startDate {
+            let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date()), to: s).day ?? 0
+            parts.append(days > 0 ? "IN \(days) DAYS" : days == 0 ? "TODAY" : e.tripType.title.uppercased())
+        } else { parts.append(e.tripType.title.uppercased()) }
+        return parts.joined(separator: " · ")
+    }
+
+    private func tripColor(_ t: TripType) -> Color {
+        switch t {
+        case .hiking: return NTColor.sage
+        case .roadTrip: return NTColor.water
+        case .camping: return NTColor.gold
+        case .city: return NTColor.milk(0.6)
+        case .ski: return NTColor.extreme
+        }
     }
 
     private func tripCard(_ trip: Expedition) -> some View {
@@ -160,8 +210,7 @@ struct CrewsView: View {
             Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(NTColor.milk(0.35))
         }
         .padding(14)
-        .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
+        .crewCard()
     }
 
     private func load() async {
@@ -174,6 +223,20 @@ struct CrewsView: View {
         // Trips that belong to a crew are listed on that crew; only ad-hoc ones here.
         adHocTrips = ((try? await CrewRepository.shared.fetchMyExpeditions()) ?? []).filter { $0.crewId == nil }
         isLoading = false
+        await loadPreviews()
+    }
+}
+
+extension CrewsView {
+    /// Avatars and the next trip for each card; cards render without them first.
+    fileprivate func loadPreviews() async {
+        for item in items {
+            async let m = try? CrewRepository.shared.fetchCrewMembers(crewId: item.id)
+            async let x = try? CrewRepository.shared.fetchCrewExpeditions(crewId: item.id)
+            let (members, expeditions) = await (m, x)
+            if let members { rosters[item.id] = members }
+            if let expeditions { trips[item.id] = expeditions.sorted { ($0.startDate ?? .distantFuture) < ($1.startDate ?? .distantFuture) } }
+        }
     }
 }
 

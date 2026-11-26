@@ -19,34 +19,44 @@ struct JoinCrewView: View {
     var body: some View {
         ZStack {
             NTColor.pine.ignoresSafeArea()
+            ContourLines(seed: 5)
+                .stroke(NTColor.sage.opacity(0.14), lineWidth: 1)
+                .frame(height: 380).frame(maxHeight: .infinity, alignment: .top)
+                .ignoresSafeArea()
 
-            VStack(spacing: 22) {
+            VStack(alignment: .leading, spacing: 18) {
                 HStack {
                     Spacer()
-                    Button { onClose(false) } label: {
-                        Image(systemName: "xmark").font(.system(size: 14, weight: .semibold))
-                            .frame(width: 36, height: 36)
-                            .background(Circle().fill(NTColor.milk(0.1)))
-                            .overlay(Circle().stroke(NTColor.milk(0.2), lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
+                    CircleIconButton(icon: "xmark", label: "Close", filled: true) { onClose(false) }
                 }
 
                 Spacer(minLength: 0)
 
                 if isLoading {
-                    ProgressView().tint(NTColor.milk)
+                    ProgressView().tint(NTColor.milk).frame(maxWidth: .infinity)
                 } else if let preview {
-                    VStack(spacing: 16) {
-                        RouteCoverImage(url: preview.coverImageUrl, tint: NTColor.pineRaised)
-                            .frame(width: 120, height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                        Text("You're invited to join")
-                            .font(NTFont.mono(11, .medium)).tracking(0.8).foregroundStyle(NTColor.milk(0.6))
+                    VStack(alignment: .leading, spacing: 18) {
+                        HStack(spacing: 10) {
+                            CompassMark(size: 30)
+                            Text("You're invited to join").font(NTFont.body(15)).foregroundStyle(NTColor.milk(0.8))
+                        }
                         Text(preview.name)
-                            .font(NTFont.heading(30, .extraBold)).multilineTextAlignment(.center)
-                        Text("\(preview.memberCount) members")
-                            .font(NTFont.body(14, .light)).foregroundStyle(NTColor.milk(0.6))
+                            .font(NTFont.heading(48, .extraBold)).tracking(-1.6)
+                            .lineLimit(3).minimumScaleFactor(0.6)
+                        HStack(spacing: 10) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(preview.memberCount)").font(NTFont.heading(26, .extraBold))
+                                Text("MEMBERS").font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.55))
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading).padding(14).crewCard(radius: 16)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Image(systemName: "lock").font(.system(size: 20, weight: .semibold)).frame(height: 31)
+                                Text("PRIVATE CREW").font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.55))
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading).padding(14).crewCard(radius: 16)
+                        }
+                        Text("Joining shows you the crew's trips, routes and member names.")
+                            .font(NTFont.body(13.5, .light)).foregroundStyle(NTColor.milk(0.6))
                     }
                 } else {
                     VStack(spacing: 12) {
@@ -55,30 +65,32 @@ struct JoinCrewView: View {
                         Text("It may have expired or been used up. Ask your friend for a new link.")
                             .font(NTFont.body(14, .light)).foregroundStyle(NTColor.milk(0.6)).multilineTextAlignment(.center)
                     }
+                    .frame(maxWidth: .infinity)
                 }
 
                 if let errorMessage {
                     Text(errorMessage).font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.hardBright)
-                        .multilineTextAlignment(.center)
                 }
-
-                Spacer(minLength: 0)
 
                 if let preview {
                     if preview.alreadyMember {
-                        NTPrimaryButton(title: "You're already in this crew") { onClose(true) }
+                        NTPrimaryButton(title: "Open crew") { onClose(true) }
                     } else {
                         NTAccentButton(title: isJoining ? "Joining…" : "Join crew") { join() }
                             .disabled(isJoining)
                     }
                     NTGhostButton(title: "Not now") { onClose(false) }
+                        .frame(maxWidth: .infinity)
+                    Text("CODE \(code.prefix(16).uppercased()) · PRIVATE CREW")
+                        .font(NTFont.mono(10, .medium)).foregroundStyle(NTColor.milk(0.4))
+                        .frame(maxWidth: .infinity)
                 } else if !isLoading {
                     NTPrimaryButton(title: "Close") { onClose(false) }
                 }
             }
-            .padding(.horizontal, 28)
-            .padding(.top, 16)
-            .padding(.bottom, 20)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
         }
         .foregroundStyle(NTColor.milk)
         .task { await load() }
@@ -132,7 +144,7 @@ struct JoinCodeSheet: View {
                     .autocorrectionDisabled()
                     .font(NTFont.body(16, .medium))
                     .padding(.horizontal, 16).frame(height: 54)
-                    .background(NTColor.milk(0.07), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+                    .crewCard(radius: 16)
                 if invalid {
                     Text("That doesn't look like a Nomad invite.")
                         .font(NTFont.body(12.5, .medium)).foregroundStyle(NTColor.hardBright)

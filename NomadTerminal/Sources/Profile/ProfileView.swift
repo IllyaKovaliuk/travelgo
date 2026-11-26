@@ -19,6 +19,7 @@ import WidgetKit
 /// real ramp, not reintroducing a muted one.
 struct ProfileView: View {
     @State private var showSaved = false
+    @State private var showGuide = false
     enum Tab: String, CaseIterable { case routes = "Routes", journal = "Journal", leaderboard = "Leaderboard", activity = "Activity", badges = "Badges" }
     @State private var tab: Tab = .routes
     @State private var showSettings = false
@@ -71,6 +72,7 @@ struct ProfileView: View {
                     // Saved / offline routes used to be a bottom-bar tab; they
                     // live here now, right under the header.
                     savedRow
+                    guideRow
 
                     if let avatarError {
                         Text(avatarError)
@@ -133,6 +135,7 @@ struct ProfileView: View {
         .foregroundStyle(NTColor.milk)
         .sheet(isPresented: $showSettings, onDismiss: { Task { await load() } }) { SettingsView() }
         .sheet(isPresented: $showSaved) { SavedSheet() }
+        .sheet(isPresented: $showGuide) { GuideView().preferredColorScheme(ThemeManager.shared.colorScheme) }
         .ntFullScreenCover(isPresented: $showAuth) { AuthView(onDone: { showAuth = false; Task { await load() } }) }
         .sheet(isPresented: $showEditProfile) {
             if let profile {
@@ -237,6 +240,30 @@ struct ProfileView: View {
         }
         .buttonStyle(NTCardPressStyle())
         .padding(.top, 16)
+    }
+
+    private var guideRow: some View {
+        Button { showGuide = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "book.closed.fill")
+                    .font(.system(size: 15))
+                    .frame(width: 36, height: 36)
+                    .background(Circle().fill(NTColor.milk(0.1)))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Field guide").font(NTFont.body(14.5, .semibold))
+                    Text("What to do when something goes wrong")
+                        .font(NTFont.body(12, .light)).foregroundStyle(NTColor.milk(0.55))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(NTColor.milk(0.35))
+            }
+            .padding(12)
+            .background(NTColor.milk(0.06), in: RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: NTRadius.card, style: .continuous).stroke(NTColor.milk(0.1), lineWidth: 1))
+        }
+        .buttonStyle(NTCardPressStyle())
+        .padding(.top, 10)
     }
 
     private var header: some View {

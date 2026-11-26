@@ -226,6 +226,13 @@ final class CrewRepository {
         } catch { throw CrewError(error) }
     }
 
+    /// Managers only; for anyone else the server silently does nothing.
+    func revokeInvite(code: String) async throws {
+        struct Params: Encodable { let p_code: String }
+        do { try await supabase.rpc("revoke_crew_invite", params: Params(p_code: code)).execute() }
+        catch { throw CrewError(error) }
+    }
+
     func previewInvite(code: String) async throws -> CrewInvitePreview? {
         try await session()
         struct Row: Decodable {
@@ -300,7 +307,11 @@ final class CrewRepository {
                 let place: String
                 let coverImageUrl: String?
                 let distanceKm: Double
-                enum CodingKeys: String, CodingKey { case title, place, coverImageUrl = "cover_image_url", distanceKm = "distance_km" }
+                let ascentM: Int?
+                let difficulty: String?
+                enum CodingKeys: String, CodingKey {
+                    case title, place, difficulty, coverImageUrl = "cover_image_url", distanceKm = "distance_km", ascentM = "ascent_m"
+                }
             }
             enum CodingKeys: String, CodingKey { case id, position, routes, routeId = "route_id", dayIndex = "day_index" }
         }
@@ -316,7 +327,7 @@ final class CrewRepository {
             enum CodingKeys: String, CodingKey { case id, kind, title, notes, lat, lng, position, dayIndex = "day_index" }
         }
         let routeRows: [RouteRow] = try await supabase.from("expedition_routes")
-            .select("id, route_id, day_index, position, routes(title, place, cover_image_url, distance_km)")
+            .select("id, route_id, day_index, position, routes(title, place, cover_image_url, distance_km, ascent_m, difficulty)")
             .eq("expedition_id", value: expeditionId.uuidString)
             .order("position").execute().value
         let stopRows: [StopRow] = try await supabase.from("expedition_stops")
@@ -328,6 +339,8 @@ final class CrewRepository {
                 guard let route = row.routes else { return nil }
                 return ExpeditionRouteItem(id: row.id, routeId: row.routeId, title: route.title, place: route.place,
                                            coverImageUrl: route.coverImageUrl, distanceKm: route.distanceKm,
+                                           ascentM: route.ascentM ?? 0,
+                                           difficulty: route.difficulty.flatMap { Route.Difficulty(rawValue: $0.uppercased()) },
                                            dayIndex: row.dayIndex, position: row.position)
             },
             stops: stopRows.map {

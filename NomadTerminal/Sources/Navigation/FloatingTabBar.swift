@@ -6,20 +6,17 @@ enum RootTab: Int, CaseIterable {
     // next to SOS) since a standalone tab for it didn't earn its keep
     // visually against the other primary destinations.
     //
-    // Order is deliberate: five slots so the Field Guide (the thing you
-    // reach for when something goes wrong) sits dead centre, in the easiest
-    // thumb position — Home and Places on its left, Saved and Profile on
-    // its right. Activity (the social/notification feed) is the bell on
-    // Home's top bar rather than a tab: a sixth slot would push the Guide
-    // off-centre.
-    case home, search, guide, crews, profile
+    // Five slots. The Field Guide used to be the centre tab; it now lives in
+    // Profile ("Field guide") to make room for Expeditions. Activity (the
+    // social/notification feed) is the bell on Home's top bar.
+    case home, search, crews, expeditions, profile
 
     var icon: String {
         switch self {
         case .home: return "house.fill"
         case .search: return "magnifyingglass"
-        case .guide: return "book.closed.fill"
         case .crews: return "person.3.fill"
+        case .expeditions: return "suitcase.fill"
         case .profile: return ""
         }
     }
@@ -28,8 +25,8 @@ enum RootTab: Int, CaseIterable {
         switch self {
         case .home: return "Home"
         case .search: return "Places"
-        case .guide: return "Guide"
         case .crews: return "Crews"
+        case .expeditions: return "Trips"
         case .profile: return "Profile"
         }
     }

@@ -25,10 +25,10 @@ struct PersonAvatar: View {
 
     private var initials: some View {
         ZStack {
-            Circle().fill(NTColor.milk(0.12))
+            Circle().fill(person.tint)
             Text(person.initials)
-                .font(NTFont.mono(size * 0.3, .semibold))
-                .foregroundStyle(NTColor.milk(0.8))
+                .font(NTFont.body(size * 0.36, .semibold))
+                .foregroundStyle(NTColor.milk)
         }
     }
 }
