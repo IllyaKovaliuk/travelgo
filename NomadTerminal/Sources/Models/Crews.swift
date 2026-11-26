@@ -119,11 +119,17 @@ struct Expedition: Identifiable, Hashable {
     let status: ExpeditionStatus
     let organizerId: UUID
     let createdAt: Date
+    var startedAt: Date? = nil
+    /// "convoy" or "foot" — how the first leg started.
+    var startMode: String? = nil
 }
 
 struct ExpeditionMember: Identifiable, Hashable {
     let person: CrewPerson
     let role: ExpeditionRole
+    var awarenessRole: AwarenessRole? = nil
+    /// The driver whose car this person rides in (their own id = they drive).
+    var carDriverId: UUID? = nil
     var id: UUID { person.id }
 }
 
