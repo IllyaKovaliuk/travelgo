@@ -54,6 +54,8 @@ struct RootTabView: View {
             }
         }
         .preferredColorScheme(ThemeManager.shared.colorScheme)
+        // A location share survives the app being killed; pick it back up.
+        .task { await LiveSession.shared.resumeSavedShare() }
         .task {
             if let profile = try? await RouteRepository.shared.fetchMyProfile() {
                 let name = profile.displayName ?? profile.username

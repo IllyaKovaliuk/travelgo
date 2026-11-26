@@ -345,8 +345,22 @@ struct CrewDetailView: View {
         }
     }
 
+    /// Trip day: a planned trip whose first day is today (or earlier), or one already running.
+    private func tripDayState(_ e: Expedition) -> String? {
+        if e.status == .active { return String(localized: "LIVE NOW") }
+        if e.status == .planning, let s = e.startDate, s <= Date(), !e.isPast { return String(localized: "STARTS TODAY") }
+        return nil
+    }
+
     private func expeditionRow(_ e: Expedition) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let live = tripDayState(e)
+        return VStack(alignment: .leading, spacing: 10) {
+            if let live {
+                HStack(spacing: 6) {
+                    Circle().fill(e.status == .active ? NTColor.sage : NTColor.accent).frame(width: 8, height: 8)
+                    Text(live).font(NTFont.mono(10.5, .semibold)).foregroundStyle(e.status == .active ? NTColor.sage : NTColor.accent)
+                }
+            }
             HStack {
                 Text(e.shortRange + (e.dayCount.map { " · \($0) DAYS" } ?? ""))
                     .font(NTFont.mono(11, .medium)).foregroundStyle(NTColor.milk(0.55))
@@ -364,10 +378,17 @@ struct CrewDetailView: View {
                 Text(e.tripType.title).font(NTFont.body(13.5))
             }
             .foregroundStyle(NTColor.milk(0.6))
+            if live != nil {
+                Text(e.status == .active ? "Open live map" : "Start expedition")
+                    .font(NTFont.body(15, .semibold)).foregroundStyle(Color(hex: 0x231007))
+                    .frame(maxWidth: .infinity).frame(height: 46).background(Capsule().fill(NTColor.accent))
+                    .padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .crewCard()
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(live == nil ? .clear : NTColor.accent.opacity(0.8), lineWidth: 1.5))
     }
 
     // MARK: Actions

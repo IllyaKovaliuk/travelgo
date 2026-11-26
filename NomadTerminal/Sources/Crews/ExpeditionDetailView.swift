@@ -20,6 +20,13 @@ struct ExpeditionDetailView: View {
     @State private var showEdit = false
     @State private var addRouteDay: DayTarget?
     @State private var addStopDay: DayTarget?
+    @State private var polls: [Poll] = []
+    @State private var openPoll: Poll?
+    @State private var newPollDay: DayTarget?
+    @State private var showLobby = false
+    @State private var showLive = false
+    @State private var showAlerts = false
+    @State private var showFinishConfirm = false
     @State private var showDeleteConfirm = false
     @State private var showLeaveConfirm = false
     @State private var showReport = false
@@ -74,10 +81,7 @@ struct ExpeditionDetailView: View {
             }
             .refreshable { await load() }
 
-            if expedition != nil, tab == .itinerary, itinerary.routes.isEmpty, itinerary.stops.isEmpty {
-                VStack { NTAccentButton(title: "Add first route", icon: "plus") { addRouteDay = DayTarget(day: 1) } }
-                    .padding(.horizontal, 16).padding(.bottom, 8)
-            }
+            if let expedition { bottomBar(expedition) }
             VStack { topBar; Spacer() }
         }
         .foregroundStyle(NTColor.milk)
@@ -85,6 +89,43 @@ struct ExpeditionDetailView: View {
         .sheet(isPresented: $showEdit) {
             if let expedition { CreateExpeditionView(crewId: expedition.crewId, editing: expedition) { _ in Task { await load() } } }
         }
+        .sheet(item: $newPollDay) { target in
+            CreatePollView(crewId: expedition?.crewId ?? UUID(), crewName: expedition?.name ?? "",
+                           expeditionId: expeditionId, day: target.day) { Task { await load() } }
+        }
+        .ntFullScreenCover(item: $openPoll, onDismiss: { Task { await load() } }) { poll in
+            PollDetailView(pollId: poll.id, crewId: poll.crewId, expeditionId: expeditionId, crewName: expedition?.name ?? "",
+                           people: Dictionary(uniqueKeysWithValues: members.map { ($0.person.id, $0.person) }),
+                           myId: myId, canManage: canManage || poll.createdBy == myId, onPlanWinner: nil,
+                           onChanged: { Task { await load() } }, onClose: { openPoll = nil })
+        }
+        .ntFullScreenCover(isPresented: $showLobby, readable: false, onDismiss: { Task { await load() } }) {
+            if let expedition {
+                StartLobbyView(expedition: expedition, onStarted: { started in
+                    self.expedition = started
+                    showLobby = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { showLive = true }
+                }, onClose: { showLobby = false })
+            }
+        }
+        .ntFullScreenCover(isPresented: $showLive, readable: false, edgeSwipeBack: false, onDismiss: { Task { await load() } }) {
+            if let expedition { LiveTripView(expedition: expedition, onClose: { showLive = false }) }
+        }
+        .sheet(isPresented: $showAlerts) {
+            if let expedition {
+                CrewAlertsView(expedition: expedition) { showAlerts = false }
+                    .presentationDetents([.large]).presentationCornerRadius(32)
+            }
+        }
+        .alert("Finish this expedition?", isPresented: $showFinishConfirm) {
+            Button("Finish", role: .destructive) {
+                run({
+                    await LiveSession.shared.stopSharing()
+                    try await CrewLiveRepository.shared.finishExpedition(id: expeditionId)
+                })
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { Text("Everyone's shared position is deleted and the trip moves to Past.") }
         .sheet(item: $addRouteDay) { target in
             AddRouteToTripSheet(expeditionId: expeditionId, day: target.day,
                                 alreadyAdded: Set(itinerary.routes.map(\.routeId))) { Task { await load() } }
@@ -149,6 +190,15 @@ struct ExpeditionDetailView: View {
                 Menu {
                     if canManage {
                         Button { showEdit = true } label: { Label("Edit trip", systemImage: "pencil") }
+                    }
+                    if expedition?.crewId != nil {
+                        Button { newPollDay = DayTarget(day: nil) } label: { Label("New poll", systemImage: "chart.bar") }
+                    }
+                    if expedition?.status == .active {
+                        Button { showAlerts = true } label: { Label("Crew alerts", systemImage: "bell.badge") }
+                        if canManage {
+                            Button(role: .destructive) { showFinishConfirm = true } label: { Label("Finish expedition", systemImage: "flag.checkered") }
+                        }
                     }
                     Button(role: .destructive) { showReport = true } label: {
                         Label(reported ? "Reported" : "Report trip", systemImage: "flag")
@@ -246,6 +296,13 @@ struct ExpeditionDetailView: View {
             }
             .padding(.horizontal, 4)
 
+            ForEach(polls.filter { $0.dayIndex == d && !($0.isClosed && $0.winner != nil && $0.kind == .route) }) { poll in
+                EmbeddedPollCard(poll: poll, myId: myId, people: Dictionary(uniqueKeysWithValues: members.map { ($0.person.id, $0.person) }),
+                                 onVote: { option in
+                                     Task { try? await CrewLiveRepository.shared.vote(pollId: poll.id, optionId: option.id); await load() }
+                                 }, onOpen: { openPoll = poll })
+            }
+
             if routes.isEmpty && stops.isEmpty {
                 Button { addRouteDay = DayTarget(day: d) } label: {
                     Text("NOTHING PLANNED · TAP TO ADD")
@@ -267,6 +324,9 @@ struct ExpeditionDetailView: View {
                 HStack(spacing: 10) {
                     Button { addRouteDay = DayTarget(day: d) } label: { addChip("Route") }.buttonStyle(.plain)
                     Button { addStopDay = DayTarget(day: d) } label: { addChip("Stop") }.buttonStyle(.plain)
+                    if e.crewId != nil, d != nil {
+                        Button { newPollDay = DayTarget(day: d) } label: { addChip("Poll") }.buttonStyle(.plain)
+                    }
                 }
             }
         }
@@ -407,6 +467,30 @@ struct ExpeditionDetailView: View {
         }
     }
 
+    // MARK: Trip day
+
+    @ViewBuilder
+    private func bottomBar(_ e: Expedition) -> some View {
+        let empty = itinerary.routes.isEmpty && itinerary.stops.isEmpty
+        VStack(spacing: 10) {
+            switch e.status {
+            case .active:
+                NTAccentButton(title: "Open live map", icon: "location.fill") { showLive = true }
+            case .planning where canManage && tab != .members:
+                if empty && tab == .itinerary {
+                    NTAccentButton(title: "Add first route", icon: "plus") { addRouteDay = DayTarget(day: 1) }
+                } else {
+                    NTAccentButton(title: "Start expedition", icon: "play.fill") { showLobby = true }
+                }
+            default:
+                if empty && tab == .itinerary && e.status == .planning {
+                    NTAccentButton(title: "Add first route", icon: "plus") { addRouteDay = DayTarget(day: 1) }
+                }
+            }
+        }
+        .padding(.horizontal, 16).padding(.bottom, 8)
+    }
+
     // MARK: Helpers
 
     private func statusTitle(_ s: ExpeditionStatus) -> String {
@@ -430,6 +514,9 @@ struct ExpeditionDetailView: View {
         if let crewId = exp?.crewId, let me = myId,
            let roster = try? await CrewRepository.shared.fetchCrewMembers(crewId: crewId) {
             crewRole = roster.first { $0.person.id == me }?.role
+        }
+        if let crewId = exp?.crewId {
+            polls = ((try? await CrewLiveRepository.shared.fetchPolls(crewId: crewId, expeditionId: expeditionId)) ?? polls)
         }
         isLoading = false
     }

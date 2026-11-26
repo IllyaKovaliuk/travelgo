@@ -3774,6 +3774,782 @@
         }
       }
     },
+    "Add option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add option" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Añadir opción" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Додати варіант" } }
+      }
+    },
+    "Add a route with an elevation profile to see the crew on it." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add a route with an elevation profile to see the crew on it." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Añade una ruta con perfil de elevación para ver al crew en él." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Додай маршрут із профілем висот, щоб побачити crew на ньому." } }
+      }
+    },
+    "Ascent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ascent" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ascenso" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Підйом" } }
+      }
+    },
+    "Back on the road in" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Back on the road in" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "De vuelta en la carretera en" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Знову в дорозі через" } }
+      }
+    },
+    "Battery low" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Battery low" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Batería baja" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Низький заряд" } }
+      }
+    },
+    "Carpathians, December" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Carpathians, December" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cárpatos, diciembre" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Карпати, грудень" } }
+      }
+    },
+    "Choose your car" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose your car" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige tu coche" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Обери свою машину" } }
+      }
+    },
+    "Convoy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Convoy" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Convoy" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Колона" } }
+      }
+    },
+    "Crew alerts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Crew alerts" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Alertas del crew" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Сповіщення crew" } }
+      }
+    },
+    "Crew on map" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Crew on map" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Crew en el mapa" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Crew на мапі" } }
+      }
+    },
+    "Day 1 drive" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day 1 drive" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Trayecto del día 1" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Дорога першого дня" } }
+      }
+    },
+    "Deadline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Deadline" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fecha límite" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Дедлайн" } }
+      }
+    },
+    "Decided" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Decided" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Decidido" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Вирішено" } }
+      }
+    },
+    "Decisions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Decisions" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Decisiones" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Рішення" } }
+      }
+    },
+    "Everyone going sees it start. You choose separately whether to share your position." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Everyone going sees it start. You choose separately whether to share your position." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Todos los que van verán que empieza. Tú decides aparte si compartes tu posición." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Усі, хто їде, побачать старт. Чи ділитись позицією — ти обираєш окремо." } }
+      }
+    },
+    "Everyone voted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Everyone voted" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Todos votaron" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Усі проголосували" } }
+      }
+    },
+    "Everyone's shared position is deleted and the trip moves to Past." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Everyone's shared position is deleted and the trip moves to Past." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se borran las posiciones compartidas y el viaje pasa a Pasados." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Усі поділені позиції буде видалено, а поїздка перейде в минулі." } }
+      }
+    },
+    "Falls behind the lead" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Falls behind the lead" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se queda atrás del líder" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Відстає від лідера" } }
+      }
+    },
+    "Finish expedition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish expedition" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Terminar expedición" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Завершити експедицію" } }
+      }
+    },
+    "Finish this expedition?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Finish this expedition?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Terminar esta expedición?" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Завершити цю експедицію?" } }
+      }
+    },
+    "First leg" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "First leg" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Primer tramo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Перший етап" } }
+      }
+    },
+    "Flat tire" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Flat tire" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pinchazo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пробите колесо" } }
+      }
+    },
+    "Fuel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fuel" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Combustible" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пальне" } }
+      }
+    },
+    "Group spreads out" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Group spreads out" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "El grupo se dispersa" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Група розтягується" } }
+      }
+    },
+    "I'm driving" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "I'm driving" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Conduzco yo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Я за кермом" } }
+      }
+    },
+    "Keep going" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep going" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Seguir" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Їхати далі" } }
+      }
+    },
+    "Leaves the route" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leaves the route" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se sale de la ruta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зійшов з маршруту" } }
+      }
+    },
+    "List" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "List" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Lista" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Список" } }
+      }
+    },
+    "Live" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "En vivo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Наживо" } }
+      }
+    },
+    "Lost the convoy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lost the convoy" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Perdí el convoy" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Загубив колону" } }
+      }
+    },
+    "Low-power mode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Low-power mode" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Modo de bajo consumo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Енергозбереження" } }
+      }
+    },
+    "Map" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Map" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mapa" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Мапа" } }
+      }
+    },
+    "Navigate to last fix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Navigate to last fix" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ir a la última posición" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Прокласти шлях до останньої позиції" } }
+      }
+    },
+    "Navigate to them" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Navigate to them" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ir hacia ellos" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Прокласти шлях до них" } }
+      }
+    },
+    "Need help — tell the crew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Need help — tell the crew" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Necesito ayuda — avisar al crew" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Потрібна допомога — повідомити crew" } }
+      }
+    },
+    "New poll" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "New poll" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nueva encuesta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Нове опитування" } }
+      }
+    },
+    "No signal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No signal" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin señal" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Немає сигналу" } }
+      }
+    },
+    "No votes yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No votes yet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aún sin votos" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Голосів ще немає" } }
+      }
+    },
+    "No winner yet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No winner yet" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aún sin ganador" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Переможця ще немає" } }
+      }
+    },
+    "Nobody is sharing a position yet." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Nobody is sharing a position yet." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nadie comparte su posición todavía." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ніхто ще не ділиться позицією." } }
+      }
+    },
+    "None" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "None" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ninguno" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ніхто" } }
+      }
+    },
+    "Not just you" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not just you" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No solo tú" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Не лише ти" } }
+      }
+    },
+    "Not now" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not now" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ahora no" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Не зараз" } }
+      }
+    },
+    "Not set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not set" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin asignar" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Не призначено" } }
+      }
+    },
+    "Note · optional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Note · optional" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Nota · opcional" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Нотатка · необов'язково" } }
+      }
+    },
+    "On foot" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "On foot" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "A pie" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пішки" } }
+      }
+    },
+    "Only while I record" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Only while I record" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Solo mientras grabo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Лише поки я записую трек" } }
+      }
+    },
+    "Open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abierta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Відкрите" } }
+      }
+    },
+    "Open live map" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open live map" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Abrir mapa en vivo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Відкрити живу мапу" } }
+      }
+    },
+    "Option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Option" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Opción" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Варіант" } }
+      }
+    },
+    "Options · 2–6" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Options · 2–6" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Opciones · 2–6" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Варіанти · 2–6" } }
+      }
+    },
+    "Or at the deadline, whichever is first" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Or at the deadline, whichever is first" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "O al llegar la fecha límite, lo que ocurra antes" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Або на дедлайні — що настане раніше" } }
+      }
+    },
+    "Pauses when you stop the track" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pauses when you stop the track" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se pausa al detener la grabación" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пауза, коли зупиняєш запис треку" } }
+      }
+    },
+    "Pick a route" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pick a route" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Elige una ruta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Обери маршрут" } }
+      }
+    },
+    "Ping" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ping" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ping" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пінг" } }
+      }
+    },
+    "Profile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Profile" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Perfil" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Профіль" } }
+      }
+    },
+    "Question" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Question" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Pregunta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Питання" } }
+      }
+    },
+    "Ready check" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready check" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Comprobación de preparados" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Перевірка готовності" } }
+      }
+    },
+    "Refill at the lake outlet…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Refill at the lake outlet…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Rellenar en la salida del lago…" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Набрати води біля витоку з озера…" } }
+      }
+    },
+    "Road" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Road" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Carretera" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Дорога" } }
+      }
+    },
+    "Set regroup point" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Set regroup point" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fijar punto de reunión" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Позначити точку збору" } }
+      }
+    },
+    "See each other on the trip" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "See each other on the trip" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Veros durante el viaje" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Бачити одне одного в поїздці" } }
+      }
+    },
+    "Share my position" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share my position" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Compartir mi posición" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ділитись моєю позицією" } }
+      }
+    },
+    "Share until" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share until" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Compartir hasta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ділитись до" } }
+      }
+    },
+    "Short break" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Short break" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Descanso corto" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Коротка зупинка" } }
+      }
+    },
+    "Someone" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Someone" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Alguien" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Хтось" } }
+      }
+    },
+    "Start expedition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start expedition" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Iniciar expedición" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Почати експедицію" } }
+      }
+    },
+    "Stop sharing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stop sharing" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Dejar de compartir" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Припинити ділитись" } }
+      }
+    },
+    "Start sharing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Start sharing" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Empezar a compartir" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Почати ділитись" } }
+      }
+    },
+    "Stops off-plan" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stops off-plan" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Paradas fuera de plan" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зупинки поза планом" } }
+      }
+    },
+    "Suggest a route" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suggest a route" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Proponer una ruta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Запропонувати маршрут" } }
+      }
+    },
+    "Suggest an option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suggest an option" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Proponer una opción" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Запропонувати варіант" } }
+      }
+    },
+    "Suggest another place" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suggest another place" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Proponer otro lugar" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Запропонувати інше місце" } }
+      }
+    },
+    "Suggest another option" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Suggest another option" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Proponer otra opción" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Запропонувати інший варіант" } }
+      }
+    },
+    "The rest of the convoy sees this instantly." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The rest of the convoy sees this instantly." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "El resto del convoy lo ve al instante." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Решта колони бачить це одразу." } }
+      }
+    },
+    "This alerts your crew only. It does not call emergency services — use SOS to message your emergency contacts." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This alerts your crew only. It does not call emergency services — use SOS to message your emergency contacts." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto avisa solo a tu crew. No llama a los servicios de emergencia: usa SOS para escribir a tus contactos de emergencia." } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Це сповіщає лише твій crew. Воно не викликає екстрені служби — для повідомлення екстреним контактам користуйся SOS." } }
+      }
+    },
+    "Tied — pick a winner" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tied — pick a winner" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Empate — elige un ganador" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Нічия — обери переможця" } }
+      }
+    },
+    "Trail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trail" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sendero" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Стежка" } }
+      }
+    },
+    "Trip ends" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Trip ends" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Fin del viaje" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Кінець поїздки" } }
+      }
+    },
+    "Turnaround reminder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Turnaround reminder" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Aviso de media vuelta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Нагадування розвернутись" } }
+      }
+    },
+    "Update every 2 min instead of 30 s" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update every 2 min instead of 30 s" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualiza cada 2 min en vez de 30 s" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Оновлення раз на 2 хв замість 30 с" } }
+      }
+    },
+    "Wait at a safe stop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wait at a safe stop" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esperar en un lugar seguro" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Чекати в безпечному місці" } }
+      }
+    },
+    "Waiting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esperando" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Чекає" } }
+      }
+    },
+    "We're moving again" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "We're moving again" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ya nos movemos" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ми знову рушили" } }
+      }
+    },
+    "What happened?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "What happened?" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Qué ha pasado?" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Що сталося?" } }
+      }
+    },
+    "When" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "When" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cuándo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Коли" } }
+      }
+    },
+    "Where" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Where" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Dónde" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Де" } }
+      }
+    },
+    "Add" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Añadir" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Додати" } }
+      }
+    },
+    "Leave" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Salir" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Вийти" } }
+      }
+    },
+    "stops automatically" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "stops automatically" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "se detiene automáticamente" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "вимкнеться автоматично" } }
+      }
+    },
+    "Anyone can add options" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Anyone can add options" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cualquiera puede añadir opciones" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Будь-хто може додавати варіанти" } }
+      }
+    },
+    "Close when everyone voted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close when everyone voted" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar cuando todos hayan votado" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Закрити, коли всі проголосують" } }
+      }
+    },
+    "Plan winner" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Plan winner" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Planificar al ganador" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Спланувати переможця" } }
+      }
+    },
+    "Close poll" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close poll" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar encuesta" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Закрити опитування" } }
+      }
+    },
+    "Pick winner" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pick winner" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Elegir ganador" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Обрати переможця" } }
+      }
+    },
+    "I'm ready" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "I'm ready" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Estoy listo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Я готовий" } }
+      }
+    },
+    "I'm not ready" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "I'm not ready" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No estoy listo" } },
+        "uk" : { "stringUnit" : { "state" : "translated", "value" : "Я не готовий" } }
+      }
+    },
     "Continue" : {
       "extractionState" : "manual",
       "localizations" : {
