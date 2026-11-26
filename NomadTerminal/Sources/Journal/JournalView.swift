@@ -44,7 +44,7 @@ struct JournalView: View {
         .sheet(item: $attachingVisit) { visit in
             attachRoutePicker(visit)
         }
-        .ntFullScreenCover(isPresented: $showRecordFlow, onDismiss: { Task { await load() } }) {
+        .ntFullScreenCover(isPresented: $showRecordFlow, edgeSwipeBack: false, onDismiss: { Task { await load() } }) {
             LogRouteFlow()
         }
         .sheet(isPresented: Binding(get: { exportText != nil }, set: { if !$0 { exportText = nil } })) {

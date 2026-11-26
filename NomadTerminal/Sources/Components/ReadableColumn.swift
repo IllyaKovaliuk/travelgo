@@ -17,7 +17,28 @@ private struct ReadableColumn: ViewModifier {
     }
 }
 
+/// Swipe in from the left edge to go back — what `NavigationStack` pushes
+/// already do, for the full-screen covers that draw their own back button.
+/// Only a drag that starts at the edge and is mostly horizontal counts, so
+/// scrolling and taps are untouched.
+private struct EdgeSwipeBack: ViewModifier {
+    @Environment(\.dismiss) private var dismiss
+
+    func body(content: Content) -> some View {
+        content.simultaneousGesture(
+            DragGesture(minimumDistance: 20).onEnded { value in
+                guard value.startLocation.x < 28,
+                      value.translation.width > 80,
+                      abs(value.translation.height) < value.translation.width * 0.5 else { return }
+                dismiss()
+            }
+        )
+    }
+}
+
 extension View {
+    func edgeSwipeBack() -> some View { modifier(EdgeSwipeBack()) }
+
     func readableColumn(maxWidth: CGFloat = 720) -> some View {
         modifier(ReadableColumn(maxWidth: maxWidth))
     }
@@ -27,22 +48,26 @@ extension View {
     func ntFullScreenCover<Content: View>(
         isPresented: Binding<Bool>,
         readable: Bool = true,
+        edgeSwipeBack: Bool = true,
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         fullScreenCover(isPresented: isPresented, onDismiss: onDismiss) {
-            if readable { content().readableColumn() } else { content() }
+            let view = readable ? AnyView(content().readableColumn()) : AnyView(content())
+            if edgeSwipeBack { view.edgeSwipeBack() } else { view }
         }
     }
 
     func ntFullScreenCover<Item: Identifiable, Content: View>(
         item: Binding<Item?>,
         readable: Bool = true,
+        edgeSwipeBack: Bool = true,
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> Content
     ) -> some View {
         fullScreenCover(item: item, onDismiss: onDismiss) { value in
-            if readable { content(value).readableColumn() } else { content(value) }
+            let view = readable ? AnyView(content(value).readableColumn()) : AnyView(content(value))
+            if edgeSwipeBack { view.edgeSwipeBack() } else { view }
         }
     }
 }

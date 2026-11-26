@@ -87,7 +87,7 @@ struct HomeFeedView: View {
         .ntFullScreenCover(isPresented: $showActivity) {
             NotificationsView(onClose: { showActivity = false })
         }
-        .ntFullScreenCover(isPresented: $showLogRoute, onDismiss: { Task { await loadRoutes() } }) {
+        .ntFullScreenCover(isPresented: $showLogRoute, edgeSwipeBack: false, onDismiss: { Task { await loadRoutes() } }) {
             LogRouteFlow()
         }
         .task { await loadRoutes() }
